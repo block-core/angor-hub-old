@@ -122,7 +122,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     noMoreEvents: boolean = false;
 
 
-     constructor(
+    constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _metadataService: MetadataService,
         private _signerService: SignerService,
@@ -140,7 +140,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private sanitizer: DomSanitizer
     ) {
         this.events$ = this.paginatedEventService.getEventStream();
-     }
+    }
 
     ngOnInit(): void {
 
@@ -221,39 +221,32 @@ export class ProfileComponent implements OnInit, OnDestroy {
             });
 
 
+        //==========================================
 
-// Subscribe to real-time events
-this.paginatedEventService
-  .subscribeToEvents([this.routePubKey])
-  .then(() => {
-      console.log('Subscribed to real-time events');
-  })
-  .catch((error) => {
-      console.error('Error subscribing to events:', error);
-  });
+        this.paginatedEventService
+            .subscribeToEvents([this.routePubKey])
+            .then(() => {
+                console.log('Subscribed to real-time events');
+            })
+            .catch((error) => {
+                console.error('Error subscribing to events:', error);
+            });
 
-// Subscribe to events stream with real-time update
-this.paginatedEventService.getEventStream().subscribe((events) => {
-  // Sort events by creation time
-  const sortedEvents = events.sort((a, b) => b.createdAt - a.createdAt);
+        this.paginatedEventService.getEventStream().subscribe((events) => {
+            const sortedEvents = events.sort((a, b) => b.createdAt - a.createdAt);
 
-  // Update the events in the component
-  this.events = sortedEvents;  // Make sure `this.events` is used in the template
+            this.events = sortedEvents;
 
-  // Detect changes in UI
-  this.changeDetectorRef.detectChanges(); // Force change detection to update the UI
-});
+            this.changeDetectorRef.detectChanges();
+        });
 
-// Load initial events
-this.loadInitialEvents();
+        this.loadInitialEvents();
 
-// Check if there are more events to load
-this.paginatedEventService.hasMoreEvents().subscribe((noMore) => {
-  this.noMoreEvents = noMore;
+        this.paginatedEventService.hasMoreEvents().subscribe((noMore) => {
+            this.noMoreEvents = noMore;
 
-  // Detect changes when the end of events list is reached
-  this.changeDetectorRef.detectChanges();
-});
+            this.changeDetectorRef.detectChanges();
+        });
 
 
 
@@ -264,7 +257,7 @@ this.paginatedEventService.hasMoreEvents().subscribe((noMore) => {
         this._unsubscribeAll.complete();
     }
 
-    async onScroll() {}
+    async onScroll() { }
 
     async loadProfile(publicKey: string): Promise<void> {
         this.isLoading = true;
@@ -539,7 +532,7 @@ this.paginatedEventService.hasMoreEvents().subscribe((noMore) => {
 
     sendEvent() {
         if (this.eventInput.nativeElement.value != '') {
-             this.paginatedEventService
+            this.paginatedEventService
                 .sendTextEvent(this.eventInput.nativeElement.value)
                 .then(() => {
                     this._changeDetectorRef.markForCheck();
@@ -641,14 +634,11 @@ this.paginatedEventService.hasMoreEvents().subscribe((noMore) => {
 
 
     toggleLike(event: NewEvent): void {
-         if (!event.likedByMe) {
-            this.sendLike(event);  // لایک کردن ایونت
+        if (!event.likedByMe) {
+            this.sendLike(event);
         }
         this._changeDetectorRef.detectChanges();
     }
-
-
-
 
 
 }

@@ -435,24 +435,28 @@ export class PaginatedEventService {
 
     private async getMyLikes(): Promise<string[]> {
         const myLikesFilter: Filter = {
-            kinds: [7], // نوع ایونت لایک
-            authors: [this.signerService.getPublicKey()] // فقط لایک‌های نوشته شده توسط کاربر جاری
+            kinds: [7],
+
+            authors: [this.signerService.getPublicKey()]
+
         };
 
         try {
-            // گرفتن لایک‌های کاربر جاری
+
             const likeEvents = await this.fetchFilteredEvents(myLikesFilter);
 
-            // استخراج ایونت‌هایی که کاربر لایک کرده و اضافه کردن آنها به myLikedNoteIds
+
             likeEvents.forEach((like) => {
                 const eventIdTag = like.tags.find(tag => tag[0] === 'e');
                 if (eventIdTag) {
                     const eventId = eventIdTag[1];
-                    this.myLikedNoteIds.push(eventId); // ذخیره ID ایونت در myLikedNoteIds
+                    this.myLikedNoteIds.push(eventId);
+
                 }
             });
 
-            return this.myLikedNoteIds; // برگرداندن لیست ایونت‌های لایک‌شده
+            return this.myLikedNoteIds;
+
 
         } catch (error) {
             console.error('Failed to get user likes:', error);
