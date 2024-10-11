@@ -20,7 +20,7 @@ export class PaginatedEventService {
     private eventsSubject = new BehaviorSubject<NewEvent[]>([]);
     private isLoading = new BehaviorSubject<boolean>(false);
     private lastLoadedEventTime: number | null = null;
-    private pageSize = 20;
+    private pageSize = 10;
     private noMoreEvents = new BehaviorSubject<boolean>(false);
     private seenEventIds = new Set<string>();
 
@@ -36,24 +36,22 @@ export class PaginatedEventService {
 
     myLikedNoteIds: string[] = [];
 
-
     constructor(
         private relayService: RelayService,
         private signerService: SignerService,
         private metadataService: MetadataService
     ) {
-
-        this.getMyLikes().then(() => {
-            // console.log('User likes loaded:', this.myLikedNoteIds);
-        }).catch(error => {
+        this.clearEvents();
+       
+        this.getMyLikes().then(() => {}).catch(error => {
             console.error('Failed to load user likes:', error);
         });
-
     }
+
 
     async subscribeToEvents(pubkeys: string[]): Promise<void> {
         await this.relayService.ensureConnectedRelays();
-        const connectedRelays = this.relayService.getConnectedRelays();
+        const connectedRelays = this.relayService.getConnectedRelays().slice(0, 3);
 
         if (!connectedRelays || connectedRelays.length === 0) {
             console.error('No connected relays available.');
@@ -97,7 +95,7 @@ export class PaginatedEventService {
                 }
             },
             oneose: () => {
-                //console.log('Subscription to relays closed.');
+
             },
         });
     }
@@ -211,6 +209,29 @@ export class PaginatedEventService {
         return replyTags.length > 0;
     }
 
+    private async getMyLikes(): Promise<string[]> {
+        const myLikesFilter: Filter = {
+            kinds: [7],
+            authors: [this.signerService.getPublicKey()]
+        };
+
+        try {
+            const likeEvents = await this.fetchFilteredEvents(myLikesFilter);
+            likeEvents.forEach((like) => {
+                const eventIdTag = like.tags.find(tag => tag[0] === 'e');
+                if (eventIdTag) {
+                    const eventId = eventIdTag[1];
+                    this.myLikedNoteIds.push(eventId);
+                }
+            });
+
+            return this.myLikedNoteIds;
+        } catch (error) {
+            console.error('Failed to get user likes:', error);
+            return [];
+        }
+    }
+
     async loadMoreEvents(pubkeys: string[]): Promise<void> {
         if (this.isLoading.value || this.noMoreEvents.value) return;
 
@@ -234,12 +255,9 @@ export class PaginatedEventService {
                 this.lastLoadedEventTime = events[events.length - 1].created_at;
 
                 const uniqueEvents = events.filter(
-                    (event) =>
-                        !this.seenEventIds.has(event.id) && !this.isReply(event)
+                    (event) => !this.seenEventIds.has(event.id) && !this.isReply(event)
                 );
-                uniqueEvents.forEach((event) =>
-                    this.seenEventIds.add(event.id)
-                );
+                uniqueEvents.forEach((event) => this.seenEventIds.add(event.id));
 
                 const newEvents = await Promise.all(
                     uniqueEvents.map((event) => this.createNewEvent(event))
@@ -263,10 +281,6 @@ export class PaginatedEventService {
     private async fetchFilteredEvents(filter: Filter): Promise<NostrEvent[]> {
         await this.relayService.ensureConnectedRelays();
         const connectedRelays = this.relayService.getConnectedRelays();
-        if (!connectedRelays || connectedRelays.length === 0) {
-            console.error('No connected relays available.');
-            return [];
-        }
 
         const eventMap = new Map<string, NostrEvent>();
         const pool = this.relayService.getPool();
@@ -301,16 +315,15 @@ export class PaginatedEventService {
         this.enqueueJob(event.id, 'reposts');
         this.enqueueJob(event.id, 'zaps');
         await this.processJobQueue();
+
         newEvent.likedByMe = this.myLikedNoteIds.includes(event.id);
 
         const metadata = await this.metadataService.fetchMetadataWithCache(
             event.pubkey
         );
-
         if (metadata) {
             newEvent.username = metadata.name || newEvent.npub;
-            newEvent.picture =
-                metadata.picture || '/images/avatars/avatar-placeholder.png';
+            newEvent.picture = metadata.picture || '/images/avatars/avatar-placeholder.png';
         }
 
         return newEvent;
@@ -433,39 +446,6 @@ export class PaginatedEventService {
         return likeEvents.map((event) => event.pubkey);
     }
 
-    private async getMyLikes(): Promise<string[]> {
-        const myLikesFilter: Filter = {
-            kinds: [7],
-
-            authors: [this.signerService.getPublicKey()]
-
-        };
-
-        try {
-
-            const likeEvents = await this.fetchFilteredEvents(myLikesFilter);
-
-
-            likeEvents.forEach((like) => {
-                const eventIdTag = like.tags.find(tag => tag[0] === 'e');
-                if (eventIdTag) {
-                    const eventId = eventIdTag[1];
-                    this.myLikedNoteIds.push(eventId);
-
-                }
-            });
-
-            return this.myLikedNoteIds;
-
-
-        } catch (error) {
-            console.error('Failed to get user likes:', error);
-            return [];
-        }
-    }
-
-
-
     private async getZappers(eventId: string): Promise<string[]> {
         const zapFilter: Filter = {
             '#e': [eventId],
@@ -511,7 +491,7 @@ export class PaginatedEventService {
     }
 
     getEventStream(): Observable<NewEvent[]> {
-        return this.eventsSubject.asObservable().pipe(throttleTime(3000));
+        return this.eventsSubject.asObservable().pipe(throttleTime(1000));
     }
 
     hasMoreEvents(): Observable<boolean> {
@@ -557,7 +537,7 @@ export class PaginatedEventService {
                 ['e', event.id],
                 ['p', event.pubkey],
             ];
-            const content = '❤️';
+            const content = '+';
 
             const unsignedEvent = this.signerService.getUnsignedEvent(
                 7,
@@ -661,5 +641,12 @@ export class PaginatedEventService {
         } catch (error) {
             console.error('Failed to send reply event:', error);
         }
+    }
+
+    clearEvents(): void {
+        this.eventsSubject.next([]);
+        this.seenEventIds.clear();
+        this.lastLoadedEventTime = null;
+        this.noMoreEvents.next(false);
     }
 }

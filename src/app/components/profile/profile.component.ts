@@ -25,7 +25,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { bech32 } from '@scure/base';
@@ -37,13 +37,14 @@ import { MetadataService } from 'app/services/metadata.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
 import { SafeUrlPipe } from 'app/shared/pipes/safe-url.pipe';
-import { LightningInvoice, LightningResponse, } from 'app/types/post';
+import { Paginator } from 'app/shared/utils';
+import { LightningInvoice, LightningResponse, Post } from 'app/types/post';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { NostrEvent } from 'nostr-tools';
-import { Observable, Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
+import { EventListComponent } from '../event-list/event-list.component';
 import { ReceiveDialogComponent } from './zap/receive-dialog/receive-dialog.component';
 import { SendDialogComponent } from './zap/send-dialog/send-dialog.component';
-import { NewEvent } from 'app/types/NewEvent';
 
 interface Chip {
     color?: string;
@@ -79,6 +80,7 @@ interface Chip {
         SafeUrlPipe,
         MatProgressSpinnerModule,
         InfiniteScrollModule,
+        EventListComponent,
     ],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
@@ -109,7 +111,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
     invoiceAmount: string = '?';
     isLiked = false;
     isPreview = false;
+    posts: Post[] = [];
+    likes: any[] = [];
 
+    paginator: Paginator;
 
     myLikes: NostrEvent[] = [];
     myLikedNoteIds: string[] = [];
@@ -117,9 +122,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     isLoadingPosts: boolean = true;
     noEventsMessage: string = '';
     loadingTimeout: any;
-    events$: Observable<NewEvent[]>;
-    events: NewEvent[] = [];
-    noMoreEvents: boolean = false;
 
 
     constructor(
@@ -135,19 +137,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _dialog: MatDialog,
         private _angorConfigService: AngorConfigService,
         private _angorConfirmationService: AngorConfirmationService,
-        private paginatedEventService: PaginatedEventService,
-        private changeDetectorRef: ChangeDetectorRef,
-        private sanitizer: DomSanitizer
+        private eventService: PaginatedEventService
     ) {
-        this.events$ = this.paginatedEventService.getEventStream();
+        let baseTimeDiff = 12000;
+        let since = 0;
+
+        this.paginator = new Paginator(0, since, (baseTimeDiff = baseTimeDiff));
     }
 
     ngOnInit(): void {
-
-
-
-
-
         this._angorConfigService.config$.subscribe((config) => {
             if (config.scheme === 'auto') {
                 this.detectSystemTheme();
@@ -171,7 +169,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             }
             this.loadCurrentUserProfile();
 
-            this.updateSuggestionList();
+
         });
 
         this._indexedDBService
@@ -219,37 +217,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 });
                 this._changeDetectorRef.detectChanges();
             });
-
-
-        //==========================================
-
-        this.paginatedEventService
-            .subscribeToEvents([this.routePubKey])
-            .then(() => {
-                console.log('Subscribed to real-time events');
-            })
-            .catch((error) => {
-                console.error('Error subscribing to events:', error);
-            });
-
-        this.paginatedEventService.getEventStream().subscribe((events) => {
-            const sortedEvents = events.sort((a, b) => b.createdAt - a.createdAt);
-
-            this.events = sortedEvents;
-
-            this.changeDetectorRef.detectChanges();
-        });
-
-        this.loadInitialEvents();
-
-        this.paginatedEventService.hasMoreEvents().subscribe((noMore) => {
-            this.noMoreEvents = noMore;
-
-            this.changeDetectorRef.detectChanges();
-        });
-
-
-
     }
 
     ngOnDestroy(): void {
@@ -257,7 +224,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
-    async onScroll() { }
 
     async loadProfile(publicKey: string): Promise<void> {
         this.isLoading = true;
@@ -277,35 +243,23 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
 
         try {
-            const userMetadata =
-                await this._metadataService.fetchMetadataWithCache(publicKey);
+           
+            const userMetadata = await this._metadataService.fetchMetadataWithCache(publicKey);
             if (userMetadata) {
                 this.metadata = userMetadata;
                 this._changeDetectorRef.detectChanges();
             }
 
-            await this._socialService.getFollowers(publicKey);
+
+            this.followers = await this._socialService.getFollowers(publicKey);
             const currentUserPubKey = this._signerService.getPublicKey();
             this.isFollowing = this.followers.includes(currentUserPubKey);
 
-            await this._socialService.getFollowing(publicKey);
-
-            this._metadataService
-                .getMetadataStream()
-                .pipe(takeUntil(this._unsubscribeAll))
-                .subscribe((updatedMetadata) => {
-                    if (
-                        updatedMetadata &&
-                        updatedMetadata.pubkey === publicKey
-                    ) {
-                        this.metadata = updatedMetadata;
-                        this._changeDetectorRef.detectChanges();
-                    }
-                });
+            this.following = await this._socialService.getFollowing(publicKey);
+            this._changeDetectorRef.detectChanges();
         } catch (error) {
             console.error('Failed to load profile data:', error);
-            this.errorMessage =
-                'Failed to load profile data. Please try again later.';
+            this.errorMessage = 'Failed to load profile data. Please try again later.';
             this._changeDetectorRef.detectChanges();
         } finally {
             this.isLoading = false;
@@ -313,54 +267,34 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
     }
 
+
     private async loadCurrentUserProfile(): Promise<void> {
         try {
             this.currentUserMetadata = null;
-
             this.currentUserPubKey = this._signerService.getPublicKey();
-            const currentUserMetadata =
-                await this._metadataService.fetchMetadataWithCache(
-                    this.currentUserPubKey
-                );
+
+
+            const currentUserMetadata = await this._metadataService.fetchMetadataWithCache(
+                this.currentUserPubKey
+            );
+
             if (currentUserMetadata) {
                 this.currentUserMetadata = currentUserMetadata;
-
-                this._changeDetectorRef.detectChanges();
             }
-            this._metadataService
-                .getMetadataStream()
-                .pipe(takeUntil(this._unsubscribeAll))
-                .subscribe((updatedMetadata) => {
-                    if (
-                        updatedMetadata &&
-                        updatedMetadata.pubkey === this.currentUserPubKey
-                    ) {
-                        this.currentUserMetadata = updatedMetadata;
-                        this._changeDetectorRef.detectChanges();
-                    }
-                });
+
+
+            this._changeDetectorRef.detectChanges();
         } catch (error) {
             console.error('Failed to load profile data:', error);
-            this.errorMessage =
-                'Failed to load profile data. Please try again later.';
+            this.errorMessage = 'Failed to load profile data. Please try again later.';
             this._changeDetectorRef.detectChanges();
         } finally {
             this._changeDetectorRef.detectChanges();
         }
     }
 
-    private updateSuggestionList(): void {
-        this._indexedDBService
-            .getSuggestionUsers()
-            .then((suggestions) => {
-                this.suggestions = suggestions;
 
-                this._changeDetectorRef.detectChanges();
-            })
-            .catch((error) => {
-                console.error('Error updating suggestion list:', error);
-            });
-    }
+
 
     getSafeUrl(url: string): SafeUrl {
         return this._sanitizer.bypassSecurityTrustUrl(url);
@@ -465,6 +399,16 @@ export class ProfileComponent implements OnInit, OnDestroy {
         });
     }
 
+    toggleLike() {
+        this.isLiked = !this.isLiked;
+
+        if (this.isLiked) {
+            setTimeout(() => {
+                this.isLiked = false;
+                this.isLiked = true;
+            }, 300);
+        }
+    }
 
     addEmoji(event: any) {
         this.eventInput.nativeElement.value += event.emoji.native;
@@ -532,7 +476,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     sendEvent() {
         if (this.eventInput.nativeElement.value != '') {
-            this.paginatedEventService
+             this.eventService
                 .sendTextEvent(this.eventInput.nativeElement.value)
                 .then(() => {
                     this._changeDetectorRef.markForCheck();
@@ -542,103 +486,4 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 });
         }
     }
-
-
-
-
-    loadInitialEvents(): void {
-        if (this.routePubKey.length === 0) {
-            console.warn('No pubkeys provided to EventListComponent');
-            return;
-        }
-
-        this.isLoading = true;
-        this.paginatedEventService.loadMoreEvents(this.routePubKey).finally(() => {
-            this.isLoading = false;
-            this.changeDetectorRef.markForCheck();
-        });
-    }
-
-    loadMoreEvents(): void {
-        if (!this.isLoading && !this.noMoreEvents) {
-            this.isLoading = true;
-            this.paginatedEventService
-                .loadMoreEvents(this.routePubKey)
-                .finally(() => {
-                    this.isLoading = false;
-                    this.changeDetectorRef.markForCheck();
-                });
-        }
-    }
-
-    getSanitizedContent(content: string): SafeHtml {
-        return this.sanitizer.bypassSecurityTrustHtml(content);
-    }
-
-
-
-    getTimeFromNow(event: NewEvent): string {
-        return event.fromNow;
-    }
-
-    trackById(index: number, item: NewEvent): string {
-        return item.id;
-    }
-
-    parseContent(content: string): SafeHtml {
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        const cleanedContent = content.replace(/["]+/g, '');
-        const parsedContent = cleanedContent
-            .replace(urlRegex, (url) => {
-                if (
-                    url.match(/\.(jpeg|jpg|gif|png|bmp|svg|webp|tiff)$/) != null
-                ) {
-                    return `<img src="${url}" alt="Image" width="100%" class="c-img">`;
-                } else if (url.match(/\.(mp4|webm)$/) != null) {
-                    return `<video controls width="100%" class="c-video"><source src="${url}" type="video/mp4">Your browser does not support the video tag.</video>`;
-                } else if (url.match(/(youtu\.be\/|youtube\.com\/watch\?v=)/)) {
-                    let videoId;
-                    if (url.includes('youtu.be/')) {
-                        videoId = url.split('youtu.be/')[1];
-                    } else if (url.includes('watch?v=')) {
-                        const urlParams = new URLSearchParams(
-                            url.split('?')[1]
-                        );
-                        videoId = urlParams.get('v');
-                    }
-                    return `<iframe width="100%" class="c-video" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
-                } else {
-                    return `<a href="${url}" target="_blank">${url}</a>`;
-                }
-            })
-            .replace(/\n/g, '<br>');
-
-        return this.sanitizer.bypassSecurityTrustHtml(parsedContent);
-    }
-
-
-    sendLike(event: NewEvent): void {
-        if (!event.likedByMe) {
-            this.paginatedEventService
-                .sendLikeEvent(event)
-                .then(() => {
-                    event.likedByMe = true;
-                    event.likeCount++;
-                    this.changeDetectorRef.markForCheck();
-                })
-                .catch((error) => {
-                    console.error('Failed to send like:', error);
-                });
-        }
-    }
-
-
-    toggleLike(event: NewEvent): void {
-        if (!event.likedByMe) {
-            this.sendLike(event);
-        }
-        this._changeDetectorRef.detectChanges();
-    }
-
-
 }
