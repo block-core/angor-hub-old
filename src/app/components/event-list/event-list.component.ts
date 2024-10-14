@@ -21,6 +21,7 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { QRCodeModule } from 'angularx-qrcode';
 import { SafeUrlPipe } from 'app/shared/pipes/safe-url.pipe';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+import { ParseContentService } from 'app/services/parse-content.service';
 
 @Component({
   selector: 'app-event-list',
@@ -65,7 +66,8 @@ export class EventListComponent implements OnInit, OnDestroy {
   constructor(
     private paginatedEventService: PaginatedEventService,
     private changeDetectorRef: ChangeDetectorRef,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    public parseContent: ParseContentService
   ) {
     this.events$ = this.paginatedEventService.getEventStream();
   }
@@ -79,7 +81,7 @@ export class EventListComponent implements OnInit, OnDestroy {
   subscribeToEvents(): void {
     this.unsubscribeAll();
 
-   
+
     if (!this.pubkeys || this.pubkeys.length === 0) {
       console.warn('No public keys provided');
       return;
@@ -223,30 +225,5 @@ export class EventListComponent implements OnInit, OnDestroy {
     return event.fromNow;
   }
 
-  parseContent(content: string): SafeHtml {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const cleanedContent = content.replace(/["]+/g, '');
-    const parsedContent = cleanedContent
-      .replace(urlRegex, (url) => {
-        if (url.match(/\.(jpeg|jpg|gif|png|bmp|svg|webp|tiff)$/) != null) {
-          return `<img src="${url}" alt="Image" width="100%" class="c-img">`;
-        } else if (url.match(/\.(mp4|webm)$/) != null) {
-          return `<video controls width="100%" class="c-video"><source src="${url}" type="video/mp4">Your browser does not support the video tag.</video>`;
-        } else if (url.match(/(youtu\.be\/|youtube\.com\/watch\?v=)/)) {
-          let videoId;
-          if (url.includes('youtu.be/')) {
-            videoId = url.split('youtu.be/')[1];
-          } else if (url.includes('watch?v=')) {
-            const urlParams = new URLSearchParams(url.split('?')[1]);
-            videoId = urlParams.get('v');
-          }
-          return `<iframe width="100%" class="c-video" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
-        } else {
-          return `<a href="${url}" target="_blank">${url}</a>`;
-        }
-      })
-      .replace(/\n/g, '<br>');
 
-    return this.sanitizer.bypassSecurityTrustHtml(parsedContent);
-  }
 }

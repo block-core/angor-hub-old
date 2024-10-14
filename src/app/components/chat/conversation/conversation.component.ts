@@ -35,6 +35,7 @@ import { GifDialogComponent } from 'app/shared/gif-dialog/gif-dialog.component';
 import { Subject, takeUntil } from 'rxjs';
 import { ChatService } from '../chat.service';
 import { ContactInfoComponent } from '../contact-info/contact-info.component';
+import { ParseContentService } from 'app/services/parse-content.service';
 
 @Component({
     selector: 'chat-conversation',
@@ -80,7 +81,8 @@ export class ConversationComponent implements OnInit, OnDestroy {
         private _ngZone: NgZone,
         private _angorConfigService: AngorConfigService,
         public dialog: MatDialog,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private parseContent: ParseContentService
     ) {
         const SpeechRecognition =
             (window as any).SpeechRecognition ||
@@ -158,36 +160,6 @@ export class ConversationComponent implements OnInit, OnDestroy {
             });
     }
 
-    parseContent(content: string): SafeHtml {
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        const cleanedContent = content.replace(/["]+/g, '');
-        const parsedContent = cleanedContent
-            .replace(urlRegex, (url) => {
-                if (
-                    url.match(/\.(jpeg|jpg|gif|png|bmp|svg|webp|tiff)$/) != null
-                ) {
-                    return `<img src="${url}" alt="Image" width="100%" class="c-img">`;
-                } else if (url.match(/\.(mp4|webm)$/) != null) {
-                    return `<video controls width="100%" class="c-video"><source src="${url}" type="video/mp4">Your browser does not support the video tag.</video>`;
-                } else if (url.match(/(youtu\.be\/|youtube\.com\/watch\?v=)/)) {
-                    let videoId;
-                    if (url.includes('youtu.be/')) {
-                        videoId = url.split('youtu.be/')[1];
-                    } else if (url.includes('watch?v=')) {
-                        const urlParams = new URLSearchParams(
-                            url.split('?')[1]
-                        );
-                        videoId = urlParams.get('v');
-                    }
-                    return `<iframe width="100%" class="c-video" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
-                } else {
-                    return `<a href="${url}" target="_blank">${url}</a>`;
-                }
-            })
-            .replace(/\n/g, '<br>');
-
-        return this.sanitizer.bypassSecurityTrustHtml(parsedContent);
-    }
 
     @HostListener('input')
     @HostListener('ngModelChange')
