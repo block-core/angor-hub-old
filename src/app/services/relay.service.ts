@@ -2,119 +2,57 @@ import { Injectable } from '@angular/core';
 import { NostrEvent, SimplePool } from 'nostr-tools';
 import { BehaviorSubject, Observable } from 'rxjs';
 
+interface Relay {
+    url: string;
+    connected: boolean;
+    retries: number;
+    retryTimeout: any;
+    accessType: string;
+    ws?: WebSocket;
+}
+
 @Injectable({
     providedIn: 'root',
 })
 export class RelayService {
-    private pool: SimplePool;
-    private relays: {
-        url: string;
-        connected: boolean;
-        retries: number;
-        retryTimeout: any;
-        accessType: string;
-        ws?: WebSocket;
-    }[] = [];
+    private pool: SimplePool = new SimplePool();
+    private relays: Relay[] = [];
     private maxRetries = 10;
     private retryDelay = 15000;
     private eventSubject = new BehaviorSubject<NostrEvent | null>(null);
-    private relaysSubject = new BehaviorSubject<
-        {
-            url: string;
-            connected: boolean;
-            accessType: string;
-            ws?: WebSocket;
-        }[]
-    >([]);
+    private relaysSubject = new BehaviorSubject<Relay[]>([]);
 
     constructor() {
-        this.pool = new SimplePool();
         this.relays = this.loadRelaysFromLocalStorage();
         this.connectToRelays();
-        this.setupVisibilityChangeHandling();
+        this.setupVisibilityHandling();
         this.relaysSubject.next(this.relays);
     }
 
-    private loadRelaysFromLocalStorage(): {
-        url: string;
-        connected: boolean;
-        retries: number;
-        retryTimeout: any;
-        accessType: string;
-        ws?: WebSocket;
-    }[] {
-        const storedRelays = JSON.parse(
-            localStorage.getItem('nostrRelays') || '[]'
-        );
-        const defaultRelays = [
-            {
-                url: 'wss://relay.primal.net',
-                connected: false,
-                retries: 0,
-                retryTimeout: null,
-                accessType: 'read-write',
-                ws: undefined,
-            },
-            {
-                url: 'wss://relay.damus.io',
-                connected: false,
-                retries: 0,
-                retryTimeout: null,
-                accessType: 'read-write',
-                ws: undefined,
-            },
-            {
-                url: 'wss://relay.angor.io',
-                connected: false,
-                retries: 0,
-                retryTimeout: null,
-                accessType: 'read-write',
-                ws: undefined,
-            },
-            {
-                url: 'wss://relay2.angor.io',
-                connected: false,
-                retries: 0,
-                retryTimeout: null,
-                accessType: 'read-write',
-                ws: undefined,
-            },
+    private loadRelaysFromLocalStorage(): Relay[] {
+        const storedRelays = JSON.parse(localStorage.getItem('nostrRelays') || '[]');
+        const defaultRelays: Relay[] = [
+            { url: 'wss://relay.primal.net', connected: false, retries: 0, retryTimeout: null, accessType: 'read-write' },
+            { url: 'wss://relay.damus.io', connected: false, retries: 0, retryTimeout: null, accessType: 'read-write' },
+            { url: 'wss://relay.angor.io', connected: false, retries: 0, retryTimeout: null, accessType: 'read-write' },
+            { url: 'wss://relay2.angor.io', connected: false, retries: 0, retryTimeout: null, accessType: 'read-write' }
         ];
 
         return storedRelays.length > 0
-            ? storedRelays.map((relay) => ({
-                  ...relay,
-                  connected: false,
-                  retries: 0,
-                  retryTimeout: null,
-                  ws: undefined,
-              }))
+            ? storedRelays.map(relay => ({ ...relay, connected: false, retries: 0, retryTimeout: null, ws: undefined }))
             : defaultRelays;
     }
 
     private saveRelaysToLocalStorage(): void {
-        const relaysToSave = this.relays.map((relay) => ({
-            url: relay.url,
-            accessType: relay.accessType,
-            connected: relay.connected,
-            retries: relay.retries,
-            retryTimeout: relay.retryTimeout,
+        const relaysToSave = this.relays.map(({ url, accessType, connected, retries, retryTimeout }) => ({
+            url, accessType, connected, retries, retryTimeout
         }));
         localStorage.setItem('nostrRelays', JSON.stringify(relaysToSave));
         this.relaysSubject.next(this.relays);
     }
 
-    private connectToRelay(relay: {
-        url: string;
-        connected: boolean;
-        retries: number;
-        retryTimeout: any;
-        accessType: string;
-        ws?: WebSocket;
-    }): void {
-        if (relay.connected) {
-            return;
-        }
+    private connectToRelay(relay: Relay): void {
+        if (relay.connected) return;
 
         relay.ws = new WebSocket(relay.url);
 
@@ -123,25 +61,18 @@ export class RelayService {
             relay.retries = 0;
             clearTimeout(relay.retryTimeout);
             this.saveRelaysToLocalStorage();
-            //console.log(`Connected to relay: ${relay.url}`);
         };
 
-        relay.ws.onerror = () => {
-            this.handleRelayError(relay);
-        };
+        relay.ws.onerror = () => this.handleRelayError(relay);
 
         relay.ws.onclose = () => {
             relay.connected = false;
             this.handleRelayError(relay);
         };
 
-        relay.ws.onmessage = (message) => {
+        relay.ws.onmessage = ({ data }) => {
             try {
-                const dataStr =
-                    typeof message.data === 'string'
-                        ? message.data
-                        : message.data.toString('utf-8');
-                const parsedData = JSON.parse(dataStr);
+                const parsedData = JSON.parse(typeof data === 'string' ? data : data.toString('utf-8'));
                 this.eventSubject.next(parsedData);
             } catch (error) {
                 console.error('Error parsing WebSocket message:', error);
@@ -149,53 +80,35 @@ export class RelayService {
         };
     }
 
-    private handleRelayError(relay: {
-        url: string;
-        connected: boolean;
-        retries: number;
-        retryTimeout: any;
-        accessType: string;
-        ws?: WebSocket;
-    }): void {
+    private handleRelayError(relay: Relay): void {
         if (relay.retries >= this.maxRetries) {
-            console.error(
-                `Max retries reached for relay: ${relay.url}. No further attempts will be made.`
-            );
+            console.error(`Max retries reached for relay: ${relay.url}. No further attempts will be made.`);
             return;
         }
 
-        const retryInterval = this.retryDelay * relay.retries;
         relay.retries++;
-
-        relay.retryTimeout = setTimeout(() => {
-            this.connectToRelay(relay);
-        }, retryInterval);
+        relay.retryTimeout = setTimeout(() => this.connectToRelay(relay), this.retryDelay * relay.retries);
     }
 
     public connectToRelays(): void {
-        this.relays.forEach((relay) => {
-            if (!relay.connected) {
-                this.connectToRelay(relay);
-            }
-        });
+        this.relays.forEach(relay => !relay.connected && this.connectToRelay(relay));
     }
 
     public async ensureConnectedRelays(): Promise<void> {
         this.connectToRelays();
-
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             const checkConnection = () => {
                 if (this.getConnectedRelays().length > 0) {
                     resolve();
                 } else {
-                    setTimeout(checkConnection, 1000); // Retry after 1 second
+                    setTimeout(checkConnection, 1000);
                 }
             };
             checkConnection();
         });
     }
 
-    private setupVisibilityChangeHandling(): void {
+    private setupVisibilityHandling(): void {
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
                 this.connectToRelays();
@@ -203,136 +116,35 @@ export class RelayService {
         });
 
         window.addEventListener('beforeunload', () => {
-            this.relays.forEach((relay) => {
-                if (relay.ws) {
-                    relay.ws.close();
-                }
-            });
+            this.relays.forEach(relay => relay.ws?.close());
         });
     }
 
     public getConnectedRelays(): string[] {
-        return this.relays
-            .filter((relay) => relay.connected)
-            .map((relay) => relay.url);
+        return this.relays.filter(relay => relay.connected).map(relay => relay.url);
     }
 
-    public getRelays(): Observable<
-        {
-            url: string;
-            connected: boolean;
-            accessType: string;
-            ws?: WebSocket;
-        }[]
-    > {
+    public getRelays(): Observable<Relay[]> {
         return this.relaysSubject.asObservable();
     }
 
-    async publishEventToWriteRelays(event: NostrEvent): Promise<NostrEvent> {
-        const pool = this.getPool();
-
-        const connectedRelays = this.getConnectedRelays();
-        console.log('Connected relays:', connectedRelays);
-
-        const writeRelays = this.relays.filter(
-            (relay) =>
-                relay.accessType === 'write' ||
-                relay.accessType === 'read-write'
-        );
-        console.log('Write relays:', writeRelays);
-
-        const allowedRelays = writeRelays
-            .map((relay) => relay.url)
-            .filter((url) => connectedRelays.includes(url));
-
-        if (allowedRelays.length === 0) {
-            throw new Error('No connected write relays available');
-        }
-
-        console.log('Allowed relays for publishing:', allowedRelays);
-
-        const publishPromises = allowedRelays.map(async (relayUrl) => {
-            try {
-                await pool.publish([relayUrl], event);
-                this.eventSubject.next(event);
-                return event;
-            } catch (error) {
-                console.error(
-                    `Failed to publish event to relay: ${relayUrl}`,
-                    error
-                );
-                throw error;
-            }
-        });
+    public async publishEventToWriteRelays(event: NostrEvent): Promise<NostrEvent> {
+        const writeRelays = this.relays.filter(relay => ['write', 'read-write'].includes(relay.accessType) && relay.connected);
+        if (!writeRelays.length) throw new Error('No connected write relays available');
 
         try {
-            await Promise.any(publishPromises);
+            await Promise.any(writeRelays.map(relay => this.pool.publish([relay.url], event)));
+            this.eventSubject.next(event);
             return event;
-        } catch (aggregateError) {
-            console.error(
-                'Failed to publish event: AggregateError',
-                aggregateError
-            );
-            this.handlePublishFailure(aggregateError);
-            throw aggregateError;
-        }
-    }
-
-    async publishEventToRelays(event: NostrEvent): Promise<NostrEvent> {
-        const pool = this.getPool();
-        const connectedRelays = this.getConnectedRelays();
-
-        if (connectedRelays.length === 0) {
-            throw new Error('No connected relays');
-        }
-
-        const publishPromises = connectedRelays.map(async (relayUrl) => {
-            try {
-                await pool.publish([relayUrl], event);
-                this.eventSubject.next(event); // Emit the event to subscribers
-                return event;
-            } catch (error) {
-                console.error(
-                    `Failed to publish event to relay: ${relayUrl}`,
-                    error
-                );
-                throw error;
-            }
-        });
-
-        try {
-            await Promise.any(publishPromises);
-            return event;
-        } catch (aggregateError) {
-            console.error(
-                'Failed to publish event: AggregateError',
-                aggregateError
-            );
-            this.handlePublishFailure(aggregateError);
-            throw aggregateError;
-        }
-    }
-
-    private handlePublishFailure(error: unknown): void {
-        if (error instanceof AggregateError) {
-            console.error(
-                'All relays failed to publish the event. Retrying...'
-            );
-        } else {
-            console.error('An unexpected error occurred:', error);
+        } catch (error) {
+            console.error('Failed to publish event to relays:', error);
+            throw error;
         }
     }
 
     public addRelay(url: string, accessType: string = 'read-write'): void {
-        if (!this.relays.some((relay) => relay.url === url)) {
-            const newRelay = {
-                url,
-                connected: false,
-                retries: 0,
-                retryTimeout: null,
-                accessType,
-                ws: undefined,
-            };
+        if (!this.relays.some(relay => relay.url === url)) {
+            const newRelay: Relay = { url, connected: false, retries: 0, retryTimeout: null, accessType };
             this.relays.push(newRelay);
             this.connectToRelay(newRelay);
             this.saveRelaysToLocalStorage();
@@ -340,20 +152,18 @@ export class RelayService {
     }
 
     public removeRelay(url: string): void {
-        this.relays = this.relays.filter((relay) => relay.url !== url);
+        this.relays = this.relays.filter(relay => relay.url !== url);
         this.saveRelaysToLocalStorage();
     }
 
     public removeAllCustomRelays(): void {
         const defaultRelays = ['wss://relay.angor.io', 'wss://relay2.angor.io'];
-        this.relays = this.relays.filter((relay) =>
-            defaultRelays.includes(relay.url)
-        );
+        this.relays = this.relays.filter(relay => defaultRelays.includes(relay.url));
         this.saveRelaysToLocalStorage();
     }
 
     public updateRelayAccessType(url: string, accessType: string): void {
-        const relay = this.relays.find((relay) => relay.url === url);
+        const relay = this.relays.find(relay => relay.url === url);
         if (relay) {
             relay.accessType = accessType;
             this.saveRelaysToLocalStorage();

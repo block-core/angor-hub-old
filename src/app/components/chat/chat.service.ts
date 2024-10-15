@@ -685,7 +685,7 @@ export class ChatService implements OnDestroy {
                 event.id = getEventHash(event);
 
                 return from(
-                    this._relayService.publishEventToRelays(event)
+                    this._relayService.publishEventToWriteRelays(event)
                 ).pipe(
                     map(() => {
                         if (chats) {
@@ -862,7 +862,7 @@ export class ChatService implements OnDestroy {
                 );
 
                 const published =
-                    await this._relayService.publishEventToRelays(signedEvent);
+                    await this._relayService.publishEventToWriteRelays(signedEvent);
 
                 if (published) {
                     this.message = '';
@@ -893,7 +893,7 @@ export class ChatService implements OnDestroy {
                 });
 
             const published =
-                await this._relayService.publishEventToRelays(signedEvent);
+                await this._relayService.publishEventToWriteRelays(signedEvent);
 
             if (published) {
                 this.message = '';

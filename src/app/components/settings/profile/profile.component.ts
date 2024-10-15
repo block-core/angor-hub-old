@@ -174,7 +174,7 @@ export class SettingsProfileComponent implements OnInit {
     }
 
     publishSignedEvent(signedEvent: NostrEvent) {
-        this.relayService.publishEventToRelays(signedEvent);
+        this.relayService.publishEventToWriteRelays(signedEvent);
         console.log('Profile Updated!');
         this.router.navigate([`/profile`]);
     }

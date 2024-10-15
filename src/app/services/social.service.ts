@@ -123,7 +123,7 @@ export class SocialService {
         }
 
         // Publish the signed follow event
-        this.relayService.publishEventToRelays(signedEvent);
+        this.relayService.publishEventToWriteRelays(signedEvent);
         console.log(`Now following ${pubkeyToFollow}`);
     }
 
@@ -170,7 +170,7 @@ export class SocialService {
         }
 
         // Publish the signed unfollow event
-        this.relayService.publishEventToRelays(signedEvent);
+        this.relayService.publishEventToWriteRelays(signedEvent);
         console.log(`Unfollowed ${pubkeyToUnfollow}`);
     }
 
