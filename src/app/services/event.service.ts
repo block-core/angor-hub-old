@@ -10,7 +10,7 @@ import { SignerService } from './signer.service';
 
 interface Job {
     eventId: string;
-    jobType: 'replies' | 'likes' | 'zaps' | 'reposts';
+    jobType: 'replies' | 'likes' | 'zaps' | 'reposts' | "multi-filter";
 }
 
 @Injectable({
@@ -42,7 +42,7 @@ export class PaginatedEventService {
         private metadataService: MetadataService
     ) {
         this.clearEvents();
-       
+
         this.getMyLikes().then(() => {}).catch(error => {
             console.error('Failed to load user likes:', error);
         });
@@ -70,7 +70,7 @@ export class PaginatedEventService {
             },
         ];
 
-        this.relayService.getPool().subscribeMany(connectedRelays, filters, {
+       const sub= this.relayService.getPool().subscribeMany(connectedRelays, filters, {
             onevent: (event: NostrEvent) => {
                 if (!this.isReply(event)) {
                     this.handleNewOrUpdatedEvent(event);
@@ -95,7 +95,7 @@ export class PaginatedEventService {
                 }
             },
             oneose: () => {
-
+               // sub.close();
             },
         });
     }
@@ -310,17 +310,12 @@ export class PaginatedEventService {
             event.tags
         );
 
-        this.enqueueJob(event.id, 'replies');
-        this.enqueueJob(event.id, 'likes');
-        this.enqueueJob(event.id, 'reposts');
-        this.enqueueJob(event.id, 'zaps');
+         this.enqueueJob(event.id, 'multi-filter');
         await this.processJobQueue();
 
         newEvent.likedByMe = this.myLikedNoteIds.includes(event.id);
 
-        const metadata = await this.metadataService.fetchMetadataWithCache(
-            event.pubkey
-        );
+        const metadata = await this.metadataService.fetchMetadataWithCache(event.pubkey);
         if (metadata) {
             newEvent.username = metadata.name || newEvent.npub;
             newEvent.picture = metadata.picture || '/images/avatars/avatar-placeholder.png';
@@ -329,9 +324,10 @@ export class PaginatedEventService {
         return newEvent;
     }
 
+
     private enqueueJob(
         eventId: string,
-        jobType: 'replies' | 'likes' | 'zaps' | 'reposts'
+        jobType: 'replies' | 'likes' | 'zaps' | 'reposts' | 'multi-filter'
     ): void {
         if (
             !this.jobQueue.some(
@@ -354,7 +350,7 @@ export class PaginatedEventService {
             while (this.jobQueue.length > 0 && activeJobs.length < 10) {
                 const job = this.jobQueue.shift();
                 if (!job) break;
-
+                await this.delay(1000);
                 const jobPromise = this.processJob(job);
                 activeJobs.push(jobPromise);
 
@@ -374,26 +370,18 @@ export class PaginatedEventService {
     }
 
     private async processJob(job: Job): Promise<void> {
-        switch (job.jobType) {
-            case 'replies':
-                const replies = await this.fetchReplies(job.eventId);
-                this.repliesMap.set(job.eventId, replies);
-                break;
-            case 'likes':
-                const likers = await this.getLikers(job.eventId);
-                this.likesMap.set(job.eventId, likers);
-                break;
-            case 'zaps':
-                const zappers = await this.getZappers(job.eventId);
-                this.zapsMap.set(job.eventId, zappers);
-                break;
-            case 'reposts':
-                const reposters = await this.getReposters(job.eventId);
-                this.repostsMap.set(job.eventId, reposters);
-                break;
-        }
+         const multiFilterResult = await this.fetchMultiFilterEvents(job.eventId);
+
+        this.repliesMap.set(job.eventId, multiFilterResult.replies);
+        this.likesMap.set(job.eventId, multiFilterResult.likers);
+        this.zapsMap.set(job.eventId, multiFilterResult.zappers);
+        this.repostsMap.set(job.eventId, multiFilterResult.reposters);
 
         this.updateEventInSubject(job.eventId);
+    }
+
+    private delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     private updateEventInSubject(eventId: string): void {
@@ -465,6 +453,79 @@ export class PaginatedEventService {
         const repostEvents = await this.fetchFilteredEvents(repostFilter);
         return repostEvents.map((event) => event.pubkey);
     }
+
+
+    private async fetchMultiFilterEvents(eventId: string): Promise<any> {
+        const multiFilter: Filter[] = [
+            {
+                '#e': [eventId],
+                kinds: [1]
+            },
+            {
+                '#e': [eventId],
+                kinds: [7]
+            },
+            {
+                '#e': [eventId],
+                kinds: [9735]
+            },
+            {
+                '#e': [eventId],
+                kinds: [6]
+            }
+        ];
+
+
+        const eventMap = new Map<string, NostrEvent>();
+
+
+        const replies: NewEvent[] = [];
+        const likers: string[] = [];
+        const zappers: string[] = [];
+        const reposters: string[] = [];
+
+
+        const sub = this.relayService.getPool().subscribeMany(
+            this.relayService.getConnectedRelays(),
+            multiFilter,
+            {
+                onevent: (event: NostrEvent) => {
+
+                    if (!eventMap.has(event.id)) {
+                        eventMap.set(event.id, event);
+                    }
+
+
+                    if (event.kind === 1) {
+                        this.createNewEvent(event).then(newEvent => replies.push(newEvent));
+                    } else if (event.kind === 7) {
+                        likers.push(event.pubkey);
+                    } else if (event.kind === 9735) {
+                        zappers.push(event.pubkey);
+                    } else if (event.kind === 6) {
+                        reposters.push(event.pubkey);
+                    }
+                },
+                oneose: () => {
+                    sub.close();
+                }
+            }
+        );
+
+
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    replies: replies,
+                    likers: likers,
+                    zappers: zappers,
+                    reposters: reposters
+                });
+            }, 2000);
+        });
+    }
+
+
 
     getRepliesCount(eventId: string): number {
         return (this.repliesMap.get(eventId) || []).length;

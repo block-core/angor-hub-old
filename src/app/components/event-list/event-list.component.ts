@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PaginatedEventService } from 'app/services/event.service';
@@ -52,7 +52,7 @@ import { ParseContentService } from 'app/services/parse-content.service';
     InfiniteScrollModule,
   ]
 })
-export class EventListComponent implements OnInit, OnDestroy {
+export class EventListComponent implements OnInit, OnDestroy,OnChanges {
   @Input() pubkeys: string[] = [];
   @Input() currentUserMetadata: any;
 
@@ -72,11 +72,14 @@ export class EventListComponent implements OnInit, OnDestroy {
     this.events$ = this.paginatedEventService.getEventStream();
   }
 
+
   ngOnInit(): void {
     this.resetAll();
   }
 
-
+  ngOnChanges(changes: SimpleChanges): void {
+    this.resetAll();
+}
 
   subscribeToEvents(): void {
     this.unsubscribeAll();
