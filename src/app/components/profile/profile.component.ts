@@ -146,6 +146,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+this.updateSuggestionList();
+
         this._angorConfigService.config$.subscribe((config) => {
             if (config.scheme === 'auto') {
                 this.detectSystemTheme();
@@ -243,7 +245,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
 
         try {
-           
+
             const userMetadata = await this._metadataService.fetchMetadataWithCache(publicKey);
             if (userMetadata) {
                 this.metadata = userMetadata;
@@ -485,5 +487,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
                     console.error('Failed to send Event:', error);
                 });
         }
+    }
+
+    private updateSuggestionList(): void {
+        this._indexedDBService.getSuggestionUsers().then((suggestions) => {
+            this.suggestions = suggestions;
+
+            this._changeDetectorRef.detectChanges();
+        }).catch((error) => {
+            console.error('Error updating suggestion list:', error);
+        });
     }
 }

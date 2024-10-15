@@ -54,6 +54,7 @@
         "dayjs": "^1.11.13",
         "highlight.js": "11.10.0",
         "install": "^0.13.0",
+        "light-bolt11-decoder": "^3.2.0",
         "lnd-grpc": "^0.5.4",
         "localforage": "^1.10.0",
         "lodash-es": "4.17.21",
