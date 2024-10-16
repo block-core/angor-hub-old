@@ -19,7 +19,6 @@ export class QueueService {
 
     constructor(private relayService: RelayService) {}
 
-
     public addRequestToQueue(filters: Filter[]): Observable<NostrEvent> {
         const subject = new Subject<NostrEvent>();
         const request: QueueRequest = { filters, subject };
@@ -27,7 +26,6 @@ export class QueueService {
         this.processQueue();
         return subject.asObservable();
     }
-
 
     private async processQueue(): Promise<void> {
         if (this.isProcessingQueue) return;
@@ -39,7 +37,7 @@ export class QueueService {
 
             try {
                 this.currentRequestCount++;
-                await this.fetchEvents(request.filters, request.subject);
+                await this.handleRequest(request);
             } catch (error) {
                 request.subject.error(error);
             } finally {
@@ -48,17 +46,27 @@ export class QueueService {
         }
 
         this.isProcessingQueue = false;
+         if (this.requestQueue.length > 0) {
+            this.processQueue();
+        }
     }
 
+    private async handleRequest(request: QueueRequest): Promise<void> {
+        try {
+            await this.relayService.ensureConnectedRelays();
+            const connectedRelays = this.relayService.getConnectedRelays();
 
-    private async fetchEvents(filters: Filter[], subject: Subject<NostrEvent>): Promise<void> {
-        await this.relayService.ensureConnectedRelays();
-        const connectedRelays = this.relayService.getConnectedRelays();
+            if (connectedRelays.length === 0) {
+                throw new Error('No connected relays available');
+            }
 
-        if (connectedRelays.length === 0) {
-            throw new Error('No connected relays');
+            await this.fetchEvents(connectedRelays, request.filters, request.subject);
+        } catch (error) {
+            request.subject.error(error);
         }
+    }
 
+    private async fetchEvents(connectedRelays: string[], filters: Filter[], subject: Subject<NostrEvent>): Promise<void> {
         const pool = this.relayService.getPool();
 
         const sub = pool.subscribeMany(connectedRelays, filters, {
@@ -71,10 +79,11 @@ export class QueueService {
             },
         });
 
-
-        setTimeout(() => {
-            sub.close();
-            subject.complete();
-        }, 2000);
+         setTimeout(() => {
+            if (!sub.close) {
+                sub.close();
+                subject.complete();
+            }
+        }, 5000);
     }
 }
