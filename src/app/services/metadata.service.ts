@@ -1,33 +1,24 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { IndexedDBService } from './indexed-db.service';
-import { RelayService } from './relay.service';
 import { NostrEvent, Filter } from 'nostr-tools';
-import { debounceTime, throttleTime } from 'rxjs/operators';
+import { throttleTime } from 'rxjs/operators';
+import { QueueService } from './queue-service.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MetadataService {
   private metadataSubject = new BehaviorSubject<any>(null);
-  private requestQueue: Set<string> = new Set();
-  private isProcessingQueue = false;
-  private maxRequestsPerBatch = 3;
-  private requestDelay = 5000;
-
   constructor(
     private indexedDBService: IndexedDBService,
-    private relayService: RelayService
+    private queueService: QueueService
   ) {}
 
   getMetadataStream(): Observable<any> {
     return this.metadataSubject.asObservable().pipe(throttleTime(2000));
   }
 
-  private enqueueRequest(pubkey: string): void {
-    this.requestQueue.add(pubkey);
-    this.processQueue();
-  }
 
   async fetchMetadataForMultipleKeys(pubkeys: string[]): Promise<any[]> {
     const filter: Filter = {
@@ -36,36 +27,28 @@ export class MetadataService {
     };
 
     try {
-      await this.relayService.ensureConnectedRelays();
-      const connectedRelays = this.relayService.getConnectedRelays();
-
-      if (connectedRelays.length === 0) {
-        console.error('No relays are connected.');
-        return [];
-      }
-
       const metadataList: any[] = [];
 
-      const sub = this.relayService.getPool().subscribeMany(connectedRelays, [filter], {
-        onevent: async (event: NostrEvent) => {
+
+      this.queueService.addRequestToQueue([filter]).subscribe({
+        next: async (event: NostrEvent) => {
           if (event.kind === 0) {
             try {
               const metadata = JSON.parse(event.content);
               await this.indexedDBService.saveUserMetadata(event.pubkey, metadata);
               metadataList.push({ pubkey: event.pubkey, metadata });
-
             } catch (error) {
               console.error('Error parsing metadata:', error);
             }
           }
         },
-        oneose: () => {
+        complete: () => {
+          console.log('Metadata fetching completed');
+        },
+        error: (error) => {
+          console.error('Error fetching metadata:', error);
         }
       });
-
-      setTimeout(() => {
-        sub.close();
-      }, 1000 );
 
       return metadataList;
     } catch (error) {
@@ -74,98 +57,65 @@ export class MetadataService {
     }
   }
 
-  private async processQueue(): Promise<void> {
-    if (this.isProcessingQueue || this.requestQueue.size === 0) {
-      return;
-    }
-
-    this.isProcessingQueue = true;
-
-    while (this.requestQueue.size > 0) {
-      const batch = Array.from(this.requestQueue).slice(0, this.maxRequestsPerBatch);
-      this.requestQueue = new Set(Array.from(this.requestQueue).slice(this.maxRequestsPerBatch));
-
-      await Promise.all(batch.map(async (pubkey) => {
-        try {
-          const updatedMetadata = await this.fetchMetadataRealtime(pubkey);
-          if (updatedMetadata) {
-            await this.indexedDBService.saveUserMetadata(pubkey, updatedMetadata);
-            this.metadataSubject.next(updatedMetadata);
-           }
-        } catch (error) {
-          console.error(`Failed to update metadata for user: ${pubkey}`, error);
-        }
-      }));
-
-      await new Promise(resolve => setTimeout(resolve, this.requestDelay));
-    }
-
-    this.isProcessingQueue = false;
-  }
 
   async fetchMetadataWithCache(pubkey: string): Promise<any> {
     const metadata = await this.indexedDBService.getUserMetadata(pubkey);
     if (metadata) {
       this.metadataSubject.next(metadata);
-     } else {
-      this.enqueueRequest(pubkey);
-    }
+      return metadata;
+    } else {
 
-    this.subscribeToMetadataUpdates(pubkey);
-    return metadata;
-  }
-
-  private subscribeToMetadataUpdates(pubkey: string): void {
-    this.relayService.ensureConnectedRelays().then(() => {
-      const filter: Filter = { authors: [pubkey], kinds: [0] };
-
-      this.relayService.getPool().subscribeMany(this.relayService.getConnectedRelays(), [filter], {
-        onevent: async (event: NostrEvent) => {
-          if (event.pubkey === pubkey && event.kind === 0) {
+      this.queueService.addRequestToQueue([{ authors: [pubkey], kinds: [0] }]).subscribe({
+        next: async (event: NostrEvent) => {
+          if (event.kind === 0 && event.pubkey === pubkey) {
             try {
               const updatedMetadata = JSON.parse(event.content);
               await this.indexedDBService.saveUserMetadata(pubkey, updatedMetadata);
               this.metadataSubject.next(updatedMetadata);
-             } catch (error) {
+            } catch (error) {
               console.error('Error parsing updated metadata:', error);
             }
           }
         },
-        oneose(){},
+        complete: () => {
+          console.log('Metadata fetching for pubkey completed');
+        },
+        error: (error) => {
+          console.error(`Error fetching metadata for pubkey ${pubkey}:`, error);
+        }
       });
-    });
+
+      return null;
+    }
   }
 
+
   async fetchMetadataRealtime(pubkey: string): Promise<any> {
-    await this.relayService.ensureConnectedRelays();
-    const connectedRelays = this.relayService.getConnectedRelays();
-
-    if (connectedRelays.length === 0) {
-      throw new Error('No connected relays');
-    }
-
     return new Promise<any>((resolve) => {
-      const sub = this.relayService.getPool().subscribeMany(connectedRelays, [{ authors: [pubkey], kinds: [0] }], {
-        onevent: (event: NostrEvent) => {
-          if (event.pubkey === pubkey && event.kind === 0) {
+      this.queueService.addRequestToQueue([{ authors: [pubkey], kinds: [0] }]).subscribe({
+        next: (event: NostrEvent) => {
+          if (event.kind === 0 && event.pubkey === pubkey) {
             try {
               const content = JSON.parse(event.content);
               resolve(content);
             } catch (error) {
               console.error('Error parsing event content:', error);
               resolve(null);
-            } finally {
-              sub.close();
             }
           }
         },
-        oneose() {
-          sub.close();
+        complete: () => {
+          console.log(`Metadata fetching for pubkey ${pubkey} completed`);
           resolve(null);
         },
+        error: (error) => {
+          console.error(`Error fetching metadata for pubkey ${pubkey}:`, error);
+          resolve(null);
+        }
       });
     });
   }
+
 
   async refreshAllStoredMetadata(): Promise<void> {
     const storedUsers = await this.indexedDBService.getAllUsers();
@@ -173,7 +123,9 @@ export class MetadataService {
       return;
     }
 
-    storedUsers.forEach(user => this.enqueueRequest(user.pubkey));
+    storedUsers.forEach(user => {
+      this.fetchMetadataWithCache(user.pubkey);
+    });
   }
 
 
@@ -196,5 +148,4 @@ export class MetadataService {
       return null;
     }
   }
-
 }
