@@ -7,10 +7,10 @@ import { throttleTime } from 'rxjs/operators';
 import { MetadataService } from './metadata.service';
 import { RelayService } from './relay.service';
 import { SignerService } from './signer.service';
+import { QueueService } from './queue-service.service';
 
 interface Job {
     eventId: string;
-    jobType: 'replies' | 'likes' | 'zaps' | 'reposts' | "multi-filter";
 }
 
 @Injectable({
@@ -39,7 +39,8 @@ export class PaginatedEventService {
     constructor(
         private relayService: RelayService,
         private signerService: SignerService,
-        private metadataService: MetadataService
+        private metadataService: MetadataService,
+        private queueService: QueueService
     ) {
         this.clearEvents();
 
@@ -78,18 +79,18 @@ export class PaginatedEventService {
 
                 const parentEventId = this.getParentEventId(event);
                 if (parentEventId) {
-                    this.enqueueJob(parentEventId, 'replies');
+                    this.enqueueJob(parentEventId);
                 }
 
                 switch (event.kind) {
                     case 7:
-                        this.enqueueJob(parentEventId, 'likes');
+                        this.enqueueJob(parentEventId);
                         break;
                     case 9735:
-                        this.enqueueJob(parentEventId, 'zaps');
+                        this.enqueueJob(parentEventId);
                         break;
                     case 6:
-                        this.enqueueJob(parentEventId, 'reposts');
+                        this.enqueueJob(parentEventId);
                         break;
                     default:
                 }
@@ -310,7 +311,7 @@ export class PaginatedEventService {
             event.tags
         );
 
-         this.enqueueJob(event.id, 'multi-filter');
+         this.enqueueJob(event.id);
         await this.processJobQueue();
 
         newEvent.likedByMe = this.myLikedNoteIds.includes(event.id);
@@ -326,21 +327,19 @@ export class PaginatedEventService {
 
 
     private enqueueJob(
-        eventId: string,
-        jobType: 'replies' | 'likes' | 'zaps' | 'reposts' | 'multi-filter'
+        eventId: string
     ): void {
         if (
             !this.jobQueue.some(
-                (job) => job.eventId === eventId && job.jobType === jobType
+                (job) => job.eventId === eventId
             )
         ) {
-            this.jobQueue.push({ eventId, jobType });
+            this.jobQueue.push({ eventId });
             if (!this.isProcessingQueue) {
                 this.processJobQueue();
             }
         }
     }
-
     private async processJobQueue(): Promise<void> {
         if (this.isProcessingQueue) return;
         this.isProcessingQueue = true;
@@ -351,7 +350,9 @@ export class PaginatedEventService {
                 const job = this.jobQueue.shift();
                 if (!job) break;
                 await this.delay(1000);
-                const jobPromise = this.processJob(job);
+
+                // استفاده از QueueService برای پردازش درخواست‌ها
+                const jobPromise = this.processJobWithQueueService(job);
                 activeJobs.push(jobPromise);
 
                 jobPromise
@@ -369,16 +370,24 @@ export class PaginatedEventService {
         this.isProcessingQueue = false;
     }
 
-    private async processJob(job: Job): Promise<void> {
-         const multiFilterResult = await this.fetchMultiFilterEvents(job.eventId);
+    private async processJobWithQueueService(job: Job): Promise<void> {
+        try {
+            const multiFilterResult = await this.fetchMultiFilterEvents(job.eventId);
 
-        this.repliesMap.set(job.eventId, multiFilterResult.replies);
-        this.likesMap.set(job.eventId, multiFilterResult.likers);
-        this.zapsMap.set(job.eventId, multiFilterResult.zappers);
-        this.repostsMap.set(job.eventId, multiFilterResult.reposters);
+            this.repliesMap.set(job.eventId, multiFilterResult.replies);
+            this.likesMap.set(job.eventId, multiFilterResult.likers);
+            this.zapsMap.set(job.eventId, multiFilterResult.zappers);
+            this.repostsMap.set(job.eventId, multiFilterResult.reposters);
 
-        this.updateEventInSubject(job.eventId);
+            this.updateEventInSubject(job.eventId);
+        } catch (error) {
+            console.error('Error processing job with QueueService:', error);
+            throw error;
+        }
     }
+
+
+
 
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -402,102 +411,33 @@ export class PaginatedEventService {
         this.eventsSubject.next(updatedEvents);
     }
 
-    private async fetchReplies(eventId: string): Promise<NewEvent[]> {
-        const replyFilter: Filter = {
-            '#e': [eventId],
-            kinds: [1],
-        };
-
-        const events = await this.fetchFilteredEvents(replyFilter);
-
-        const uniqueEventMap = new Map<string, NostrEvent>();
-        events.forEach((event) => {
-            if (!uniqueEventMap.has(event.id)) {
-                uniqueEventMap.set(event.id, event);
-            }
-        });
-
-        return Promise.all(
-            Array.from(uniqueEventMap.values()).map((event) =>
-                this.createNewEvent(event)
-            )
-        );
-    }
-
-    private async getLikers(eventId: string): Promise<string[]> {
-        const likeFilter: Filter = {
-            '#e': [eventId],
-            kinds: [7],
-        };
-
-        const likeEvents = await this.fetchFilteredEvents(likeFilter);
-        return likeEvents.map((event) => event.pubkey);
-    }
-
-    private async getZappers(eventId: string): Promise<string[]> {
-        const zapFilter: Filter = {
-            '#e': [eventId],
-            kinds: [9735],
-        };
-
-        const zapEvents = await this.fetchFilteredEvents(zapFilter);
-        return zapEvents.map((event) => event.pubkey);
-    }
-
-    private async getReposters(eventId: string): Promise<string[]> {
-        const repostFilter: Filter = {
-            '#e': [eventId],
-            kinds: [6],
-        };
-
-        const repostEvents = await this.fetchFilteredEvents(repostFilter);
-        return repostEvents.map((event) => event.pubkey);
-    }
-
-
     private async fetchMultiFilterEvents(eventId: string): Promise<any> {
         const multiFilter: Filter[] = [
-            {
-                '#e': [eventId],
-                kinds: [1]
-            },
-            {
-                '#e': [eventId],
-                kinds: [7]
-            },
-            {
-                '#e': [eventId],
-                kinds: [9735]
-            },
-            {
-                '#e': [eventId],
-                kinds: [6]
-            }
+            { '#e': [eventId], kinds: [1] },
+            { '#e': [eventId], kinds: [7] },
+            { '#e': [eventId], kinds: [9735] },
+            { '#e': [eventId], kinds: [6] }
         ];
 
-
         const eventMap = new Map<string, NostrEvent>();
-
 
         const replies: NewEvent[] = [];
         const likers: string[] = [];
         const zappers: string[] = [];
         const reposters: string[] = [];
 
+         const eventObservable = this.queueService.addRequestToQueue(multiFilter);
 
-        const sub = this.relayService.getPool().subscribeMany(
-            this.relayService.getConnectedRelays(),
-            multiFilter,
-            {
-                onevent: (event: NostrEvent) => {
-
+        return new Promise((resolve, reject) => {
+            eventObservable.subscribe({
+                next: async (event: NostrEvent) => {
                     if (!eventMap.has(event.id)) {
                         eventMap.set(event.id, event);
                     }
 
-
-                    if (event.kind === 1) {
-                        this.createNewEvent(event).then(newEvent => replies.push(newEvent));
+                     if (event.kind === 1) {
+                        const newEvent = await this.createNewEvent(event);
+                        replies.push(newEvent);
                     } else if (event.kind === 7) {
                         likers.push(event.pubkey);
                     } else if (event.kind === 9735) {
@@ -506,22 +446,19 @@ export class PaginatedEventService {
                         reposters.push(event.pubkey);
                     }
                 },
-                oneose: () => {
-                    sub.close();
+                error: (err) => {
+                    console.error('Error fetching events:', err);
+                    reject(err);
+                },
+                complete: () => {
+                     resolve({
+                        replies: replies,
+                        likers: likers,
+                        zappers: zappers,
+                        reposters: reposters
+                    });
                 }
-            }
-        );
-
-
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    replies: replies,
-                    likers: likers,
-                    zappers: zappers,
-                    reposters: reposters
-                });
-            }, 2000);
+            });
         });
     }
 

@@ -14,7 +14,7 @@ interface QueueRequest {
 export class QueueService {
     private requestQueue: QueueRequest[] = [];
     private isProcessingQueue = false;
-    private maxConcurrentRequests = 5;
+    private maxConcurrentRequests = 3;
     private currentRequestCount = 0;
 
     constructor(private relayService: RelayService) {}

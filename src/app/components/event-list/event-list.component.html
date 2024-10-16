@@ -85,7 +85,13 @@ class=""
         <span class="ml-2">{{ event.likeCount }} Like</span>
     </button>
 
-
+    <button class="mr-1 px-3" mat-button>
+        <mat-icon class="text-orange-500 icon-size-5"
+            [svgIcon]="'feather:zap'">
+        </mat-icon>
+        <span class="ml-2">{{ event.zapCount }} Zap</span>
+    </button>
+    
     <button class="mr-1 px-3" mat-button (click)="
             expandableComments.expanded = !expandableComments.expanded
         ">
@@ -109,9 +115,7 @@ class=""
             src="images/avatars/avatar-placeholder.png" alt="Card cover image" />
         <img class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
             src="images/avatars/avatar-placeholder.png" alt="Card cover image" />
-        <div class="ml-3 text-md tracking-tight">
-            ⚡ {{ event.zapCount }} zap
-        </div>
+
     </div>
     <div class="hidden flex-auto sm:flex"></div>
     <div class="mt-4 flex items-center sm:mt-0">

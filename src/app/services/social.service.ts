@@ -3,6 +3,8 @@ import { Event, Filter, NostrEvent, UnsignedEvent } from 'nostr-tools';
 import { Observable, Subject } from 'rxjs';
 import { RelayService } from './relay.service';
 import { SignerService } from './signer.service';
+import { QueueService } from './queue-service.service';
+
 
 @Injectable({
     providedIn: 'root',
@@ -13,7 +15,9 @@ export class SocialService {
 
     constructor(
         private relayService: RelayService,
-        private signerService: SignerService
+        private signerService: SignerService,
+        private queueService: QueueService
+
     ) {}
 
     getFollowersObservable(): Observable<NostrEvent> {
@@ -26,65 +30,55 @@ export class SocialService {
 
     // Fetch followers
     async getFollowers(pubkey: string): Promise<any[]> {
-        await this.relayService.ensureConnectedRelays();
-        const pool = this.relayService.getPool();
-        const connectedRelays = this.relayService.getConnectedRelays();
-
-        if (connectedRelays.length === 0) {
-            throw new Error('No connected relays');
-        }
-
         const filters: Filter[] = [{ kinds: [3], '#p': [pubkey] }];
         const followers: any[] = [];
 
-        return new Promise((resolve) => {
-            const sub = pool.subscribeMany(connectedRelays, filters, {
-                onevent: (event: NostrEvent) => {
+        return new Promise((resolve, reject) => {
+            const eventObservable = this.queueService.addRequestToQueue(filters);
+            eventObservable.subscribe({
+                next: (event: NostrEvent) => {
                     followers.push(event);
                     this.followersSubject.next(event);
                 },
-                oneose() {
-                    sub.close();
-                    resolve(followers);
+                error: (err) => {
+                    console.error('Error fetching followers:', err);
+                    reject(err);
                 },
+                complete: () => {
+                    resolve(followers);
+                }
             });
         });
     }
 
     // Fetch who the user is following
     async getFollowing(pubkey: string): Promise<any[]> {
-        await this.relayService.ensureConnectedRelays();
-        const pool = this.relayService.getPool();
-        const connectedRelays = this.relayService.getConnectedRelays();
-
-        if (connectedRelays.length === 0) {
-            throw new Error('No connected relays');
-        }
-
         const filters: Filter[] = [{ kinds: [3], authors: [pubkey] }];
         const following: any[] = [];
 
-        return new Promise((resolve) => {
-            const sub = pool.subscribeMany(connectedRelays, filters, {
-                onevent: (event: NostrEvent) => {
+        return new Promise((resolve, reject) => {
+            const eventObservable = this.queueService.addRequestToQueue(filters);
+            eventObservable.subscribe({
+                next: (event: NostrEvent) => {
                     const tags = event.tags.filter((tag) => tag[0] === 'p');
                     tags.forEach((tag) => {
                         following.push(tag[1]);
                         this.followingSubject.next(event);
                     });
                 },
-                oneose() {
-                    sub.close();
-                    resolve(following);
+                error: (err) => {
+                    console.error('Error fetching following:', err);
+                    reject(err);
                 },
+                complete: () => {
+                    resolve(following);
+                }
             });
         });
     }
 
     // Follow a user
     async follow(pubkeyToFollow: string): Promise<void> {
-        await this.relayService.ensureConnectedRelays();
-        const pool = this.relayService.getPool();
         const currentFollowing = this.getFollowingList();
         if (currentFollowing.includes(pubkeyToFollow)) {
             console.log(`Already following ${pubkeyToFollow}`);
@@ -95,41 +89,19 @@ export class SocialService {
         const newFollowingList = [...currentFollowing, pubkeyToFollow];
         this.setFollowingList(newFollowingList);
 
-        const unsignedEvent: UnsignedEvent =
-            this.signerService.getUnsignedEvent(
-                3,
-                newFollowingList.map((f) => ['p', f]),
-                ''
-            );
+        const unsignedEvent: UnsignedEvent = this.signerService.getUnsignedEvent(
+            3,
+            newFollowingList.map((f) => ['p', f]),
+            ''
+        );
 
-        // Check if using Nostr extension
-        const isUsingExtension = await this.signerService.isUsingExtension();
-        let signedEvent: Event;
-
-        if (isUsingExtension) {
-            // Sign using Nostr extension
-            signedEvent =
-                await this.signerService.signEventWithExtension(unsignedEvent);
-        } else {
-            // Sign using private key
-            const secretKey = await this.signerService.getDecryptedSecretKey();
-            if (!secretKey) {
-                throw new Error('Secret key is missing. Unable to follow.');
-            }
-            signedEvent = this.signerService.getSignedEvent(
-                unsignedEvent,
-                secretKey
-            );
-        }
-
-        // Publish the signed follow event
-        this.relayService.publishEventToWriteRelays(signedEvent);
+        // Sign and publish the follow event
+        await this.publishSignedEvent(unsignedEvent);
         console.log(`Now following ${pubkeyToFollow}`);
     }
 
     // Unfollow a user
     async unfollow(pubkeyToUnfollow: string): Promise<void> {
-        await this.relayService.ensureConnectedRelays();
         const currentFollowing = this.getFollowingList();
         if (!currentFollowing.includes(pubkeyToUnfollow)) {
             console.log(`Not following ${pubkeyToUnfollow}`);
@@ -142,36 +114,32 @@ export class SocialService {
         );
         this.setFollowingList(updatedFollowingList);
 
-        const unsignedEvent: UnsignedEvent =
-            this.signerService.getUnsignedEvent(
-                3,
-                updatedFollowingList.map((f) => ['p', f]),
-                ''
-            );
+        const unsignedEvent: UnsignedEvent = this.signerService.getUnsignedEvent(
+            3,
+            updatedFollowingList.map((f) => ['p', f]),
+            ''
+        );
 
-        // Check if using Nostr extension
+        // Sign and publish the unfollow event
+        await this.publishSignedEvent(unsignedEvent);
+        console.log(`Unfollowed ${pubkeyToUnfollow}`);
+    }
+
+    private async publishSignedEvent(unsignedEvent: UnsignedEvent): Promise<void> {
         const isUsingExtension = await this.signerService.isUsingExtension();
         let signedEvent: Event;
 
         if (isUsingExtension) {
-            // Sign using Nostr extension
-            signedEvent =
-                await this.signerService.signEventWithExtension(unsignedEvent);
+            signedEvent = await this.signerService.signEventWithExtension(unsignedEvent);
         } else {
-            // Sign using private key
             const secretKey = await this.signerService.getDecryptedSecretKey();
             if (!secretKey) {
-                throw new Error('Secret key is missing. Unable to unfollow.');
+                throw new Error('Secret key is missing. Unable to sign event.');
             }
-            signedEvent = this.signerService.getSignedEvent(
-                unsignedEvent,
-                secretKey
-            );
+            signedEvent = this.signerService.getSignedEvent(unsignedEvent, secretKey);
         }
 
-        // Publish the signed unfollow event
         this.relayService.publishEventToWriteRelays(signedEvent);
-        console.log(`Unfollowed ${pubkeyToUnfollow}`);
     }
 
     // Retrieve following list as tags for publishing follow/unfollow events
