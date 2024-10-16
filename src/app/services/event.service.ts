@@ -96,7 +96,7 @@ export class PaginatedEventService {
                 }
             },
             oneose: () => {
-               // sub.close();
+
             },
         });
     }
@@ -280,25 +280,35 @@ export class PaginatedEventService {
     }
 
     private async fetchFilteredEvents(filter: Filter): Promise<NostrEvent[]> {
-        await this.relayService.ensureConnectedRelays();
-        const connectedRelays = this.relayService.getConnectedRelays();
+        return new Promise((resolve, reject) => {
 
-        const eventMap = new Map<string, NostrEvent>();
-        const pool = this.relayService.getPool();
+            const eventsMap = new Map<string, NostrEvent>();
+            const eventsArray: NostrEvent[] = [];
 
-        await Promise.all(
-            connectedRelays.map(async (relay) => {
-                const events = await pool.querySync([relay], filter);
-                events.forEach((event) => {
-                    if (!eventMap.has(event.id)) {
-                        eventMap.set(event.id, event);
+
+            this.queueService.addRequestToQueue([filter]).subscribe({
+
+                next: (event: NostrEvent) => {
+
+                    if (!eventsMap.has(event.id)) {
+                        eventsMap.set(event.id, event);
+                        eventsArray.push(event);
                     }
-                });
-            })
-        );
+                },
 
-        return Array.from(eventMap.values());
+                error: (error) => {
+                    console.error('Error fetching events:', error);
+                    reject(error);
+                },
+
+                complete: () => {
+                    console.log('All events fetched and completed');
+                    resolve(eventsArray);
+                }
+            });
+        });
     }
+
 
     private async createNewEvent(event: NostrEvent): Promise<NewEvent> {
         const newEvent = new NewEvent(
@@ -351,7 +361,7 @@ export class PaginatedEventService {
                 if (!job) break;
                 await this.delay(1000);
 
-                // استفاده از QueueService برای پردازش درخواست‌ها
+
                 const jobPromise = this.processJobWithQueueService(job);
                 activeJobs.push(jobPromise);
 
