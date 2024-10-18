@@ -8,7 +8,7 @@ class=""
     [scrollWindow]="true"
 >
 <angor-card class="mb-8 flex w-full flex-col" #expandableComments="angorCard"
-*ngFor="let event of events$ | async let i = index">
+*ngFor="let event of events$ | async let i = index trackBy: trackById">
 <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
     <img class="mr-4 h-10 w-10 rounded-full"
         [src]="event.picture || 'images/avatars/avatar-placeholder.png'"
@@ -91,7 +91,7 @@ class=""
         </mat-icon>
         <span class="ml-2">{{ event.zapCount }} Zap</span>
     </button>
-    
+
     <button class="mr-1 px-3" mat-button (click)="
             expandableComments.expanded = !expandableComments.expanded
         ">

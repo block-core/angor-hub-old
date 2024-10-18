@@ -57,7 +57,9 @@ export class EventListComponent implements OnInit, OnDestroy,OnChanges {
   @Input() currentUserMetadata: any;
 
   events$: Observable<NewEvent[]>;
-  eventStates: { showEmojiPicker: boolean; comment: string }[] = [];
+  eventStates: {
+      id: any; showEmojiPicker: boolean; comment: string
+}[] = [];
   subscriptions: Subscription[] = [];
 
   isLoading = false;
@@ -81,15 +83,13 @@ export class EventListComponent implements OnInit, OnDestroy,OnChanges {
     this.resetAll();
 }
 
-  subscribeToEvents(): void {
+subscribeToEvents(): void {
     this.unsubscribeAll();
-
 
     if (!this.pubkeys || this.pubkeys.length === 0) {
       console.warn('No public keys provided');
       return;
     }
-
 
     this.paginatedEventService.subscribeToEvents(this.pubkeys)
       .then(() => {
@@ -99,20 +99,26 @@ export class EventListComponent implements OnInit, OnDestroy,OnChanges {
         console.error('Error subscribing to events:', error);
       });
 
-
     const eventSub = this.events$.subscribe(events => {
       const relevantEvents = events.filter(event => this.pubkeys.includes(event.pubkey));
 
-      this.eventStates = relevantEvents.map(() => ({
-        showEmojiPicker: false,
-        comment: ''
-      }));
+
+      relevantEvents.forEach(event => {
+        if (!this.eventStates.some(e => e.id === event.id)) {
+          this.eventStates.push({
+            id: event.id,
+            showEmojiPicker: false,
+            comment: ''
+          });
+        }
+      });
 
       this.changeDetectorRef.markForCheck();
     });
 
     this.subscriptions.push(eventSub);
   }
+
 
 
 

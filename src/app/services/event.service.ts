@@ -42,11 +42,6 @@ export class PaginatedEventService {
         private metadataService: MetadataService,
         private queueService: QueueService
     ) {
-        this.clearEvents();
-
-        this.getMyLikes().then(() => {}).catch(error => {
-            console.error('Failed to load user likes:', error);
-        });
     }
 
 
@@ -112,12 +107,7 @@ export class PaginatedEventService {
                 if (!this.seenEventIds.has(event.id)) {
                     this.seenEventIds.add(event.id);
                     const newEvent = await this.createNewEvent(event);
-                    const currentEvents = this.eventsSubject.getValue();
-                    this.eventsSubject.next(
-                        [newEvent, ...currentEvents].sort(
-                            (a, b) => b.createdAt - a.createdAt
-                        )
-                    );
+                    this.eventsSubject.next([newEvent]);
                     this.updateEventInSubject(event.id);
                 }
                 break;
@@ -146,14 +136,12 @@ export class PaginatedEventService {
         const eventId = event.tags.find((tag) => tag[0] === 'e')?.[1];
         if (eventId) {
             const currentEvents = this.eventsSubject.getValue();
-            const updatedEvents = currentEvents.map((e) => {
-                if (e.id === eventId) {
-                    e.likeCount += 1;
-                    e.likers = [...(e.likers || []), event.pubkey];
-                }
-                return e;
-            });
-            this.eventsSubject.next(updatedEvents);
+            const updatedEvent = currentEvents.find((e) => e.id === eventId);
+            if (updatedEvent) {
+                updatedEvent.likeCount += 1;
+                updatedEvent.likers = [...(updatedEvent.likers || []), event.pubkey];
+                this.eventsSubject.next([updatedEvent]);
+            }
         }
     }
 
@@ -161,14 +149,12 @@ export class PaginatedEventService {
         const eventId = event.tags.find((tag) => tag[0] === 'e')?.[1];
         if (eventId) {
             const currentEvents = this.eventsSubject.getValue();
-            const updatedEvents = currentEvents.map((e) => {
-                if (e.id === eventId) {
-                    e.zapCount += 1;
-                    e.zappers = [...(e.zappers || []), event.pubkey];
-                }
-                return e;
-            });
-            this.eventsSubject.next(updatedEvents);
+            const updatedEvent = currentEvents.find((e) => e.id === eventId);
+            if (updatedEvent) {
+                updatedEvent.zapCount += 1;
+                updatedEvent.zappers = [...(updatedEvent.zappers || []), event.pubkey];
+                this.eventsSubject.next([updatedEvent]);
+            }
         }
     }
 
@@ -176,14 +162,12 @@ export class PaginatedEventService {
         const eventId = event.tags.find((tag) => tag[0] === 'e')?.[1];
         if (eventId) {
             const currentEvents = this.eventsSubject.getValue();
-            const updatedEvents = currentEvents.map((e) => {
-                if (e.id === eventId) {
-                    e.repostCount += 1;
-                    e.reposters = [...(e.reposters || []), event.pubkey];
-                }
-                return e;
-            });
-            this.eventsSubject.next(updatedEvents);
+            const updatedEvent = currentEvents.find((e) => e.id === eventId);
+            if (updatedEvent) {
+                updatedEvent.repostCount += 1;
+                updatedEvent.reposters = [...(updatedEvent.reposters || []), event.pubkey];
+                this.eventsSubject.next([updatedEvent]);
+            }
         }
     }
 
@@ -192,16 +176,15 @@ export class PaginatedEventService {
         if (eventId) {
             const replyEvent = await this.createNewEvent(event);
             const currentEvents = this.eventsSubject.getValue();
-            const updatedEvents = currentEvents.map((e) => {
-                if (e.id === eventId) {
-                    e.replyCount += 1;
-                    e.replies = [...(e.replies || []), replyEvent];
-                }
-                return e;
-            });
-            this.eventsSubject.next(updatedEvents);
+            const updatedEvent = currentEvents.find((e) => e.id === eventId);
+            if (updatedEvent) {
+                updatedEvent.replyCount += 1;
+                updatedEvent.replies = [...(updatedEvent.replies || []), replyEvent];
+                this.eventsSubject.next([updatedEvent]);
+            }
         }
     }
+
 
     private isReply(event: NostrEvent): boolean {
         const replyTags = event.tags.filter(
