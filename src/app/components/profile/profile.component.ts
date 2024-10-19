@@ -31,20 +31,21 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { bech32 } from '@scure/base';
 import { QRCodeModule } from 'angularx-qrcode';
 import { PaginatedEventService } from 'app/services/event.service';
-import { IndexedDBService } from 'app/services/indexed-db.service';
 import { LightningService } from 'app/services/lightning.service';
 import { MetadataService } from 'app/services/metadata.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
+import { StateService } from 'app/services/state.service';
+import { StorageService } from 'app/services/storage.service';
 import { SafeUrlPipe } from 'app/shared/pipes/safe-url.pipe';
-import { Paginator } from 'app/shared/utils';
 import { LightningInvoice, LightningResponse, Post } from 'app/types/post';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
-import { NostrEvent } from 'nostr-tools';
+import { Filter, NostrEvent } from 'nostr-tools';
 import { Subject, takeUntil } from 'rxjs';
 import { EventListComponent } from '../event-list/event-list.component';
 import { ReceiveDialogComponent } from './zap/receive-dialog/receive-dialog.component';
 import { SendDialogComponent } from './zap/send-dialog/send-dialog.component';
+import { SubscriptionService } from 'app/services/subscription.service';
 
 interface Chip {
     color?: string;
@@ -60,28 +61,27 @@ interface Chip {
     encapsulation: ViewEncapsulation.None,
     standalone: true,
     imports: [
-    RouterLink,
-    AngorCardComponent,
-    MatIconModule,
-    MatButtonModule,
-    MatMenuModule,
-    MatFormFieldModule,
-    MatInputModule,
-    TextFieldModule,
-    MatDividerModule,
-    MatTooltipModule,
-    NgClass,
-    CommonModule,
-    FormsModule,
-    QRCodeModule,
-    PickerComponent,
-    MatSlideToggle,
-    SafeUrlPipe,
-    MatProgressSpinnerModule,
-    InfiniteScrollModule,
-    EventListComponent,
-    
-],
+        RouterLink,
+        AngorCardComponent,
+        MatIconModule,
+        MatButtonModule,
+        MatMenuModule,
+        MatFormFieldModule,
+        MatInputModule,
+        TextFieldModule,
+        MatDividerModule,
+        MatTooltipModule,
+        NgClass,
+        CommonModule,
+        FormsModule,
+        QRCodeModule,
+        PickerComponent,
+        MatSlideToggle,
+        SafeUrlPipe,
+        MatProgressSpinnerModule,
+        InfiniteScrollModule,
+        EventListComponent,
+    ],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
     @ViewChild('eventInput', { static: false }) eventInput: ElementRef;
@@ -90,15 +90,17 @@ export class ProfileComponent implements OnInit, OnDestroy {
     darkMode: boolean = false;
     isLoading: boolean = true;
     errorMessage: string | null = null;
-    metadata: any;
-    currentUserMetadata: any;
+
+    profileUser: any;
+
+    currentUser: any;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     public currentUserPubKey: string;
     public routePubKey;
     followers: any[] = [];
     following: any[] = [];
     allPublicKeys: string[] = [];
-    suggestions: { pubkey: string; metadata: any }[] = [];
     isCurrentUserProfile: Boolean = false;
     isFollowing = false;
 
@@ -114,8 +116,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     posts: Post[] = [];
     likes: any[] = [];
 
-    paginator: Paginator;
-
     myLikes: NostrEvent[] = [];
     myLikedNoteIds: string[] = [];
 
@@ -123,12 +123,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
     noEventsMessage: string = '';
     loadingTimeout: any;
 
+    subscriptionId: string;
+
 
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _metadataService: MetadataService,
         private _signerService: SignerService,
-        private _indexedDBService: IndexedDBService,
+        private  storageService: StorageService,
         private _sanitizer: DomSanitizer,
         private _route: ActivatedRoute,
         private _socialService: SocialService,
@@ -137,17 +139,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _dialog: MatDialog,
         private _angorConfigService: AngorConfigService,
         private _angorConfirmationService: AngorConfirmationService,
-        private eventService: PaginatedEventService
-    ) {
-        let baseTimeDiff = 12000;
-        let since = 0;
+        private eventService: PaginatedEventService,
+        private stateService: StateService,
+        private subscriptionService: SubscriptionService,
+    ) { }
 
-        this.paginator = new Paginator(0, since, (baseTimeDiff = baseTimeDiff));
-    }
-
-    ngOnInit(): void {
-this.updateSuggestionList();
-
+    async ngOnInit(): Promise<void> {
         this._angorConfigService.config$.subscribe((config) => {
             if (config.scheme === 'auto') {
                 this.detectSystemTheme();
@@ -157,51 +154,24 @@ this.updateSuggestionList();
         });
         this._route.paramMap.subscribe((params) => {
             const routePubKey = params.get('pubkey');
-            this.routePubKey = routePubKey;
-            const currentUserPubKey = this._signerService.getPublicKey();
-            this.currentUserPubKey = currentUserPubKey;
-            if (routePubKey || currentUserPubKey) {
-                this.isCurrentUserProfile = routePubKey === currentUserPubKey;
-            }
-
-            this.routePubKey = routePubKey || currentUserPubKey;
-            this.loadProfile(this.routePubKey);
             if (!routePubKey) {
                 this.isCurrentUserProfile = true;
+                const currentUserPubKey = this._signerService.getPublicKey();
+
+                this.routePubKey = currentUserPubKey;
             }
-            this.loadCurrentUserProfile();
+            else {
+                this.routePubKey = routePubKey;
+            }
 
 
+
+            this.loadProfileUser(this.routePubKey);
         });
 
-        this._indexedDBService
-            .getMetadataStream()
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((updatedMetadata) => {
-                if (
-                    updatedMetadata &&
-                    updatedMetadata.pubkey === this.currentUserPubKey
-                ) {
-                    this.currentUserMetadata = updatedMetadata.metadata;
-                    this._changeDetectorRef.detectChanges();
-                }
-            });
-        if (this.routePubKey) {
-            this._indexedDBService
-                .getMetadataStream()
-                .pipe(takeUntil(this._unsubscribeAll))
-                .subscribe((updatedMetadata) => {
-                    if (
-                        updatedMetadata &&
-                        updatedMetadata.pubkey === this.routePubKey
-                    ) {
-                        this.metadata = updatedMetadata.metadata;
-                        this._changeDetectorRef.detectChanges();
-                    }
-                });
-        }
+        await this.loadCurrentUser();
 
-        this._socialService
+         this._socialService
             .getFollowersObservable()
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((event) => {
@@ -222,16 +192,27 @@ this.updateSuggestionList();
     }
 
     ngOnDestroy(): void {
+        if (this.subscriptionId) {
+             this.subscriptionService.removeSubscriptionById(this.subscriptionId);
+          }
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }
 
+    private async loadCurrentUser(): Promise<void> {
+        this.currentUser = null;
 
-    async loadProfile(publicKey: string): Promise<void> {
+        this.stateService.profileMetadata$.subscribe((metadata) => {
+            this.currentUser = metadata;
+            this._changeDetectorRef.detectChanges();
+        });
+    }
+
+    async loadProfileUser(publicKey: string): Promise<void> {
         this.isLoading = true;
         this.errorMessage = null;
+        this.profileUser = null;
 
-        this.metadata = null;
         this.followers = [];
         this.following = [];
 
@@ -244,15 +225,26 @@ this.updateSuggestionList();
             return;
         }
 
+
         try {
 
-            const userMetadata = await this._metadataService.fetchMetadataWithCache(publicKey);
-            if (userMetadata) {
-                this.metadata = userMetadata;
-                this._changeDetectorRef.detectChanges();
+            const cachedMetadata = await this.storageService.getUserMetadata(publicKey);
+
+            if (cachedMetadata) {
+
+              this.profileUser = cachedMetadata;
+              this._changeDetectorRef.detectChanges();
             }
 
 
+            this.subscribeToUserProfile(publicKey);
+          } catch (error) {
+            console.error('Error loading user profile:', error);
+          }
+
+
+
+        try {
             this.followers = await this._socialService.getFollowers(publicKey);
             const currentUserPubKey = this._signerService.getPublicKey();
             this.isFollowing = this.followers.includes(currentUserPubKey);
@@ -261,7 +253,8 @@ this.updateSuggestionList();
             this._changeDetectorRef.detectChanges();
         } catch (error) {
             console.error('Failed to load profile data:', error);
-            this.errorMessage = 'Failed to load profile data. Please try again later.';
+            this.errorMessage =
+                'Failed to load profile data. Please try again later.';
             this._changeDetectorRef.detectChanges();
         } finally {
             this.isLoading = false;
@@ -270,30 +263,29 @@ this.updateSuggestionList();
     }
 
 
-    private async loadCurrentUserProfile(): Promise<void> {
-        try {
-            this.currentUserMetadata = null;
-            this.currentUserPubKey = this._signerService.getPublicKey();
+    private subscribeToUserProfile(pubKey: string): void {
+        const filters: Filter[] = [
+          { authors: [pubKey], kinds: [0], limit: 1 }
+        ];
 
 
-            const currentUserMetadata = await this._metadataService.fetchMetadataWithCache(
-                this.currentUserPubKey
-            );
+        this.subscriptionId = this.subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
+          try {
 
-            if (currentUserMetadata) {
-                this.currentUserMetadata = currentUserMetadata;
-            }
+            const newMetadata = JSON.parse(event.content);
+            this.profileUser = newMetadata;
+
+
+            await this.storageService.saveUserMetadata(pubKey, newMetadata);
 
 
             this._changeDetectorRef.detectChanges();
-        } catch (error) {
-            console.error('Failed to load profile data:', error);
-            this.errorMessage = 'Failed to load profile data. Please try again later.';
-            this._changeDetectorRef.detectChanges();
-        } finally {
-            this._changeDetectorRef.detectChanges();
-        }
-    }
+          } catch (error) {
+            console.error('Error processing metadata event:', error);
+          }
+        });
+      }
+
 
 
 
@@ -340,17 +332,17 @@ this.updateSuggestionList();
 
     getLightningInfo() {
         let lightningAddress = '';
-        if (this.metadata?.lud06) {
-            const { words } = bech32.decode(this.metadata.lud06, 5000);
+        if (this.profileUser?.lud06) {
+            const { words } = bech32.decode(this.profileUser.lud06, 5000);
             const data = new Uint8Array(bech32.fromWords(words));
             lightningAddress = new TextDecoder().decode(Uint8Array.from(data));
-        } else if (this.metadata?.lud16?.toLowerCase().startsWith('lnurl')) {
-            const { words } = bech32.decode(this.metadata.lud16, 5000);
+        } else if (this.profileUser?.lud16?.toLowerCase().startsWith('lnurl')) {
+            const { words } = bech32.decode(this.profileUser.lud16, 5000);
             const data = new Uint8Array(bech32.fromWords(words));
             lightningAddress = new TextDecoder().decode(Uint8Array.from(data));
-        } else if (this.metadata?.lud16) {
+        } else if (this.profileUser?.lud16) {
             lightningAddress = this.lightning.getLightningAddress(
-                this.metadata.lud16
+                this.profileUser.lud16
             );
         }
         if (lightningAddress !== '') {
@@ -378,7 +370,10 @@ this.updateSuggestionList();
     }
 
     async zap() {
-        if (this.metadata && (this.metadata.lud06 || this.metadata.lud16)) {
+        if (
+            this.profileUser &&
+            (this.profileUser.lud06 || this.profileUser.lud16)
+        ) {
             this.getLightningInfo();
         } else {
             this.openSnackBar("user can't receive zaps", 'dismiss');
@@ -389,7 +384,7 @@ this.updateSuggestionList();
         this._dialog.open(SendDialogComponent, {
             width: '405px',
             maxHeight: '90vh',
-            data: this.metadata,
+            data: this.profileUser,
         });
     }
 
@@ -397,7 +392,7 @@ this.updateSuggestionList();
         this._dialog.open(ReceiveDialogComponent, {
             width: '405px',
             maxHeight: '90vh',
-            data: this.metadata,
+            data: this.profileUser,
         });
     }
 
@@ -427,11 +422,6 @@ this.updateSuggestionList();
         this.showCommentEmojiPicker = false;
     }
 
-    toggleCommentEmojiPicker() {
-        this.showEmojiPicker = false;
-        this.showCommentEmojiPicker = !this.showCommentEmojiPicker;
-    }
-
     detectSystemTheme() {
         const darkSchemeMedia = window.matchMedia(
             '(prefers-color-scheme: dark)'
@@ -443,34 +433,34 @@ this.updateSuggestionList();
         });
     }
 
-    openConfirmationDialog(): void {
-        const dialogRef = this._angorConfirmationService.open({
-            title: 'Share Event',
-            message:
-                'Are you sure you want to share this event on your profile? <span class="font-medium">This action is permanent and cannot be undone.</span>',
-            icon: {
-                show: true,
-                name: 'heroicons_solid:share',
-                color: 'primary',
-            },
-            actions: {
-                confirm: {
-                    show: true,
-                    label: 'Yes, Share',
-                    color: 'primary',
-                },
-                cancel: {
-                    show: true,
-                    label: 'Cancel',
-                },
-            },
-            dismissible: true,
-        });
 
-        dialogRef.afterClosed().subscribe((result) => {
-            console.log(result);
-        });
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     togglePreview() {
         this.isPreview = !this.isPreview;
@@ -478,7 +468,7 @@ this.updateSuggestionList();
 
     sendEvent() {
         if (this.eventInput.nativeElement.value != '') {
-             this.eventService
+            this.eventService
                 .sendTextEvent(this.eventInput.nativeElement.value)
                 .then(() => {
                     this._changeDetectorRef.markForCheck();
@@ -487,15 +477,5 @@ this.updateSuggestionList();
                     console.error('Failed to send Event:', error);
                 });
         }
-    }
-
-    private updateSuggestionList(): void {
-        this._indexedDBService.getSuggestionUsers().then((suggestions) => {
-            this.suggestions = suggestions;
-
-            this._changeDetectorRef.detectChanges();
-        }).catch((error) => {
-            console.error('Error updating suggestion list:', error);
-        });
     }
 }

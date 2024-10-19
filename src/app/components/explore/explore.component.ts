@@ -26,11 +26,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { Project } from 'app/interface/project.interface';
-import { IndexedDBService } from 'app/services/indexed-db.service';
+import { StorageService } from 'app/services/storage.service';
 import { MetadataService } from 'app/services/metadata.service';
 import { Subject, takeUntil } from 'rxjs';
 import { ProjectsService } from '../../services/projects.service';
-import { StateService } from '../../services/state.service';
 import { ChatService } from '../chat/chat.service';
 import { Contact } from '../chat/chat.types';
 
@@ -71,9 +70,8 @@ export class ExploreComponent implements OnInit, OnDestroy {
     constructor(
         private projectService: ProjectsService,
         private router: Router,
-        private stateService: StateService,
         private metadataService: MetadataService,
-        private indexedDBService: IndexedDBService,
+        private storageService: StorageService,
         private changeDetectorRef: ChangeDetectorRef,
         private sanitizer: DomSanitizer,
         private _chatService: ChatService
@@ -87,7 +85,6 @@ export class ExploreComponent implements OnInit, OnDestroy {
     private async loadInitialProjects(): Promise<void> {
         try {
             this.loading = true;
-            this.projects = this.stateService.getProjects();
 
             if (this.projects.length === 0) {
                 await this.loadProjectsFromService();
@@ -116,7 +113,6 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
             this.projects = projects;
             this.filteredProjects = [...this.projects];
-            this.stateService.setProjects(this.projects);
 
             const pubkeys = projects.map((p) => p.nostrPubKey);
             await this.loadMetadataForProjects(pubkeys);
@@ -125,7 +121,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
         }
     }
     private subscribeToMetadataUpdates(): void {
-        this.indexedDBService
+        this.storageService
             .getMetadataStream()
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((updatedMetadata: any) => {
@@ -153,7 +149,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
         const metadataPromises = pubkeys.map(async (pubkey) => {
             // Check cache first
             const cachedMetadata =
-                await this.indexedDBService.getUserMetadata(pubkey);
+                await this.storageService.getUserMetadata(pubkey);
             if (cachedMetadata) {
                 return { pubkey, metadata: cachedMetadata };
             }
@@ -226,7 +222,6 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
                     await this.loadMetadataForProjects(pubkeys);
 
-                    this.stateService.setProjects(this.projects);
 
                     this.projects.forEach((project) =>
                         this.subscribeToProjectMetadata(project)

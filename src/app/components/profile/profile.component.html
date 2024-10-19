@@ -5,9 +5,9 @@
         <div>
             <img
                 class="h-40 object-cover lg:h-80"
-                [src]="metadata?.banner || '/images/pages/profile/cover.jpg'"
+                [src]="profileUser?.banner || '/images/pages/profile/cover.jpg'"
                 onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';"
-                alt="{{ metadata?.display_name || metadata?.name || 'Banner' }}"
+                alt="{{ profileUser?.display_name || profileUser?.name || 'Banner' }}"
             />
         </div>
 
@@ -17,13 +17,13 @@
         >
             <!-- picture -->
             <div class="-mt-26 flex-shrink-0 rounded-full lg:-mt-22">
-                <ng-container *ngIf="metadata?.picture; else defaultAvatar">
+                <ng-container *ngIf="profileUser?.picture; else defaultAvatar">
                     <img
                         class="ring-bg-card h-32 min-h-32 w-32 min-w-32 max-w-fit rounded-full object-cover ring-4"
-                        [src]="getSafeUrl(metadata?.picture)"
+                        [src]="getSafeUrl(profileUser?.picture)"
                         onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
                         alt="{{
-                            metadata?.display_name || metadata?.name || ''
+                            profileUser?.display_name || profileUser?.name || ''
                         }}"
                     />
                 </ng-container>
@@ -33,7 +33,7 @@
                         src="/images/avatars/avatar-placeholder.png"
                         onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
                         alt="{{
-                            metadata?.display_name || metadata?.name || ''
+                            profileUser?.display_name || profileUser?.name || ''
                         }}"
                     />
                 </ng-template>
@@ -52,8 +52,8 @@
                     "
                 >
                     {{
-                        metadata?.display_name ||
-                            metadata?.name ||
+                        profileUser?.display_name ||
+                        profileUser?.name ||
                             'Unknown User'
                     }}
                 </div>
@@ -65,7 +65,7 @@
                         text-overflow: ellipsis;
                     "
                 >
-                    {{ metadata?.username || metadata?.name }}
+                    {{ profileUser?.username || profileUser?.name }}
                 </div>
             </div>
 
@@ -198,12 +198,12 @@
         <div class="mr-8 hidden flex-col items-start lg:flex">
             <!-- About me -->
             <angor-card
-                *ngIf="metadata?.about && metadata.about.trim() !== ''"
+                *ngIf="profileUser?.about && profileUser.about.trim() !== ''"
                 class="flex w-full max-w-80 flex-col p-8"
             >
                 <div class="text-2xl font-semibold leading-tight">About</div>
                 <div class="mt-4">
-                    {{ metadata?.about || '' }}
+                    {{ profileUser?.about || '' }}
                 </div>
                 <a
                     class="mt-8 px-6"
@@ -213,74 +213,6 @@
                 >
                     See complete about
                 </a>
-            </angor-card>
-
-            <!-- Suggestion -->
-            <angor-card
-                *ngIf="suggestions.length > 0"
-                [ngClass]="{ 'mt-8': metadata?.about }"
-                class="flex w-full max-w-80 flex-col px-8 pb-4 pt-6"
-            >
-                <div class="flex items-center justify-between">
-                    <div class="text-2xl font-semibold leading-tight">
-                        Suggestion
-                    </div>
-                    <div class="-mr-3">
-                        <button
-                            mat-icon-button
-                            [matMenuTriggerFor]="listCard08Menu"
-                        >
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="'heroicons_solid:ellipsis-vertical'"
-                            ></mat-icon>
-                        </button>
-                        <mat-menu #listCard08Menu="matMenu">
-                            <button mat-menu-item [routerLink]="['/explore']">
-                                Explore project
-                            </button>
-                        </mat-menu>
-                    </div>
-                </div>
-
-                <div
-                    class="flex flex-col"
-                    *ngIf="suggestions && suggestions.length > 0"
-                >
-                    <div
-                        class="mt-6 flex justify-between"
-                        *ngFor="let i of [0, 1, 2, 3]"
-                    >
-                        <ng-container *ngIf="suggestions.length > i * 4">
-                            <img
-                                *ngFor="let j of [0, 1, 2, 3]"
-                                class="h-14 w-14 rounded-full object-cover"
-                                [src]="
-                                    suggestions[i * 4 + j]?.metadata?.picture
-                                        ? suggestions[i * 4 + j].metadata
-                                              .picture
-                                        : 'images/avatars/avatar-placeholder.png'
-                                "
-                                [alt]="
-                                    suggestions[i * 4 + j]?.metadata?.name
-                                        ? suggestions[i * 4 + j].metadata.name
-                                        : 'image'
-                                "
-                                onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';"
-                                [matTooltip]="
-                                    suggestions[i * 4 + j]?.metadata?.name
-                                        ? suggestions[i * 4 + j].metadata.name
-                                        : ''
-                                "
-                                [routerLink]="[
-                                    '/profile',
-                                    suggestions[i * 4 + j].pubkey,
-                                ]"
-                                role="button"
-                            />
-                        </ng-container>
-                    </div>
-                </div>
             </angor-card>
 
             <!-- Last projects -->
@@ -364,18 +296,18 @@
                         <img
                             class="mr-4 h-12 w-12 min-w-12 rounded-full object-cover"
                             [src]="
-                                currentUserMetadata?.picture ||
+                            currentUser?.picture ||
                                 'images/avatars/avatar-placeholder.png'
                             "
                             onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
                             alt="{{
-                                currentUserMetadata?.display_name ||
-                                    currentUserMetadata?.name ||
+                                currentUser?.display_name ||
+                                currentUser?.name ||
                                     'Avatar'
                             }}"
                         />
                         <div class="sm:hidden">
-                            {{ currentUserMetadata?.name || 'Unknown User' }}
+                            {{ currentUser?.name || 'Unknown User' }}
                         </div>
                     </div>
                     <mat-form-field
@@ -525,20 +457,20 @@
                     <img
                         class="mr-4 h-10 w-10 rounded-full"
                         [src]="
-                            currentUserMetadata?.picture ||
+                        currentUser?.picture ||
                             'images/avatars/avatar-placeholder.png'
                         "
                         onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
                         alt="{{
-                            currentUserMetadata?.display_name ||
-                                currentUserMetadata?.name ||
+                            currentUser?.display_name ||
+                            currentUser?.name ||
                                 'Avatar'
                         }}"
                     />
                     <div class="flex flex-col">
                         <span class="font-semibold leading-none">{{
-                            currentUserMetadata?.display_name ||
-                                currentUserMetadata?.name
+                            currentUser?.display_name ||
+                            currentUser?.name
                         }}</span>
                         <span class="text-secondary mt-1 text-sm leading-none"
                             >1 minutes ago</span
@@ -722,13 +654,13 @@
                             <img
                                 class="mr-5 h-12 w-12 rounded-full object-cover"
                                 [src]="
-                                    currentUserMetadata?.picture ||
+                                currentUser?.picture ||
                                     'images/avatars/avatar-placeholder.png'
                                 "
                                 onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
                                 alt="{{
-                                    currentUserMetadata?.display_name ||
-                                        currentUserMetadata?.name ||
+                                    currentUser?.display_name ||
+                                    currentUser?.name ||
                                         'Avatar'
                                 }}"
                             />
@@ -791,7 +723,7 @@
                 </ng-container>
             </angor-card>
 
-            <app-event-list class="mb-8 w-full max-w-5xl" [pubkeys]="[routePubKey]"></app-event-list>
+            <!-- <app-event-list class="mb-8 w-full max-w-5xl" [pubkeys]="[routePubKey]"></app-event-list> -->
 
 
 

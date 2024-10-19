@@ -16,6 +16,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { SignerService } from 'app/services/signer.service';
+import { StateService } from 'app/services/state.service';
 
 @Component({
     selector: 'auth-sign-in',
@@ -54,12 +55,21 @@ export class LoginComponent implements OnInit {
     constructor(
         private _formBuilder: FormBuilder,
         private _router: Router,
-        private _signerService: SignerService
+        private _signerService: SignerService,
+        private _stateService: StateService
     ) {}
 
     ngOnInit(): void {
         this.initializeForms();
         this.checkNostrExtensionAvailability();
+    }
+
+    private async initializeAppState(): Promise<void> {
+        const publicKey = this._signerService.getPublicKey();
+        if (publicKey) {
+            await this._stateService.loadUserProfile(publicKey);
+            console.log('User profile loaded with public key:', publicKey);
+        }
     }
 
     private initializeForms(): void {
@@ -109,6 +119,7 @@ export class LoginComponent implements OnInit {
 
             if (success) {
                 // Successful login
+                this.initializeAppState();
                 this._router.navigateByUrl('/home');
             } else {
                 throw new Error('Secret key is missing or invalid.');
@@ -145,6 +156,7 @@ export class LoginComponent implements OnInit {
         );
 
         if (success) {
+            this.initializeAppState();
             this._router.navigateByUrl('/home');
         } else {
             this.loading = false;
@@ -156,6 +168,7 @@ export class LoginComponent implements OnInit {
     async loginWithNostrExtension(): Promise<void> {
         const success = await this._signerService.handleLoginWithExtension();
         if (success) {
+            this.initializeAppState();
             this._router.navigateByUrl('/home');
         } else {
             console.error('Failed to log in using Nostr extension');

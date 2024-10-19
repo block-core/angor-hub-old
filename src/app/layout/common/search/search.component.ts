@@ -32,7 +32,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { IndexedDBService } from 'app/services/indexed-db.service';
+import { StorageService } from 'app/services/storage.service';
 import { Subject, debounceTime, filter, map, takeUntil } from 'rxjs';
 
 @Component({
@@ -79,7 +79,7 @@ export class SearchComponent implements OnChanges, OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
-        private _indexedDBService: IndexedDBService,
+        private _storageService: StorageService,
         private _sanitizer: DomSanitizer
     ) {}
 
@@ -119,7 +119,7 @@ export class SearchComponent implements OnChanges, OnInit, OnDestroy {
             )
             .subscribe(async (value) => {
                 const results =
-                    await this._indexedDBService.searchUsersByMetadata(value);
+                    await this._storageService.searchUsersByMetadata(value);
 
                 this.resultSets = results.map((result) => ({
                     label: 'Project',

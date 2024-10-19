@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Chat, Contact, Profile } from 'app/components/chat/chat.types';
-import { IndexedDBService } from 'app/services/indexed-db.service';
+import { StorageService } from 'app/services/storage.service';
 import { MetadataService } from 'app/services/metadata.service';
 import { RelayService } from 'app/services/relay.service';
 import { SignerService } from 'app/services/signer.service';
@@ -49,7 +49,7 @@ export class ChatService implements OnDestroy {
     constructor(
         private _metadataService: MetadataService,
         private _signerService: SignerService,
-        private _indexedDBService: IndexedDBService,
+        private _storageService: StorageService,
         private _relayService: RelayService
     ) {}
     get profile$(): Observable<Profile | null> {
@@ -101,7 +101,7 @@ export class ChatService implements OnDestroy {
                 };
                 this._contact.next(contact);
 
-                this._indexedDBService
+                this._storageService
                     .getMetadataStream()
                     .pipe(takeUntil(this._unsubscribeAll))
                     .subscribe((updatedMetadata) => {
@@ -128,7 +128,7 @@ export class ChatService implements OnDestroy {
 
     getContacts(): Observable<Contact[]> {
         return new Observable<Contact[]>((observer) => {
-            this._indexedDBService
+            this._storageService
                 .getAllUsers()
                 .then((cachedContacts: Contact[]) => {
                     if (cachedContacts && cachedContacts.length > 0) {
@@ -250,7 +250,7 @@ export class ChatService implements OnDestroy {
             if (metadata) {
                 this._profile.next(metadata);
 
-                this._indexedDBService
+                this._storageService
                     .getMetadataStream()
                     .pipe(takeUntil(this._unsubscribeAll))
                     .subscribe((updatedMetadata) => {

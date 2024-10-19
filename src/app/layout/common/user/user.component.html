@@ -1,9 +1,9 @@
 <button mat-icon-button [matMenuTriggerFor]="userActions">
     <span class="relative">
-        <ng-container *ngIf="metadata?.picture; else defaultAvatar">
+        <ng-container *ngIf="user?.picture; else defaultAvatar">
             <img
                 class="h-7 w-7 rounded-full object-cover"
-                [src]="getSafeUrl(metadata?.picture)"
+                [src]="getSafeUrl(user?.picture)"
                 alt=""
                 onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
             />
@@ -19,7 +19,7 @@
         <span class="flex flex-col leading-none">
             <span>Logged in as</span>
             <span class="mt-1.5 text-md font-medium">{{
-                metadata?.display_name || metadata?.name || 'Unknown User'
+                user?.display_name || user?.name || 'Unknown User'
             }}</span>
         </span>
     </button>

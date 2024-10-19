@@ -69,7 +69,56 @@ class=""
         </button>
     </mat-menu>
 </div>
-<div class="mx-6 mb-6 mt-2 sm:mx-8" [innerHTML]="parseContent.parseContent(event.content)"></div>
+<div class="mx-6 mb-6 mt-2 sm:mx-8">
+    <div *ngFor="let token of parseContent.parseContent(event.content); trackBy: trackByFn" style="display: inline;">
+      <!-- YouTube Embeds -->
+      <div *ngIf="token.token === 'youtube'" style="display: block;">
+        <iframe
+          [src]="token.safeWord"
+          width="560"
+          height="315"
+          frameborder="0"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <!-- Images -->
+      <div *ngIf="token.token === 'image'" style="display: block;">
+        <img
+          [src]="token.safeWord"
+          alt="Embedded Image"
+          style="max-width: 100%;" />
+      </div>
+
+      <!-- Videos -->
+      <div *ngIf="token.token === 'video'" style="display: block;">
+        <video controls style="max-width: 100%;">
+          <source [src]="token.safeWord" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <!-- Audio -->
+      <div *ngIf="token.token === 'audio'" style="display: block;">
+        <audio controls>
+          <source [src]="token.safeWord" type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
+      </div>
+
+      <!-- Links -->
+      <div *ngIf="token.token === 'link'" style="display: inline;">
+        <a [href]="token.word" target="_blank">{{ token.word }}</a>
+      </div>
+
+      <!-- Plain Text -->
+      <span *ngIf="!token.token">{{ token }}</span>
+    </div>
+  </div>
+
+
+
+
 <div class="relative mb-4">
     <!-- image or video -->
 </div>

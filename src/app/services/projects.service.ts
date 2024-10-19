@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { IndexedDBService } from './indexed-db.service';
+import { StorageService } from './storage.service';
 import { IndexerService } from './indexer.service';
 
 export interface Project {
@@ -38,7 +38,7 @@ export class ProjectsService {
     constructor(
         private http: HttpClient,
         private indexerService: IndexerService,
-        private indexedDBService: IndexedDBService
+        private storageService: StorageService
     ) {
         this.loadNetwork();
     }
@@ -96,7 +96,7 @@ export class ProjectsService {
 
             const saveProjectsPromises = uniqueNewProjects.map(
                 async (project) => {
-                    await this.indexedDBService.saveProject(project);
+                    await this.storageService.saveProject(project);
                 }
             );
 
@@ -104,7 +104,7 @@ export class ProjectsService {
                 async (project) => {
                     try {
                         const projectStats =
-                            await this.indexedDBService.getProjectStats(
+                            await this.storageService.getProjectStats(
                                 project.projectIdentifier
                             );
                         project.totalInvestmentsCount =
@@ -160,7 +160,7 @@ export class ProjectsService {
             const stats =
                 await this.fetchProjectStats(projectIdentifier).toPromise();
             if (stats) {
-                await this.indexedDBService.saveProjectStats(
+                await this.storageService.saveProjectStats(
                     projectIdentifier,
                     stats
                 );
@@ -198,7 +198,7 @@ export class ProjectsService {
             const project =
                 await this.fetchProjectDetails(projectIdentifier).toPromise();
             if (project) {
-                await this.indexedDBService.saveProject(project);
+                await this.storageService.saveProject(project);
             }
             return project;
         } catch (error) {
@@ -211,13 +211,13 @@ export class ProjectsService {
     }
 
     async getAllProjectsFromDB(): Promise<Project[]> {
-        return this.indexedDBService.getAllProjects();
+        return this.storageService.getAllProjects();
     }
 
     async getProjectStatsFromDB(
         projectIdentifier: string
     ): Promise<ProjectStats | null> {
-        return this.indexedDBService.getProjectStats(projectIdentifier);
+        return this.storageService.getProjectStats(projectIdentifier);
     }
 
     getProjects(): Project[] {

@@ -25,6 +25,20 @@ import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
 import { navigationServices } from './layout/navigation/navigation.services';
 import { HashService } from './services/hash.service';
 import { NostrWindow } from './types/nostr';
+import { SignerService } from './services/signer.service';
+import { StateService } from './services/state.service';
+
+
+export function initializeState(signerService: SignerService, stateService: StateService): () => Promise<void> {
+    return async () => {
+      const publicKey = signerService.getPublicKey();
+      console.log("publicKey : " + publicKey);
+
+      if (publicKey) {
+        await stateService.loadUserProfile(publicKey);
+      }
+    };
+  }
 
 export function initializeApp(hashService: HashService) {
     return (): Promise<void> => hashService.load();
@@ -40,9 +54,15 @@ export const appConfig: ApplicationConfig = {
         {
             provide: APP_INITIALIZER,
             useFactory: initializeApp,
-            deps: [HashService],
+            deps: [HashService, SignerService, StateService],
             multi: true,
         },
+        {
+            provide: APP_INITIALIZER,
+            useFactory: initializeState,
+            deps: [SignerService, StateService],
+            multi: true,
+          },
         provideRouter(
             appRoutes,
             withPreloading(PreloadAllModules),

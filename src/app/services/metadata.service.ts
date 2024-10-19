@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { IndexedDBService } from './indexed-db.service';
+import { StorageService } from './storage.service';
 import { NostrEvent, Filter } from 'nostr-tools';
 import { throttleTime } from 'rxjs/operators';
 import { QueueService } from './queue-service.service';
@@ -11,7 +11,7 @@ import { QueueService } from './queue-service.service';
 export class MetadataService {
   private metadataSubject = new BehaviorSubject<any>(null);
   constructor(
-    private indexedDBService: IndexedDBService,
+    private storageService: StorageService,
     private queueService: QueueService
   ) {}
 
@@ -35,7 +35,7 @@ export class MetadataService {
           if (event.kind === 0) {
             try {
               const metadata = JSON.parse(event.content);
-              await this.indexedDBService.saveUserMetadata(event.pubkey, metadata);
+              await this.storageService.saveUserMetadata(event.pubkey, metadata);
               metadataList.push({ pubkey: event.pubkey, metadata });
             } catch (error) {
               console.error('Error parsing metadata:', error);
@@ -59,7 +59,7 @@ export class MetadataService {
 
 
   async fetchMetadataWithCache(pubkey: string): Promise<any> {
-    const metadata = await this.indexedDBService.getUserMetadata(pubkey);
+    const metadata = await this.storageService.getUserMetadata(pubkey);
     if (metadata) {
       this.metadataSubject.next(metadata);
       return metadata;
@@ -70,7 +70,7 @@ export class MetadataService {
           if (event.kind === 0 && event.pubkey === pubkey) {
             try {
               const updatedMetadata = JSON.parse(event.content);
-              await this.indexedDBService.saveUserMetadata(pubkey, updatedMetadata);
+              await this.storageService.saveUserMetadata(pubkey, updatedMetadata);
               this.metadataSubject.next(updatedMetadata);
             } catch (error) {
               console.error('Error parsing updated metadata:', error);
@@ -118,7 +118,7 @@ export class MetadataService {
 
 
   async refreshAllStoredMetadata(): Promise<void> {
-    const storedUsers = await this.indexedDBService.getAllUsers();
+    const storedUsers = await this.storageService.getAllUsers();
     if (!storedUsers || storedUsers.length === 0) {
       return;
     }
@@ -131,14 +131,14 @@ export class MetadataService {
 
   async getUserMetadata(pubkey: string): Promise<any> {
     try {
-      const cachedMetadata = await this.indexedDBService.getUserMetadata(pubkey);
+      const cachedMetadata = await this.storageService.getUserMetadata(pubkey);
       if (cachedMetadata) {
         return cachedMetadata;
       }
 
       const liveMetadata = await this.fetchMetadataRealtime(pubkey);
       if (liveMetadata) {
-        await this.indexedDBService.saveUserMetadata(pubkey, liveMetadata);
+        await this.storageService.saveUserMetadata(pubkey, liveMetadata);
         return liveMetadata;
       }
 

@@ -1,46 +1,73 @@
 import { Injectable } from '@angular/core';
-import { Project } from 'app/interface/project.interface';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { SubscriptionService } from './subscription.service';
+import { NostrEvent, Filter } from 'nostr-tools';
+import { StorageService } from './storage.service';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class StateService {
-    private projects: Project[] = [];
-    private projectsSubject = new BehaviorSubject<Project[]>([]);
+  private profileMetadataSubject = new BehaviorSubject<any>(null);
+  private followersSubject = new BehaviorSubject<string[]>([]);
+  private followingSubject = new BehaviorSubject<string[]>([]);
 
-    getProjectsObservable() {
-        return this.projectsSubject.asObservable();
+  public profileMetadata$: Observable<any> = this.profileMetadataSubject.asObservable();
+  public followers$: Observable<string[]> = this.followersSubject.asObservable();
+  public following$: Observable<string[]> = this.followingSubject.asObservable();
+
+  private isProfileLoaded = false;
+
+  constructor(
+    private subscriptionService: SubscriptionService,
+    private storageService: StorageService
+  ) {}
+
+  public async loadUserProfile(pubkey: string): Promise<void> {
+    console.log(`Loading user profile for pubkey: ${pubkey}`);
+
+    if (this.isProfileLoaded) {
+      console.log('Profile already loaded, skipping.');
+      return;
     }
 
-    setProjects(projects: Project[]): void {
-        this.projects = projects;
-        this.projectsSubject.next(this.projects);
+    const cachedMetadata = await this.storageService.getUserMetadata(pubkey);
+
+    if (cachedMetadata) {
+      this.profileMetadataSubject.next(cachedMetadata);
     }
 
-    getProjects(): Project[] {
-        return this.projects;
+    this.subscribeToUserProfile(pubkey);
+
+    this.isProfileLoaded = true;
+  }
+
+  private async subscribeToUserProfile(pubkey: string): Promise<void> {
+    console.log(`Subscribing to user profile for pubkey: ${pubkey}`);
+
+    const metadataLastUpdate = await this.storageService.getLastUpdateDate('users');
+
+    const metadataFilter: Filter = { kinds: [0], authors: [pubkey], limit: 1 };
+
+    if (metadataLastUpdate) {
+      metadataFilter.since = parseInt(metadataLastUpdate, 10);
     }
 
-    hasProjects(): boolean {
-        return this.projects.length > 0;
+    this.subscriptionService.addSubscriptions([metadataFilter], (event: NostrEvent) => {
+      const metadata = this.parseMetadataEvent(event);
+      this.profileMetadataSubject.next(metadata);
+      this.storageService.saveUserMetadata(pubkey, metadata);
+    });
+
+  }
+
+  private parseMetadataEvent(event: NostrEvent): any {
+    try {
+      return JSON.parse(event.content);
+    } catch (error) {
+      console.error('Error parsing metadata event:', error);
+      return null;
     }
+  }
 
-    updateProject(project: Project): void {
-        const index = this.projects.findIndex(
-            (p) => p.nostrPubKey === project.nostrPubKey
-        );
-
-        if (index > -1) {
-            this.projects[index] = project;
-        } else {
-            this.projects.push(project);
-        }
-
-        this.projectsSubject.next(this.projects);
-    }
-
-    getProjectByPubKey(nostrPubKey: string): Project | undefined {
-        return this.projects.find((p) => p.nostrPubKey === nostrPubKey);
-    }
 }
