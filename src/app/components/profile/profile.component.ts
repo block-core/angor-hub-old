@@ -163,9 +163,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
             else {
                 this.routePubKey = routePubKey;
             }
-
-
-
             this.loadProfileUser(this.routePubKey);
         });
 

@@ -23,6 +23,7 @@ import {
     takeUntil,
     tap,
 } from 'rxjs/operators';
+import { StateService } from 'app/services/state.service';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService implements OnDestroy {
@@ -50,7 +51,8 @@ export class ChatService implements OnDestroy {
         private _metadataService: MetadataService,
         private _signerService: SignerService,
         private _storageService: StorageService,
-        private _relayService: RelayService
+        private _relayService: RelayService,
+        private stateService: StateService,
     ) {}
     get profile$(): Observable<Profile | null> {
         return this._profile.asObservable();
@@ -244,24 +246,10 @@ export class ChatService implements OnDestroy {
 
     async getProfile(): Promise<void> {
         try {
-            const publicKey = this._signerService.getPublicKey();
-            const metadata =
-                await this._metadataService.fetchMetadataWithCache(publicKey);
-            if (metadata) {
-                this._profile.next(metadata);
+            this.stateService.profileMetadata$.subscribe((metadata) => {
+                  this._profile.next(metadata);
+            });
 
-                this._storageService
-                    .getMetadataStream()
-                    .pipe(takeUntil(this._unsubscribeAll))
-                    .subscribe((updatedMetadata) => {
-                        if (
-                            updatedMetadata &&
-                            updatedMetadata.pubkey === publicKey
-                        ) {
-                            this._profile.next(updatedMetadata.metadata);
-                        }
-                    });
-            }
         } catch (error) {
             console.error('Error fetching profile metadata:', error);
         }
