@@ -79,8 +79,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         this.loadInitialProjects();
-        this.subscribeToMetadataUpdates();
-    }
+     }
 
     private async loadInitialProjects(): Promise<void> {
         try {
@@ -120,24 +119,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
             this.handleError('Error fetching projects from service');
         }
     }
-    private subscribeToMetadataUpdates(): void {
-        this.storageService
-            .getMetadataStream()
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((updatedMetadata: any) => {
-                if (updatedMetadata) {
-                    const projectToUpdate = this.projects.find(
-                        (p) => p.nostrPubKey === updatedMetadata.pubkey
-                    );
-                    if (projectToUpdate) {
-                        this.updateProjectMetadata(
-                            projectToUpdate,
-                            updatedMetadata.metadata
-                        );
-                    }
-                }
-            });
-    }
+
 
     private getProjectsWithoutMetadata(): string[] {
         return this.projects

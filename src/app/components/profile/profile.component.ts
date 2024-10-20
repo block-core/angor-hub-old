@@ -199,11 +199,21 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private async loadCurrentUser(): Promise<void> {
         this.currentUser = null;
 
-        this.stateService.profileMetadata$.subscribe((metadata) => {
-            this.currentUser = metadata;
+        this.storageService.metadata$.subscribe((data) => {
+            if (data && data.pubKey && data.metadata) {
+                if (data.pubKey === this.routePubKey) {
+                    this.currentUser = data.metadata;
+                    this._changeDetectorRef.detectChanges();
+                }
+            }
+        });
+
+        this.storageService.getUserMetadata(this.routePubKey).then((metadata) => {
             this._changeDetectorRef.detectChanges();
+            this.currentUser = metadata;
         });
     }
+
 
     async loadProfileUser(publicKey: string): Promise<void> {
         this.isLoading = true;
@@ -226,9 +236,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         try {
 
             const cachedMetadata = await this.storageService.getUserMetadata(publicKey);
-
             if (cachedMetadata) {
-
               this.profileUser = cachedMetadata;
               this._changeDetectorRef.detectChanges();
             }

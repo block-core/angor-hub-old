@@ -128,8 +128,8 @@ export class SearchComponent implements OnChanges, OnInit, OnDestroy {
                             name:
                                 result.user.name ||
                                 result.user.displayName ||
-                                result.pubkey,
-                            pubkey: result.pubkey,
+                                result.pubKey,
+                            pubkey: result.pubKey,
                             username: result.user.username || '',
                             website: result.user.website || '',
                             about: result.user.about
@@ -140,7 +140,7 @@ export class SearchComponent implements OnChanges, OnInit, OnDestroy {
                                 : '',
                             avatar: result.user.picture || null,
                             banner: result.user.banner || null,
-                            link: `/profile/${result.pubkey}`,
+                            link: `/profile/${result.pubKey}`,
                         },
                     ],
                 }));

@@ -103,25 +103,7 @@ export class ChatService implements OnDestroy {
                 };
                 this._contact.next(contact);
 
-                this._storageService
-                    .getMetadataStream()
-                    .pipe(takeUntil(this._unsubscribeAll))
-                    .subscribe((updatedMetadata) => {
-                        if (
-                            updatedMetadata &&
-                            updatedMetadata.pubkey === pubkey
-                        ) {
-                            const updatedContact: Contact = {
-                                pubKey: pubkey,
-                                displayName: updatedMetadata.metadata.name
-                                    ? updatedMetadata.metadata.name
-                                    : 'Unknown',
-                                picture: updatedMetadata.metadata.picture,
-                                about: updatedMetadata.metadata.about,
-                            };
-                            this._contact.next(updatedContact);
-                        }
-                    });
+
             }
         } catch (error) {
             console.error('Error fetching contact metadata:', error);
@@ -246,8 +228,16 @@ export class ChatService implements OnDestroy {
 
     async getProfile(): Promise<void> {
         try {
-            this.stateService.profileMetadata$.subscribe((metadata) => {
-                  this._profile.next(metadata);
+            this._storageService.metadata$.subscribe((data) => {
+                if (data && data.pubKey && data.metadata) {
+                    if (data.pubKey === this._signerService.getPublicKey()) {
+                        this._profile.next(data.metadata);
+                     }
+                }
+            });
+
+            this._storageService.getUserMetadata(this._signerService.getPublicKey()).then((metadata) => {
+                this._profile.next(metadata);
             });
 
         } catch (error) {

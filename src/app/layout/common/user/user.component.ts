@@ -54,27 +54,22 @@ export class UserComponent implements OnInit, OnDestroy {
     scheme: 'dark' | 'light';
     theme: string;
     themes: Themes;
-
+    userPubKey: string;
 
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
         private _angorConfigService: AngorConfigService,
-        private _metadataService: MetadataService,
         private _signerService: SignerService,
         private _storageService: StorageService,
         private sanitizer: DomSanitizer,
-        private subscriptionService: SubscriptionService,
         private cdRef: ChangeDetectorRef,
-        private stateService: StateService
-    ) {}
-
-
-
+    ) { }
 
 
     ngOnInit(): void {
-        this.loadUserProfile();
+        this.userPubKey = this._signerService.getPublicKey()
+
         this._angorConfigService.config$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((config: AngorConfig) => {
@@ -82,8 +77,18 @@ export class UserComponent implements OnInit, OnDestroy {
                 this.config = config;
                 this._changeDetectorRef.detectChanges();
             });
+
+            this._storageService.metadata$.subscribe((data) => {
+                if (data && data.pubKey === this.userPubKey) {
+                  this.user = data.metadata;
+                  this.cdRef.detectChanges();
+                }
+              });
+
+
+
         this.loadUserProfile();
-     }
+    }
 
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
@@ -91,10 +96,11 @@ export class UserComponent implements OnInit, OnDestroy {
     }
 
     private async loadUserProfile(): Promise<void> {
-        this.stateService.profileMetadata$.subscribe((metadata) => {
+
+        this._storageService.getUserMetadata(this.userPubKey).then((metadata) => {
             this.user = metadata;
             this.cdRef.detectChanges();
-          });
+        });
 
     }
 
