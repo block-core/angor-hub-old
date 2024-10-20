@@ -5,13 +5,19 @@ import { Project, ProjectStats } from './projects.service';
 
 export interface ChatEvent {
     id: string;
-    kind: number;
     pubkey: string;
     created_at: number;
     tags: string[][];
     content: string;
     IsRead: boolean;
 }
+export interface ContactEvent {
+    id: string;
+    pubkey: string;
+    created_at: number;
+    tags: string[][];
+    isFollower: boolean;
+ }
 
 @Injectable({
   providedIn: 'root',
@@ -22,11 +28,12 @@ export class StorageService {
   private projectStatsSubject = new BehaviorSubject<{ [key: string]: ProjectStats }>({});
   private chatEventsSubject = new BehaviorSubject<ChatEvent[]>([]);
   private unreadChatCountSubject = new BehaviorSubject<number>(0);
-  private followersSubject = new BehaviorSubject<{ [key: string]: string[] }>({});
-  private followingSubject = new BehaviorSubject<{ [key: string]: string[] }>({});
-  private postsSubject = new BehaviorSubject<any>(null);
+  private contactsSubject = new BehaviorSubject<{ pubKey: string, contacts: ContactEvent[] }>({ pubKey: '', contacts: [] });
+   private postsSubject = new BehaviorSubject<any>(null);
   private myLikesSubject = new BehaviorSubject<any[]>([]);
   private notificationsSubject = new BehaviorSubject<any[]>([]);
+  private contactStatsSubject = new BehaviorSubject<{ totalContacts: number, followersCount: number, followingCount: number }>({ totalContacts: 0, followersCount: 0, followingCount: 0 });
+
 
 
 
@@ -34,20 +41,19 @@ export class StorageService {
   private profileStore: LocalForage;
   private projectsStore: LocalForage;
   private projectStatsStore: LocalForage;
-  private followersStore: LocalForage;
-  private followingStore: LocalForage;
-  private chatsStore: LocalForage;
+  private contactsStore: LocalForage;
+   private chatsStore: LocalForage;
   private updateHistoryStore: LocalForage;
   private postsStore: LocalForage;
   private myLikesStore: LocalForage;
   private notificationsStore: LocalForage;
 
+
   constructor() {
     this.profileStore = this.createStore('profiles');
     this.updateHistoryStore = this.createStore('updateHistory');
-    this.followersStore = this.createStore('followers');
+    this.contactsStore = this.createStore('contacts');
     this.chatsStore = this.createStore('chats');
-    this.followingStore = this.createStore('following');
     this.postsStore = this.createStore('posts');
     this.myLikesStore = this.createStore('myLikes');
     this.notificationsStore = this.createStore('notifications');
@@ -56,12 +62,13 @@ export class StorageService {
 
     this.loadAllProjectsFromDB();
     this.loadAllProjectStatsFromDB();
-    this.loadAllFollowersFromDB();
-    this.loadAllFollowingFromDB();
-    this.loadAllChatEventsFromDB();
+    this.loadAllContactsFromDB();
+     this.loadAllChatEventsFromDB();
     this.loadAllPostsFromDB();
     this.loadAllMyLikesFromDB();
     this.loadAllNotificationsFromDB();
+    this.loadContactStatsFromDB();
+    this.calculateAndStoreAllContactStats();
   }
 
   private createStore(storeName: string): LocalForage {
@@ -94,16 +101,16 @@ export class StorageService {
     return this.unreadChatCountSubject.asObservable();
   }
 
-  get followers$(): Observable<{ [key: string]: string[] }> {
-    return this.followersSubject.asObservable();
-  }
-
-  get following$(): Observable<{ [key: string]: string[] }> {
-    return this.followingSubject.asObservable();
+  get contacts$(): Observable<{ pubKey: string, contacts: ContactEvent[] }> {
+    return this.contactsSubject.asObservable();
   }
 
   get posts$(): Observable<any> {
     return this.postsSubject.asObservable();
+  }
+
+  get contactStats$(): Observable<{ totalContacts: number, followersCount: number, followingCount: number }> {
+    return this.contactStatsSubject.asObservable();
   }
 
   get myLikes$(): Observable<any[]> {
@@ -114,73 +121,190 @@ export class StorageService {
     return this.notificationsSubject.asObservable();
   }
 
-  // --------------------- Followers Methods ---------------------
-  async saveFollowers(pubKey: string, followers: string[]): Promise<void> {
+  // --------------------- Contacts Methods ---------------------
+
+  async saveContacts(pubKey: string, contacts: ContactEvent[]): Promise<void> {
     try {
-      await this.followersStore.setItem(pubKey, followers);
-      const updatedFollowers = await this.getAllFollowers();
-      this.followersSubject.next(updatedFollowers);
-      await this.setUpdateHistory('followers');
+      const savedContacts: ContactEvent[] = [];
+      for (const contact of contacts) {
+        const key = `${pubKey}:${contact.id}`;
+        await this.contactsStore.setItem(key, contact);  // ذخیره‌سازی هر کانتکت
+        savedContacts.push(contact);
+      }
+      this.contactsSubject.next({ pubKey, contacts: savedContacts });
+
+      // محاسبه و به‌روزرسانی آمار پس از ذخیره کانتکت‌ها
+      await this.calculateAndStoreAllContactStats();
+
+      await this.setUpdateHistory('contacts');
     } catch (error) {
-      console.error('Error saving followers:', error);
+      console.error('Error saving contacts:', error);
     }
   }
 
-  async getFollowers(pubKey: string): Promise<string[]> {
+
+  private contactStatsMap: { [pubKey: string]: BehaviorSubject<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }> } = {};
+
+private async calculateAndStoreAllContactStats(): Promise<void> {
+  try {
+    const statsMap: { [pubKey: string]: { totalContacts: number, followersCount: number, followingCount: number } } = {};
+
+    await this.contactsStore.iterate<ContactEvent, void>((contact, key) => {
+      const [storedPubKey] = key.split(':');
+      if (!statsMap[storedPubKey]) {
+        statsMap[storedPubKey] = { totalContacts: 0, followersCount: 0, followingCount: 0 };
+      }
+      statsMap[storedPubKey].totalContacts++;
+      if (contact.isFollower) {
+        statsMap[storedPubKey].followersCount++;
+      } else {
+        statsMap[storedPubKey].followingCount++;
+      }
+    });
+
+    for (const pubKey in statsMap) {
+      if (!this.contactStatsMap[pubKey]) {
+        this.contactStatsMap[pubKey] = new BehaviorSubject<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }>({
+          pubKey,
+          totalContacts: 0,
+          followersCount: 0,
+          followingCount: 0,
+        });
+      }
+      this.contactStatsMap[pubKey].next({
+        pubKey,
+        totalContacts: statsMap[pubKey].totalContacts,
+        followersCount: statsMap[pubKey].followersCount,
+        followingCount: statsMap[pubKey].followingCount,
+      });
+    }
+  } catch (error) {
+    console.error('Error calculating and storing contact stats:', error);
+  }
+}
+
+
+  getContactStats$(pubKey: string): Observable<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }> {
+    if (!this.contactStatsMap[pubKey]) {
+      this.contactStatsMap[pubKey] = new BehaviorSubject<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }>({
+        pubKey,
+        totalContacts: 0,
+        followersCount: 0,
+        followingCount: 0,
+      });
+
+      this.calculateAndStoreAllContactStats();
+    }
+    return this.contactStatsMap[pubKey].asObservable();
+  }
+
+
+
+
+// Paginated retrieval of contacts for a specific pubKey
+async getAllContactsPaginated(pubKey: string, page: number, pageSize: number): Promise<{ contacts: ContactEvent[], totalCount: number }> {
     try {
-      return (await this.followersStore.getItem<string[]>(pubKey)) || [];
+      const allContacts: ContactEvent[] = [];
+      await this.contactsStore.iterate<ContactEvent, void>((contact, key) => {
+        const [storedPubKey] = key.split(':');
+        if (storedPubKey === pubKey) {
+          allContacts.push(contact);  // Collect only contacts for the given pubKey
+        }
+      });
+
+      const totalCount = allContacts.length;
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize;
+
+      return {
+        contacts: allContacts.slice(start, end),
+        totalCount,
+      };
     } catch (error) {
-      console.error('Error retrieving followers:', error);
+      console.error('Error retrieving paginated contacts for pubKey:', error);
+      return { contacts: [], totalCount: 0 };
+    }
+  }
+
+  // Retrieve all contacts for a specific pubKey
+  async getAllContacts(pubKey: string = ""): Promise<{ pubKey: string, contact: ContactEvent }[]> {
+    try {
+      const allContacts: { pubKey: string, contact: ContactEvent }[] = [];
+      await this.contactsStore.iterate<ContactEvent, void>((contact, key) => {
+        const [storedPubKey, contactId] = key.split(':');
+
+        if (pubKey === "" || storedPubKey === pubKey) {
+          allContacts.push({ pubKey: storedPubKey, contact });
+        }
+      });
+
+      return allContacts;
+    } catch (error) {
+      console.error('Error retrieving contacts:', error);
       return [];
     }
   }
 
-  async getAllFollowers(): Promise<{ [key: string]: string[] }> {
+  async getContactStats(pubKey: string): Promise<{ totalContacts: number, followersCount: number, followingCount: number }> {
     try {
-      const followersMap: { [key: string]: string[] } = {};
-      await this.followersStore.iterate<string[], void>((followers, pubKey) => {
-        followersMap[pubKey] = followers;
+      let totalContacts = 0;
+      let followersCount = 0;
+      let followingCount = 0;
+
+      await this.contactsStore.iterate<ContactEvent, void>((contact, key) => {
+        const [storedPubKey, contactId] = key.split(':');
+
+        if (storedPubKey === pubKey) {
+          totalContacts++;
+
+          if (contact.isFollower) {
+            followersCount++;
+          } else {
+            followingCount++;
+          }
+        }
       });
-      return followersMap;
+
+      return {
+        totalContacts,
+        followersCount,
+        followingCount,
+      };
     } catch (error) {
-      console.error('Error retrieving all followers:', error);
-      return {};
+      console.error('Error retrieving contact stats for pubKey:', error);
+      return { totalContacts: 0, followersCount: 0, followingCount: 0 };
     }
   }
 
-  // --------------------- Following Methods ---------------------
-  async saveFollowing(pubKey: string, following: string[]): Promise<void> {
-    try {
-      await this.followingStore.setItem(pubKey, following);
-      const updatedFollowing = await this.getAllFollowing();
-      this.followingSubject.next(updatedFollowing);
-      await this.setUpdateHistory('following');
-    } catch (error) {
-      console.error('Error saving following:', error);
-    }
-  }
 
-  async getFollowing(pubKey: string): Promise<string[]> {
+  // Remove all contacts for a specific pubKey
+  async removeAllContacts(pubKey: string): Promise<void> {
     try {
-      return (await this.followingStore.getItem<string[]>(pubKey)) || [];
-    } catch (error) {
-      console.error('Error retrieving following:', error);
-      return [];
-    }
-  }
+      const keysToRemove: string[] = [];
 
-  async getAllFollowing(): Promise<{ [key: string]: string[] }> {
-    try {
-      const followingMap: { [key: string]: string[] } = {};
-      await this.followingStore.iterate<string[], void>((following, pubKey) => {
-        followingMap[pubKey] = following;
+      // Collect all keys related to the given pubKey
+      await this.contactsStore.iterate<ContactEvent, void>((contact, key) => {
+        const [storedPubKey] = key.split(':');
+        if (storedPubKey === pubKey) {
+          keysToRemove.push(key);  // Add keys related to this pubKey to the list
+        }
       });
-      return followingMap;
+
+      // Remove all collected keys
+      for (const key of keysToRemove) {
+        await this.contactsStore.removeItem(key);
+      }
+
+      await this.contactsStore.clear();
+      this.contactStatsSubject.next({ totalContacts: 0, followersCount: 0, followingCount: 0 });
+
+      this.contactsSubject.next({ pubKey, contacts: [] });  // Emit an empty contact list for this pubKey
+      await this.setUpdateHistory('contacts');
     } catch (error) {
-      console.error('Error retrieving all following:', error);
-      return {};
+      console.error('Error removing all contacts for pubKey:', error);
     }
   }
+
 
   // --------------------- profiles Metadata Methods ---------------------
 async saveProfile(pubKey: string, metadata: any): Promise<void> {
@@ -493,6 +617,20 @@ async savePostForPubKey(event: any): Promise<void> {
     this.unreadChatCountSubject.next(unreadCount);
   }
 
+
+  async removeAllChats(): Promise<void> {
+    try {
+      await this.chatsStore.clear();
+      this.chatEventsSubject.next([]);
+      this.unreadChatCountSubject.next(0);
+      console.log('All chat events have been removed successfully.');
+    } catch (error) {
+      console.error('Error removing all chat events:', error);
+    }
+  }
+
+
+
   // ------------------- Other Helper Methods -------------------
   async setUpdateHistory(tableName: string): Promise<void> {
     try {
@@ -521,21 +659,24 @@ async savePostForPubKey(event: any): Promise<void> {
     }
   }
 
-  private async loadAllFollowersFromDB(): Promise<void> {
+  private async loadAllContactsFromDB(pubKey:string=""): Promise<void> {
     try {
-      const followers = await this.getAllFollowers();
-      this.followersSubject.next(followers);
-    } catch (error) {
-      console.error('Error loading followers from DB:', error);
-    }
-  }
+      const contacts = await this.getAllContacts(pubKey);
+      if (contacts.length > 0) {
+        const groupedContacts: { [pubKey: string]: ContactEvent[] } = {};
 
-  private async loadAllFollowingFromDB(): Promise<void> {
-    try {
-      const following = await this.getAllFollowing();
-      this.followingSubject.next(following);
+        for (const contact of contacts) {
+          if (!groupedContacts[contact.pubKey]) {
+            groupedContacts[contact.pubKey] = [];
+          }
+          groupedContacts[contact.pubKey].push(contact.contact);
+        }
+        for (const pubKey in groupedContacts) {
+          this.contactsSubject.next({ pubKey, contacts: groupedContacts[pubKey] });
+        }
+      }
     } catch (error) {
-      console.error('Error loading following from DB:', error);
+      console.error('Error loading contacts from DB:', error);
     }
   }
 
@@ -572,6 +713,31 @@ async savePostForPubKey(event: any): Promise<void> {
       this.notificationsSubject.next(notifications);
     } catch (error) {
       console.error('Error loading notifications from DB:', error);
+    }
+  }
+
+
+  private async loadContactStatsFromDB(): Promise<void> {
+    try {
+      let totalContacts = 0;
+      let followersCount = 0;
+      let followingCount = 0;
+
+      await this.contactsStore.iterate<ContactEvent, void>((contact, key) => {
+        const [storedPubKey] = key.split(':');
+
+        totalContacts++;
+
+        if (contact.isFollower) {
+          followersCount++;
+        } else {
+          followingCount++;
+        }
+      });
+
+      this.contactStatsSubject.next({ totalContacts, followersCount, followingCount });
+    } catch (error) {
+      console.error('Error loading contact stats from DB:', error);
     }
   }
 }

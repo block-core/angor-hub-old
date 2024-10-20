@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { SubscriptionService } from './subscription.service';
 import { NostrEvent, Filter } from 'nostr-tools';
-import { StorageService } from './storage.service';
+import { ContactEvent, StorageService } from './storage.service';
+import { Contacts, EncryptedDirectMessage } from 'nostr-tools/kinds';
 
 @Injectable({
   providedIn: 'root',
@@ -22,9 +23,8 @@ export class StateService {
       return;
     }
 
-     await this.subscribeToUserProfile(pubkey);
-    await this.subscribeToUserFollowers(pubkey);
-    await this.subscribeToUserFollowing(pubkey);
+    await this.subscribeToUserProfile(pubkey);
+    await this.subscribeToUserContacts(pubkey);
     await this.subscribeToUserChats(pubkey);
     await this.subscribeToUserPosts(pubkey);
 
@@ -49,53 +49,72 @@ export class StateService {
     });
   }
 
-  private async subscribeToUserFollowers(pubkey: string): Promise<void> {
-    console.log(`Subscribing to followers for pubkey: ${pubkey}`);
+  private async subscribeToUserContacts(pubkey: string): Promise<void> {
+    console.log(`Subscribing to contacts for pubkey: ${pubkey}`);
 
-    const followersLastUpdate = await this.storageService.getLastUpdateDate('followers');
-    const followersFilter: Filter = { kinds: [3] };
+    const contactsLastUpdate = await this.storageService.getLastUpdateDate('contacts');
 
-    if (followersLastUpdate) {
-      followersFilter.since = parseInt(followersLastUpdate, 10);
+    const contactsFilter: Filter[] = [
+      {
+        kinds: [Contacts],
+        authors: [pubkey],
+      },
+      {
+        kinds: [Contacts],
+        '#p': [pubkey],
+      },
+    ];
+
+    if (contactsLastUpdate) {
+      const lastUpdateTimestamp = parseInt(contactsLastUpdate, 10);
+      contactsFilter.forEach(filter => filter.since = lastUpdateTimestamp);
     }
 
-    this.subscriptionService.addSubscriptions([followersFilter], (event: NostrEvent) => {
-      const followers = this.parseFollowersOrFollowingEvent(event);
-      this.storageService.saveFollowers(pubkey, followers);
+    this.subscriptionService.addSubscriptions(contactsFilter, (event: NostrEvent) => {
+      const isFollower = event.pubkey === pubkey;
+
+      const contactEvent: ContactEvent = {
+        id: event.id,
+        pubkey: event.pubkey,
+        created_at: event.created_at,
+        tags: event.tags,
+        isFollower,
+      };
+
+      this.storageService.saveContacts(pubkey, [contactEvent]);
     });
   }
 
-  // Subscription for following
-  private async subscribeToUserFollowing(pubkey: string): Promise<void> {
-    console.log(`Subscribing to following for pubkey: ${pubkey}`);
-
-    const followingLastUpdate = await this.storageService.getLastUpdateDate('following');
-    const followingFilter: Filter = { kinds: [3], authors: [pubkey] };
-
-    if (followingLastUpdate) {
-      followingFilter.since = parseInt(followingLastUpdate, 10);
-    }
-
-    this.subscriptionService.addSubscriptions([followingFilter], (event: NostrEvent) => {
-      const following = this.parseFollowersOrFollowingEvent(event);
-      this.storageService.saveFollowing(pubkey, following);
-    });
-  }
 
   private async subscribeToUserChats(pubkey: string): Promise<void> {
     console.log(`Subscribing to chats for pubkey: ${pubkey}`);
 
     const chatsLastUpdate = await this.storageService.getLastUpdateDate('chats');
-    const chatFilter: Filter = {
-      kinds: [4],
-      limit: 300,
-    };
+
+
+    const chatFilter: Filter[] = [
+        {
+            kinds: [EncryptedDirectMessage],
+            authors: [pubkey],
+            limit: 300,
+        },
+        {
+            kinds: [EncryptedDirectMessage],
+            '#p': [pubkey],
+            limit: 300,
+        },
+    ];
+
 
     if (chatsLastUpdate) {
-      chatFilter.since = parseInt(chatsLastUpdate, 10);
+        const lastUpdateTimestamp = parseInt(chatsLastUpdate, 10);
+        chatFilter.forEach(filter => filter.since = lastUpdateTimestamp);
+    }
+    else{
+        this.storageService.removeAllChats();
     }
 
-    this.subscriptionService.addSubscriptions([chatFilter], (event: NostrEvent) => {
+    this.subscriptionService.addSubscriptions(chatFilter, (event: NostrEvent) => {
       const chatEvent = this.parseChatEvent(event);
       console.log(chatEvent);
 
@@ -111,7 +130,7 @@ export class StateService {
     const postFilter: Filter = {
       kinds: [1],
       authors: [pubkey],
-      limit: 50
+      limit: 100
     };
 
     if (postsLastUpdate) {
@@ -134,16 +153,6 @@ export class StateService {
     }
   }
 
-  private parseFollowersOrFollowingEvent(event: NostrEvent): string[] {
-    try {
-      return event.tags
-        .filter((tag) => tag[0] === 'p')
-        .map((tag) => tag[1]);
-    } catch (error) {
-      console.error('Error parsing followers/following event:', error);
-      return [];
-    }
-  }
 
   private parseChatEvent(event: NostrEvent): any {
     try {

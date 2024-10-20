@@ -73,16 +73,17 @@
             <div class="mx-8 hidden h-8 flex-shrink-0 border-l-2 lg:flex"></div>
 
             <!-- Stats -->
-            <div class="mt-6 flex flex-shrink-0 items-center space-x-6 lg:mt-0">
+            <div *ngIf="stats$ | async as stats" class="mt-6 flex flex-shrink-0 items-center space-x-6 lg:mt-0">
                 <div class="flex flex-col items-center">
-                    <span class="font-bold">{{ followers.length }}</span>
+                    <span [matTooltip]="'Total contact: ' + stats.totalContacts" class="font-bold">{{ stats.followersCount }}</span>
                     <span class="text-secondary text-sm font-medium"
                         >FOLLOWERS</span
                     >
                 </div>
+
                 <div class="flex flex-col items-center">
-                    <span class="font-bold">{{ following.length }}</span>
-                    <span class="text-secondary text-sm font-medium"
+                    <span class="font-bold">{{ stats.followingCount }}</span>
+                    <span [matTooltip]="'Total contact: ' + stats.totalContacts" class="text-secondary text-sm font-medium"
                         >FOLLOWING</span
                     >
                 </div>
@@ -215,62 +216,7 @@
                 </a>
             </angor-card>
 
-            <!-- Last projects -->
-            <angor-card
-                class="mt-8 flex w-full max-w-80 flex-col px-8 pb-4 pt-6"
-            >
-                <div class="flex items-center justify-between">
-                    <div class="text-2xl font-semibold leading-tight">
-                        Last projects
-                    </div>
-                    <div class="-mr-3">
-                        <button
-                            mat-icon-button
-                            [matMenuTriggerFor]="listEventMenu"
-                        >
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="'heroicons_solid:ellipsis-vertical'"
-                            ></mat-icon>
-                        </button>
-                        <mat-menu #listEventMenu="matMenu">
-                            <button mat-menu-item>Search for groups</button>
-                        </mat-menu>
-                    </div>
-                </div>
-                <div class="mt-5 flex flex-col">
-                    <div class="flex items-center">
-                        <img
-                            class="mr-4 h-14 w-14 rounded object-cover"
-                            src="images/cards/coffee-shop-01-320x200.jpg"
-                            alt="Card cover image"
-                        />
-                        <div class="flex min-w-0 flex-col">
-                            <div class="font-medium leading-none">
-                                The Port Cafe
-                            </div>
-                            <div class="mt-1 truncate text-md leading-none">
-                                Best cafe of the downtown New York
-                            </div>
-                            <div
-                                class="text-secondary mt-2 text-md leading-none"
-                            >
-                                1.2k followers
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="-mx-3 mt-6 flex items-center">
-                    <a
-                        class="px-3"
-                        mat-button
-                        [color]="'primary'"
-                        [routerLink]="['/explore']"
-                    >
-                        See all Project
-                    </a>
-                </div>
-            </angor-card>
+
         </div>
 
         <!-- Column -->
@@ -724,7 +670,6 @@
             </angor-card>
 
             <!-- <app-event-list class="mb-8 w-full max-w-5xl" [pubkeys]="[routePubKey]"></app-event-list> -->
-
 
 
         </div>

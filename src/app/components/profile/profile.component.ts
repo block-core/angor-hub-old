@@ -41,7 +41,7 @@ import { SafeUrlPipe } from 'app/shared/pipes/safe-url.pipe';
 import { LightningInvoice, LightningResponse, Post } from 'app/types/post';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { Filter, NostrEvent } from 'nostr-tools';
-import { Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { EventListComponent } from '../event-list/event-list.component';
 import { ReceiveDialogComponent } from './zap/receive-dialog/receive-dialog.component';
 import { SendDialogComponent } from './zap/send-dialog/send-dialog.component';
@@ -98,8 +98,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     public currentUserPubKey: string;
     public routePubKey;
-    followers: any[] = [];
-    following: any[] = [];
+
     allPublicKeys: string[] = [];
     isCurrentUserProfile: Boolean = false;
     isFollowing = false;
@@ -125,6 +124,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     subscriptionId: string;
 
+    totalContacts: number = 0;
+    followersCount: number = 0;
+    followingCount: number = 0;
+
+    // تعریف Observable برای نگه‌داشتن اطلاعات آماری
+    stats$!: Observable<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }>;
 
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
@@ -143,6 +148,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
     ) { }
 
     async ngOnInit(): Promise<void> {
+
+
+
+
         this._angorConfigService.config$.subscribe((config) => {
             if (config.scheme === 'auto') {
                 this.detectSystemTheme();
@@ -162,28 +171,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 this.routePubKey = routePubKey;
             }
             this.loadProfileUser(this.routePubKey);
+
+            this.stats$ = this._storageService.getContactStats$(this.routePubKey);
+
         });
 
-        await this.loadCurrentUser();
 
-         this._socialService
-            .getFollowersObservable()
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((event) => {
-                this.followers.push(event.pubkey);
-                this._changeDetectorRef.detectChanges();
-            });
-
-        this._socialService
-            .getFollowingObservable()
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((event) => {
-                const tags = event.tags.filter((tag) => tag[0] === 'p');
-                tags.forEach((tag) => {
-                    this.following.push({ nostrPubKey: tag[1] });
-                });
-                this._changeDetectorRef.detectChanges();
-            });
     }
 
     ngOnDestroy(): void {
@@ -218,9 +211,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.errorMessage = null;
         this.profileUser = null;
 
-        this.followers = [];
-        this.following = [];
-
         this._changeDetectorRef.detectChanges();
 
         if (!publicKey) {
@@ -245,24 +235,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
             console.error('Error loading user profile:', error);
           }
 
-
-
-        try {
-            this.followers = await this._socialService.getFollowers(publicKey);
-            const currentUserPubKey = this._signerService.getPublicKey();
-            this.isFollowing = this.followers.includes(currentUserPubKey);
-
-            this.following = await this._socialService.getFollowing(publicKey);
-            this._changeDetectorRef.detectChanges();
-        } catch (error) {
-            console.error('Failed to load profile data:', error);
-            this.errorMessage =
-                'Failed to load profile data. Please try again later.';
-            this._changeDetectorRef.detectChanges();
-        } finally {
-            this.isLoading = false;
-            this._changeDetectorRef.detectChanges();
-        }
     }
 
 
@@ -311,14 +283,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 await this._socialService.unfollow(routePubKey);
                 console.log(`Unfollowed ${routePubKey}`);
 
-                this.followers = this.followers.filter(
-                    (pubkey) => pubkey !== userPubKey
-                );
             } else {
                 await this._socialService.follow(routePubKey);
                 console.log(`Followed ${routePubKey}`);
-
-                this.followers.push(userPubKey);
             }
 
             this.isFollowing = !this.isFollowing;
