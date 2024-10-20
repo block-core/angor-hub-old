@@ -113,7 +113,7 @@ export class ChatService implements OnDestroy {
     getContacts(): Observable<Contact[]> {
         return new Observable<Contact[]>((observer) => {
             this._storageService
-                .getAllUsers()
+                .getAllProfiles()
                 .then((cachedContacts: Contact[]) => {
                     if (cachedContacts && cachedContacts.length > 0) {
                         const validatedContacts = cachedContacts.map(
@@ -228,7 +228,7 @@ export class ChatService implements OnDestroy {
 
     async getProfile(): Promise<void> {
         try {
-            this._storageService.metadata$.subscribe((data) => {
+            this._storageService.profile$.subscribe((data) => {
                 if (data && data.pubKey && data.metadata) {
                     if (data.pubKey === this._signerService.getPublicKey()) {
                         this._profile.next(data.metadata);
@@ -236,7 +236,7 @@ export class ChatService implements OnDestroy {
                 }
             });
 
-            this._storageService.getUserMetadata(this._signerService.getPublicKey()).then((metadata) => {
+            this._storageService.getProfile(this._signerService.getPublicKey()).then((metadata) => {
                 this._profile.next(metadata);
             });
 

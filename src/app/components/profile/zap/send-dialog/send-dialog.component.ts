@@ -80,11 +80,11 @@ export class SendDialogComponent {
     invoiceAmount: string = '?';
     nwc: any;
     constructor(
-        private dialogRef: MatDialogRef<SendDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public metadata: any,
-        private lightning: LightningService,
-        private snackBar: MatSnackBar,
-        private clipboard: Clipboard
+        private _dialogRef: MatDialogRef<SendDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public _metadata: any,
+        private _lightning: LightningService,
+        private _snackBar: MatSnackBar,
+        private _clipboard: Clipboard
     ) {
         this.getLightningInfo();
     }
@@ -103,22 +103,22 @@ export class SendDialogComponent {
 
     getLightningInfo(): void {
         let lightningAddress = '';
-        if (this.metadata?.lud06) {
-            const { words } = bech32.decode(this.metadata.lud06, 5000);
+        if (this._metadata?.lud06) {
+            const { words } = bech32.decode(this._metadata.lud06, 5000);
             const data = new Uint8Array(bech32.fromWords(words));
             lightningAddress = new TextDecoder().decode(Uint8Array.from(data));
-        } else if (this.metadata?.lud16?.toLowerCase().startsWith('lnurl')) {
-            const { words } = bech32.decode(this.metadata.lud16, 5000);
+        } else if (this._metadata?.lud16?.toLowerCase().startsWith('lnurl')) {
+            const { words } = bech32.decode(this._metadata.lud16, 5000);
             const data = new Uint8Array(bech32.fromWords(words));
             lightningAddress = new TextDecoder().decode(Uint8Array.from(data));
-        } else if (this.metadata?.lud16) {
-            lightningAddress = this.lightning.getLightningAddress(
-                this.metadata.lud16
+        } else if (this._metadata?.lud16) {
+            lightningAddress = this._lightning.getLightningAddress(
+                this._metadata.lud16
             );
         }
 
         if (lightningAddress !== '') {
-            this.lightning
+            this._lightning
                 .getLightning(lightningAddress)
                 .subscribe((response) => {
                     this.lightningResponse = response;
@@ -143,7 +143,7 @@ export class SendDialogComponent {
 
     getLightningInvoice(amount: string): void {
         if (this.lightningResponse && this.lightningResponse.callback) {
-            this.lightning
+            this._lightning
                 .getLightningInvoice(this.lightningResponse.callback, amount)
                 .subscribe(async (response) => {
                     this.lightningInvoice = response.pr;
@@ -194,7 +194,7 @@ export class SendDialogComponent {
                         `Payment successful, preimage: ${response.preimage}`
                     );
                     this.openSnackBar('Zapped!', 'dismiss');
-                    this.dialogRef.close();
+                    this._dialogRef.close();
                 } else {
                     this.listenForPaymentStatus(nwc);
                 }
@@ -230,7 +230,7 @@ export class SendDialogComponent {
                             response.preimage
                         );
                         this.openSnackBar('Payment confirmed!', 'dismiss');
-                        this.dialogRef.close();
+                        this._dialogRef.close();
                     } else {
                         setTimeout(checkPaymentStatus, 5000);
                     }
@@ -246,7 +246,7 @@ export class SendDialogComponent {
 
     copyInvoice(): void {
         if (this.lightningInvoice) {
-            this.clipboard.copy(this.lightningInvoice);
+            this._clipboard.copy(this.lightningInvoice);
             this.openSnackBar('Invoice copied', 'dismiss');
         } else {
             this.openSnackBar('No invoice available to copy', 'dismiss');
@@ -254,10 +254,10 @@ export class SendDialogComponent {
     }
 
     openSnackBar(message: string, action: string): void {
-        this.snackBar.open(message, action, { duration: 1300 });
+        this._snackBar.open(message, action, { duration: 1300 });
     }
 
     closeDialog(): void {
-        this.dialogRef.close();
+        this._dialogRef.close();
     }
 }

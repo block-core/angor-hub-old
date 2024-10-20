@@ -63,7 +63,7 @@ export class UserComponent implements OnInit, OnDestroy {
         private _signerService: SignerService,
         private _storageService: StorageService,
         private sanitizer: DomSanitizer,
-        private cdRef: ChangeDetectorRef,
+        private _changeDetectorRefef: ChangeDetectorRef,
     ) { }
 
 
@@ -78,10 +78,10 @@ export class UserComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.detectChanges();
             });
 
-            this._storageService.metadata$.subscribe((data) => {
+            this._storageService.profile$.subscribe((data) => {
                 if (data && data.pubKey === this.userPubKey) {
                   this.user = data.metadata;
-                  this.cdRef.detectChanges();
+                  this._changeDetectorRefef.detectChanges();
                 }
               });
 
@@ -97,9 +97,9 @@ export class UserComponent implements OnInit, OnDestroy {
 
     private async loadUserProfile(): Promise<void> {
 
-        this._storageService.getUserMetadata(this.userPubKey).then((metadata) => {
+        this._storageService.getProfile(this.userPubKey).then((metadata) => {
             this.user = metadata;
-            this.cdRef.detectChanges();
+            this._changeDetectorRefef.detectChanges();
         });
 
     }

@@ -68,12 +68,12 @@ export class ExploreComponent implements OnInit, OnDestroy {
     showCloseSearchButton: boolean = false;
 
     constructor(
-        private projectService: ProjectsService,
-        private router: Router,
-        private metadataService: MetadataService,
-        private storageService: StorageService,
-        private changeDetectorRef: ChangeDetectorRef,
-        private sanitizer: DomSanitizer,
+        private _projectService: ProjectsService,
+        private _router: Router,
+        private _metadataService: MetadataService,
+        private _storageService: StorageService,
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _sanitizer: DomSanitizer,
         private _chatService: ChatService
     ) {}
 
@@ -98,13 +98,13 @@ export class ExploreComponent implements OnInit, OnDestroy {
             this.handleError('Error loading initial projects');
         } finally {
             this.loading = false;
-            this.changeDetectorRef.detectChanges();
+            this._changeDetectorRef.detectChanges();
         }
     }
 
     private async loadProjectsFromService(): Promise<void> {
         try {
-            const projects = await this.projectService.fetchProjects();
+            const projects = await this._projectService.fetchProjects();
             if (projects.length === 0) {
                 this.errorMessage = 'No projects found';
                 return;
@@ -131,7 +131,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
         const metadataPromises = pubkeys.map(async (pubkey) => {
             // Check cache first
             const cachedMetadata =
-                await this.storageService.getUserMetadata(pubkey);
+                await this._storageService.getProfile(pubkey);
             if (cachedMetadata) {
                 return { pubkey, metadata: cachedMetadata };
             }
@@ -159,7 +159,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
         // Fetch metadata for pubkeys that are not cached
         if (missingPubkeys.length > 0) {
-            await this.metadataService
+            await this._metadataService
                 .fetchMetadataForMultipleKeys(missingPubkeys)
                 .then((metadataList: any[]) => {
                     metadataList.forEach((metadata) => {
@@ -170,7 +170,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
                             this.updateProjectMetadata(project, metadata);
                         }
                     });
-                    this.changeDetectorRef.detectChanges();
+                    this._changeDetectorRef.detectChanges();
                 })
                 .catch((error) => {
                     console.error(
@@ -187,7 +187,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
         this.loading = true;
 
-        this.projectService
+        this._projectService
             .fetchProjects()
             .then(async (projects: Project[]) => {
                 if (projects.length === 0 && this.projects.length === 0) {
@@ -210,20 +210,20 @@ export class ExploreComponent implements OnInit, OnDestroy {
                     );
                 }
                 this.loading = false;
-                this.changeDetectorRef.detectChanges();
+                this._changeDetectorRef.detectChanges();
             })
             .catch((error: any) => {
                 console.error('Error fetching projects:', error);
                 this.errorMessage =
                     'Error fetching projects. Please try again later.';
                 this.loading = false;
-                this.changeDetectorRef.detectChanges();
+                this._changeDetectorRef.detectChanges();
             });
     }
 
     async loadMetadataForProject(project: Project): Promise<void> {
         try {
-            const metadata = await this.metadataService.fetchMetadataWithCache(
+            const metadata = await this._metadataService.fetchMetadataWithCache(
                 project.nostrPubKey
             );
             if (metadata) {
@@ -261,11 +261,11 @@ export class ExploreComponent implements OnInit, OnDestroy {
         }
 
         this.filteredProjects = [...this.projects];
-        this.changeDetectorRef.detectChanges();
+        this._changeDetectorRef.detectChanges();
     }
 
     subscribeToProjectMetadata(project: Project): void {
-        this.metadataService
+        this._metadataService
             .getMetadataStream()
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((updatedMetadata: any) => {
@@ -284,7 +284,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
     goToProjectDetails(project: Project): void {
         this.loading = true;
 
-        this.projectService
+        this._projectService
             .fetchAndSaveProjectStats(project.projectIdentifier)
             .then((stats) => {
                 if (stats) {
@@ -303,14 +303,14 @@ export class ExploreComponent implements OnInit, OnDestroy {
     }
 
     private navigateToProfile(nostrPubKey: string): void {
-        this.router.navigate(['/profile', nostrPubKey]);
+        this._router.navigate(['/profile', nostrPubKey]);
     }
 
     filterByQuery(query: string): void {
         if (!query || query.trim() === '') {
             this.filteredProjects = [...this.projects];
             this.showCloseSearchButton = false;
-            this.changeDetectorRef.detectChanges();
+            this._changeDetectorRef.detectChanges();
             return;
         }
 
@@ -341,7 +341,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
         this.showCloseSearchButton = this.projects.length > 0;
 
-        this.changeDetectorRef.detectChanges();
+        this._changeDetectorRef.detectChanges();
     }
 
     resetSearch(queryInput: HTMLInputElement): void {
@@ -361,17 +361,17 @@ export class ExploreComponent implements OnInit, OnDestroy {
         console.error(message);
         this.errorMessage = message;
         this.loading = false;
-        this.changeDetectorRef.detectChanges();
+        this._changeDetectorRef.detectChanges();
     }
 
     getSafeUrl(url: any, isBanner: boolean): SafeUrl {
         if (url && typeof url === 'string' && this.isImageUrl(url)) {
-            return this.sanitizer.bypassSecurityTrustUrl(url);
+            return this._sanitizer.bypassSecurityTrustUrl(url);
         } else {
             const defaultImage = isBanner
                 ? '/images/pages/profile/cover.jpg'
                 : 'images/avatars/avatar-placeholder.png';
-            return this.sanitizer.bypassSecurityTrustUrl(defaultImage);
+            return this._sanitizer.bypassSecurityTrustUrl(defaultImage);
         }
     }
 
@@ -382,7 +382,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
     async openChat(publicKey: string): Promise<void> {
         try {
             const metadata =
-                await this.metadataService.fetchMetadataWithCache(publicKey);
+                await this._metadataService.fetchMetadataWithCache(publicKey);
 
             if (metadata) {
                 const contact: Contact = {
@@ -399,7 +399,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
                 this._chatService
                     .getChatById(contact.pubKey, contact)
                     .subscribe((chat) => {
-                        this.router.navigate(['/chat', contact.pubKey]);
+                        this._router.navigate(['/chat', contact.pubKey]);
                     });
             } else {
                 console.error(

@@ -83,7 +83,7 @@ export class GifDialogComponent {
     constructor(
         private gifService: GifService,
         public dialogRef: MatDialogRef<GifDialogComponent>,
-        private cdr: ChangeDetectorRef,
+        private _changeDetectorRef: ChangeDetectorRef,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {}
 
@@ -101,7 +101,7 @@ export class GifDialogComponent {
                         this.gifsFound = response.results.map(
                             (gif) => gif.media[0].gif.url
                         );
-                        this.cdr.detectChanges();
+                        this._changeDetectorRef.detectChanges();
                     },
                     (error) => {
                         console.error('Error fetching GIFs:', error);

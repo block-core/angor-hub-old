@@ -93,7 +93,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     selectedPanel = 'relay';
     selectPanel(panelId: string): void {
         this.selectedPanel = panelId;
-        this.router.navigate(['settings', panelId], { replaceUrl: true });
+        this._router.navigate(['settings', panelId], { replaceUrl: true });
     }
 
     private _unsubscribeAll = new Subject<void>();
@@ -103,7 +103,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         private _angorMediaWatcherService: AngorMediaWatcherService,
         private _signerService: SignerService,
         private _route: ActivatedRoute,
-        private router: Router
+        private _router: Router
     ) {}
 
     ngOnInit(): void {
@@ -159,7 +159,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     goToPanel(panel: string): void {
         this.selectedPanel = panel;
-        this.router.navigate(['settings', panel], { replaceUrl: true });
+        this._router.navigate(['settings', panel], { replaceUrl: true });
         if (this.drawerMode === 'over') {
             this.drawer.close();
         }

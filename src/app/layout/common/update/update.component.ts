@@ -40,12 +40,12 @@ export class UpdateComponent {
 
     constructor(
         public updateService: NewVersionCheckerService,
-        private cdr: ChangeDetectorRef // Injecting ChangeDetectorRef
+        private _changeDetectorRef: ChangeDetectorRef // Injecting ChangeDetectorRef
     ) {
         // Listen to the update available event and trigger change detection
         this.updateService.isNewVersionAvailable$.subscribe((isAvailable) => {
             if (isAvailable) {
-                this.cdr.detectChanges(); // Trigger change detection
+                this._changeDetectorRef.detectChanges(); // Trigger change detection
             }
         });
     }

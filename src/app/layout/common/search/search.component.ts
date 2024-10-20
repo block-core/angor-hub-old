@@ -119,27 +119,27 @@ export class SearchComponent implements OnChanges, OnInit, OnDestroy {
             )
             .subscribe(async (value) => {
                 const results =
-                    await this._storageService.searchUsersByMetadata(value);
+                    await this._storageService.searchProfile(value);
 
                 this.resultSets = results.map((result) => ({
                     label: 'Project',
                     results: [
                         {
                             name:
-                                result.user.name ||
-                                result.user.displayName ||
+                                result.profile.name ||
+                                result.profile.displayName ||
                                 result.pubKey,
                             pubkey: result.pubKey,
-                            username: result.user.username || '',
-                            website: result.user.website || '',
-                            about: result.user.about
-                                ? result.user.about.replace(
+                            username: result.profile.username || '',
+                            website: result.profile.website || '',
+                            about: result.profile.about
+                                ? result.profile.about.replace(
                                       /<\/?[^>]+(>|$)/g,
                                       ''
                                   )
                                 : '',
-                            avatar: result.user.picture || null,
-                            banner: result.user.banner || null,
+                            avatar: result.profile.picture || null,
+                            banner: result.profile.banner || null,
                             link: `/profile/${result.pubKey}`,
                         },
                     ],

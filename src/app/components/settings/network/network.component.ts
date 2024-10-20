@@ -41,28 +41,28 @@ export class SettingsNetworkComponent implements OnInit {
     networkForm: FormGroup;
     selectedNetwork: 'mainnet' | 'testnet' = 'testnet';
     constructor(
-        private fb: FormBuilder,
-        private indexerService: IndexerService
+        private _fb: FormBuilder,
+        private _indexerService: IndexerService
     ) {}
 
     ngOnInit(): void {
-        this.networkForm = this.fb.group({
-            network: [this.indexerService.getNetwork()],
+        this.networkForm = this._fb.group({
+            network: [this._indexerService.getNetwork()],
         });
 
-        this.selectedNetwork = this.indexerService.getNetwork();
+        this.selectedNetwork = this._indexerService.getNetwork();
     }
 
     setNetwork(network: 'mainnet' | 'testnet'): void {
         this.selectedNetwork = network;
-        this.indexerService.setNetwork(this.selectedNetwork);
+        this._indexerService.setNetwork(this.selectedNetwork);
     }
 
     save(): void {
-        this.indexerService.setNetwork(this.selectedNetwork);
+        this._indexerService.setNetwork(this.selectedNetwork);
     }
 
     cancel(): void {
-        this.selectedNetwork = this.indexerService.getNetwork();
+        this.selectedNetwork = this._indexerService.getNetwork();
     }
 }

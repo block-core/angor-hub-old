@@ -128,20 +128,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
-        private _metadataService: MetadataService,
         private _signerService: SignerService,
-        private  storageService: StorageService,
+        private _storageService: StorageService,
         private _sanitizer: DomSanitizer,
         private _route: ActivatedRoute,
         private _socialService: SocialService,
-        private snackBar: MatSnackBar,
-        private lightning: LightningService,
+        private _snackBar: MatSnackBar,
+        private _lightning: LightningService,
         private _dialog: MatDialog,
         private _angorConfigService: AngorConfigService,
         private _angorConfirmationService: AngorConfirmationService,
-        private eventService: PaginatedEventService,
-        private stateService: StateService,
-        private subscriptionService: SubscriptionService,
+        private _eventService: PaginatedEventService,
+        private _subscriptionService: SubscriptionService,
     ) { }
 
     async ngOnInit(): Promise<void> {
@@ -190,7 +188,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         if (this.subscriptionId) {
-             this.subscriptionService.removeSubscriptionById(this.subscriptionId);
+             this._subscriptionService.removeSubscriptionById(this.subscriptionId);
           }
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
@@ -199,7 +197,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private async loadCurrentUser(): Promise<void> {
         this.currentUser = null;
 
-        this.storageService.metadata$.subscribe((data) => {
+        this._storageService.profile$.subscribe((data) => {
             if (data && data.pubKey && data.metadata) {
                 if (data.pubKey === this.routePubKey) {
                     this.currentUser = data.metadata;
@@ -208,7 +206,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.storageService.getUserMetadata(this.routePubKey).then((metadata) => {
+        this._storageService.getProfile(this.routePubKey).then((metadata) => {
             this._changeDetectorRef.detectChanges();
             this.currentUser = metadata;
         });
@@ -235,7 +233,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
         try {
 
-            const cachedMetadata = await this.storageService.getUserMetadata(publicKey);
+            const cachedMetadata = await this._storageService.getProfile(publicKey);
             if (cachedMetadata) {
               this.profileUser = cachedMetadata;
               this._changeDetectorRef.detectChanges();
@@ -274,14 +272,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
         ];
 
 
-        this.subscriptionId = this.subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
+        this.subscriptionId = this._subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
           try {
 
             const newMetadata = JSON.parse(event.content);
             this.profileUser = newMetadata;
 
 
-            await this.storageService.saveUserMetadata(pubKey, newMetadata);
+            await this._storageService.saveProfile(pubKey, newMetadata);
 
 
             this._changeDetectorRef.detectChanges();
@@ -332,7 +330,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     openSnackBar(message: string, action: string) {
-        this.snackBar.open(message, action, { duration: 1300 });
+        this._snackBar.open(message, action, { duration: 1300 });
     }
 
     getLightningInfo() {
@@ -346,12 +344,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
             const data = new Uint8Array(bech32.fromWords(words));
             lightningAddress = new TextDecoder().decode(Uint8Array.from(data));
         } else if (this.profileUser?.lud16) {
-            lightningAddress = this.lightning.getLightningAddress(
+            lightningAddress = this._lightning.getLightningAddress(
                 this.profileUser.lud16
             );
         }
         if (lightningAddress !== '') {
-            this.lightning
+            this._lightning
                 .getLightning(lightningAddress)
                 .subscribe((response) => {
                     this.lightningResponse = response;
@@ -473,7 +471,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     sendEvent() {
         if (this.eventInput.nativeElement.value != '') {
-            this.eventService
+            this._eventService
                 .sendTextEvent(this.eventInput.nativeElement.value)
                 .then(() => {
                     this._changeDetectorRef.markForCheck();

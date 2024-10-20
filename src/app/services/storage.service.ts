@@ -17,7 +17,7 @@ export interface ChatEvent {
   providedIn: 'root',
 })
 export class StorageService {
-  private metadataSubject = new BehaviorSubject<any>(null);
+  private profileSubject = new BehaviorSubject<any>(null);
   private projectsSubject = new BehaviorSubject<Project[]>([]);
   private projectStatsSubject = new BehaviorSubject<{ [key: string]: ProjectStats }>({});
   private chatEventsSubject = new BehaviorSubject<ChatEvent[]>([]);
@@ -31,7 +31,7 @@ export class StorageService {
 
 
 
-  private userStore: LocalForage;
+  private profileStore: LocalForage;
   private projectsStore: LocalForage;
   private projectStatsStore: LocalForage;
   private followersStore: LocalForage;
@@ -43,7 +43,7 @@ export class StorageService {
   private notificationsStore: LocalForage;
 
   constructor() {
-    this.userStore = this.createStore('users');
+    this.profileStore = this.createStore('profiles');
     this.updateHistoryStore = this.createStore('updateHistory');
     this.followersStore = this.createStore('followers');
     this.chatsStore = this.createStore('chats');
@@ -74,8 +74,8 @@ export class StorageService {
   }
 
   // --------- Observable Getters -----------
-  get metadata$(): Observable<any> {
-    return this.metadataSubject.asObservable();
+  get profile$(): Observable<any> {
+    return this.profileSubject.asObservable();
   }
 
   get projects$(): Observable<Project[]> {
@@ -182,8 +182,8 @@ export class StorageService {
     }
   }
 
-  // --------------------- User Metadata Methods ---------------------
-async saveUserMetadata(pubKey: string, metadata: any): Promise<void> {
+  // --------------------- profiles Metadata Methods ---------------------
+async saveProfile(pubKey: string, metadata: any): Promise<void> {
   try {
     if (!pubKey || !metadata) {
       console.error('Invalid pubKey or metadata:', pubKey, metadata);
@@ -191,54 +191,54 @@ async saveUserMetadata(pubKey: string, metadata: any): Promise<void> {
     }
 
     metadata.pubKey = pubKey;
-    await this.userStore.setItem(pubKey, metadata);
+    await this.profileStore.setItem(pubKey, metadata);
 
-    this.metadataSubject.next({ pubKey, metadata });
+    this.profileSubject.next({ pubKey, metadata });
 
-    await this.setUpdateHistory('users');
+    await this.setUpdateHistory('profiles');
   } catch (error) {
-    console.error('Error saving user metadata:', error);
+    console.error('Error saving profile', error);
   }
 }
 
 
-  async getUserMetadata(pubKey: string): Promise<any | null> {
+  async getProfile(pubKey: string): Promise<any | null> {
     try {
-      return (await this.userStore.getItem<any>(pubKey)) || null;
+      return (await this.profileStore.getItem<any>(pubKey)) || null;
     } catch (error) {
-      console.error('Error retrieving user metadata:', error);
+      console.error('Error retrieving profile metadata:', error);
       return null;
     }
   }
 
-  async getAllUsers(): Promise<any[]> {
+  async getAllProfiles(): Promise<any[]> {
     try {
-      const users: any[] = [];
-      await this.userStore.iterate<any, void>((value) => {
-        users.push(value);
+      const profiles: any[] = [];
+      await this.profileStore.iterate<any, void>((value) => {
+        profiles.push(value);
       });
-      return users;
+      return profiles;
     } catch (error) {
-      console.error('Error retrieving all users:', error);
+      console.error('Error retrieving all Profile:', error);
       return [];
     }
   }
 
-  async searchUsersByMetadata(query: string): Promise<{ pubKey: string; user: any }[]> {
+  async searchProfile(query: string): Promise<{ pubKey: string; profile: any }[]> {
     try {
-      const matchingUsers: { pubKey: string; user: any }[] = [];
+      const matchingProfiles: { pubKey: string; profile: any }[] = [];
       const searchQuery = query.toLowerCase();
 
-      await this.userStore.iterate<any, void>((user, pubKey) => {
-        const userString = JSON.stringify(user).toLowerCase();
-        if (userString.includes(searchQuery)) {
-          matchingUsers.push({ pubKey, user });
+      await this.profileStore.iterate<any, void>((profile, pubKey) => {
+        const profileString = JSON.stringify(profile).toLowerCase();
+        if (profileString.includes(searchQuery)) {
+          matchingProfiles.push({ pubKey, profile });
         }
       });
 
-      return matchingUsers;
+      return matchingProfiles;
     } catch (error) {
-      console.error('Error searching users by metadata:', error);
+      console.error('Error searching profiles by metadata:', error);
       return [];
     }
   }

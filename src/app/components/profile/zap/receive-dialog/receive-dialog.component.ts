@@ -72,9 +72,9 @@ export class ReceiveDialogComponent {
     nwc: any;
 
     constructor(
-        private dialogRef: MatDialogRef<ReceiveDialogComponent>,
-        private snackBar: MatSnackBar,
-        private clipboard: Clipboard
+        private _dialogRef: MatDialogRef<ReceiveDialogComponent>,
+        private _snackBar: MatSnackBar,
+        private _clipboard: Clipboard
     ) {}
 
     zapButtons = [
@@ -130,7 +130,7 @@ export class ReceiveDialogComponent {
 
     copyInvoice(): void {
         if (this.lightningInvoice) {
-            this.clipboard.copy(this.lightningInvoice);
+            this._clipboard.copy(this.lightningInvoice);
             this.openSnackBar('Invoice copied', 'dismiss');
         } else {
             this.openSnackBar('No invoice available to copy', 'dismiss');
@@ -138,10 +138,10 @@ export class ReceiveDialogComponent {
     }
 
     openSnackBar(message: string, action: string): void {
-        this.snackBar.open(message, action, { duration: 1300 });
+        this._snackBar.open(message, action, { duration: 1300 });
     }
 
     closeDialog(): void {
-        this.dialogRef.close();
+        this._dialogRef.close();
     }
 }

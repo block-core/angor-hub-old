@@ -52,16 +52,16 @@ export class SettingsProfileComponent implements OnInit {
     content: string;
 
     constructor(
-        private fb: FormBuilder,
-        private signerService: SignerService,
-        private metadataService: MetadataService,
-        private relayService: RelayService,
-        private router: Router,
-        private dialog: MatDialog
+        private _fb: FormBuilder,
+        private _signerService: SignerService,
+        private _metadataService: MetadataService,
+        private _relayService: RelayService,
+        private _router: Router,
+        private _dialog: MatDialog
     ) {}
 
     ngOnInit(): void {
-        this.profileForm = this.fb.group({
+        this.profileForm = this._fb.group({
             name: ['', Validators.required],
             username: [''],
             displayName: [''],
@@ -84,8 +84,8 @@ export class SettingsProfileComponent implements OnInit {
     }
 
     async setValues() {
-        let kind0 = await this.metadataService.getUserMetadata(
-            this.signerService.getPublicKey()
+        let kind0 = await this._metadataService.getProfile(
+            this._signerService.getPublicKey()
         );
         if (kind0) {
             this.profileForm.setValue({
@@ -115,18 +115,18 @@ export class SettingsProfileComponent implements OnInit {
         const profileData = this.profileForm.value;
         this.content = JSON.stringify(profileData);
 
-        if (this.signerService.isUsingSecretKey()) {
-            const storedPassword = this.signerService.getPassword();
+        if (this._signerService.isUsingSecretKey()) {
+            const storedPassword = this._signerService.getPassword();
             if (storedPassword) {
                 try {
                     const privateKey =
-                        await this.signerService.getSecretKey(storedPassword);
+                        await this._signerService.getSecretKey(storedPassword);
                     this.signEvent(privateKey);
                 } catch (error) {
                     console.error(error);
                 }
             } else {
-                const dialogRef = this.dialog.open(PasswordDialogComponent, {
+                const dialogRef = this._dialog.open(PasswordDialogComponent, {
                     width: '300px',
                     disableClose: true,
                 });
@@ -135,12 +135,12 @@ export class SettingsProfileComponent implements OnInit {
                     if (result && result.password) {
                         try {
                             const privateKey =
-                                await this.signerService.getSecretKey(
+                                await this._signerService.getSecretKey(
                                     result.password
                                 );
                             this.signEvent(privateKey);
                             if (result.duration != 0) {
-                                this.signerService.savePassword(
+                                this._signerService.savePassword(
                                     result.password,
                                     result.duration
                                 );
@@ -153,18 +153,18 @@ export class SettingsProfileComponent implements OnInit {
                     }
                 });
             }
-        } else if (this.signerService.isUsingExtension()) {
+        } else if (this._signerService.isUsingExtension()) {
             const unsignedEvent: UnsignedEvent =
-                this.signerService.getUnsignedEvent(0, [], this.content);
+                this._signerService.getUnsignedEvent(0, [], this.content);
             const signedEvent =
-                await this.signerService.signEventWithExtension(unsignedEvent);
+                await this._signerService.signEventWithExtension(unsignedEvent);
             this.publishSignedEvent(signedEvent);
         }
     }
 
     async signEvent(privateKey: string) {
         const unsignedEvent: UnsignedEvent =
-            this.signerService.getUnsignedEvent(0, [], this.content);
+            this._signerService.getUnsignedEvent(0, [], this.content);
         const privateKeyBytes = hexToBytes(privateKey);
         const signedEvent: NostrEvent = finalizeEvent(
             unsignedEvent,
@@ -174,8 +174,8 @@ export class SettingsProfileComponent implements OnInit {
     }
 
     publishSignedEvent(signedEvent: NostrEvent) {
-        this.relayService.publishEventToWriteRelays(signedEvent);
+        this._relayService.publishEventToWriteRelays(signedEvent);
         console.log('Profile Updated!');
-        this.router.navigate([`/profile`]);
+        this._router.navigate([`/profile`]);
     }
 }

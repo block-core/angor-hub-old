@@ -45,7 +45,7 @@ export class StateService {
 
     this.subscriptionService.addSubscriptions([metadataFilter], (event: NostrEvent) => {
       const metadata = this.parseMetadataEvent(event);
-      this.storageService.saveUserMetadata(pubkey, metadata);
+      this.storageService.saveProfile(pubkey, metadata);
     });
   }
 

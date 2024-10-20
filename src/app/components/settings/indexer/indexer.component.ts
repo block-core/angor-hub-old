@@ -44,26 +44,26 @@ export class SettingsIndexerComponent implements OnInit {
     newMainnetIndexerUrl: string = '';
     newTestnetIndexerUrl: string = '';
 
-    constructor(private indexerService: IndexerService) {}
+    constructor(private _indexerService: IndexerService) {}
 
     ngOnInit(): void {
         this.loadIndexers();
     }
 
     loadIndexers(): void {
-        this.mainnetIndexers = this.indexerService
+        this.mainnetIndexers = this._indexerService
             .getIndexers('mainnet')
             .map((url) => ({
                 url,
                 primary:
-                    url === this.indexerService.getPrimaryIndexer('mainnet'),
+                    url === this._indexerService.getPrimaryIndexer('mainnet'),
             }));
-        this.testnetIndexers = this.indexerService
+        this.testnetIndexers = this._indexerService
             .getIndexers('testnet')
             .map((url) => ({
                 url,
                 primary:
-                    url === this.indexerService.getPrimaryIndexer('testnet'),
+                    url === this._indexerService.getPrimaryIndexer('testnet'),
             }));
 
         console.log('Mainnet Indexers:', this.mainnetIndexers);
@@ -72,14 +72,14 @@ export class SettingsIndexerComponent implements OnInit {
 
     addIndexer(network: 'mainnet' | 'testnet'): void {
         if (network === 'mainnet' && this.newMainnetIndexerUrl) {
-            this.indexerService.addIndexer(
+            this._indexerService.addIndexer(
                 this.newMainnetIndexerUrl,
                 'mainnet'
             );
             this.loadIndexers();
             this.newMainnetIndexerUrl = '';
         } else if (network === 'testnet' && this.newTestnetIndexerUrl) {
-            this.indexerService.addIndexer(
+            this._indexerService.addIndexer(
                 this.newTestnetIndexerUrl,
                 'testnet'
             );
@@ -92,7 +92,7 @@ export class SettingsIndexerComponent implements OnInit {
         network: 'mainnet' | 'testnet',
         indexer: { url: string; primary: boolean }
     ): void {
-        this.indexerService.removeIndexer(indexer.url, network);
+        this._indexerService.removeIndexer(indexer.url, network);
         this.loadIndexers();
     }
 
@@ -100,7 +100,7 @@ export class SettingsIndexerComponent implements OnInit {
         network: 'mainnet' | 'testnet',
         indexer: { url: string; primary: boolean }
     ): void {
-        this.indexerService.setPrimaryIndexer(indexer.url, network);
+        this._indexerService.setPrimaryIndexer(indexer.url, network);
         this.loadIndexers();
     }
 

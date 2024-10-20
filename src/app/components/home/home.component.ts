@@ -22,7 +22,7 @@ export class LandingHomeComponent {
   constructor(
     private subscriptionService: SubscriptionService,
     private parseContent: ParseContentService,
-    private cdRef: ChangeDetectorRef
+    private _changeDetectorRefef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {

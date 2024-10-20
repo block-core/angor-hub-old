@@ -43,19 +43,19 @@ export class SettingsRelayComponent implements OnInit {
     private subscriptions: Subscription = new Subscription();
 
     constructor(
-        private relayService: RelayService,
-        private cdr: ChangeDetectorRef,
-        private zone: NgZone,
-        private sanitizer: DomSanitizer
+        private _relayService: RelayService,
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _zone: NgZone,
+        private _sanitizer: DomSanitizer
     ) {}
 
     ngOnInit(): void {
         // Subscribe to relays observable
         this.subscriptions.add(
-            this.relayService.getRelays().subscribe((relays) => {
-                this.zone.run(() => {
+            this._relayService.getRelays().subscribe((relays) => {
+                this._zone.run(() => {
                     this.relays = relays;
-                    this.cdr.markForCheck(); // Mark the component for check
+                    this._changeDetectorRef.markForCheck(); // Mark the component for check
                 });
             })
         );
@@ -89,18 +89,18 @@ export class SettingsRelayComponent implements OnInit {
 
     addRelay() {
         if (this.newRelayUrl) {
-            this.relayService.addRelay(this.newRelayUrl);
+            this._relayService.addRelay(this.newRelayUrl);
             this.newRelayUrl = '';
         }
     }
 
     updateRelayAccess(relay: any) {
         console.log('Relay Access Updated:', relay.url, relay.accessType);
-        this.relayService.updateRelayAccessType(relay.url, relay.accessType);
+        this._relayService.updateRelayAccessType(relay.url, relay.accessType);
     }
 
     removeRelay(url: string) {
-        this.relayService.removeRelay(url);
+        this._relayService.removeRelay(url);
     }
 
     trackByFn(index: number, item: any): any {
@@ -124,6 +124,6 @@ export class SettingsRelayComponent implements OnInit {
     }
 
     getSafeUrl(url: string): SafeUrl {
-        return this.sanitizer.bypassSecurityTrustUrl(url);
+        return this._sanitizer.bypassSecurityTrustUrl(url);
     }
 }
