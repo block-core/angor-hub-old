@@ -30,6 +30,7 @@
         "@angular/pwa": "^18.2.8",
         "@angular/router": "18.2.8",
         "@angular/service-worker": "^18.2.8",
+        "@blockcore/nostr-login": "^1.0.6",
         "@ctrl/ngx-emoji-mart": "^9.2.0",
         "@gandlaf21/bolt11-decode": "^3.1.1",
         "@getalby/lightning-tools": "^5.0.3",
