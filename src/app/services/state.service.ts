@@ -116,8 +116,6 @@ export class StateService {
 
     this.subscriptionService.addSubscriptions(chatFilter, (event: NostrEvent) => {
       const chatEvent = this.parseChatEvent(event);
-      console.log(chatEvent);
-
       this.storageService.saveChatEvent(chatEvent);
     });
   }
