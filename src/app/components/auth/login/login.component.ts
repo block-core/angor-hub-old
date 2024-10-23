@@ -17,7 +17,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { SignerService } from 'app/services/signer.service';
 import { StateService } from 'app/services/state.service';
-
+import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@blockcore/nostr-login';
 @Component({
     selector: 'auth-sign-in',
     templateUrl: './login.component.html',
@@ -34,7 +34,7 @@ import { StateService } from 'app/services/state.service';
         MatCheckboxModule,
         MatProgressSpinnerModule,
         CommonModule,
-    ],
+     ],
 })
 export class LoginComponent implements OnInit {
     SecretKeyLoginForm: FormGroup;
@@ -52,6 +52,8 @@ export class LoginComponent implements OnInit {
     npub: string = '';
     nsec: string = '';
 
+    useNostrLogin = false;
+
     constructor(
         private _formBuilder: FormBuilder,
         private _router: Router,
@@ -60,8 +62,32 @@ export class LoginComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+ 
         this.initializeForms();
         this.checkNostrExtensionAvailability();
+
+        initNostrLogin({
+            theme: 'ocean',
+            noBanner: true,
+            title:'Angor Hub',
+            onAuth: (npub: string, options: any) => {
+              console.log('User authenticated:', npub);
+              alert('User authenticated: ' + npub);
+            },
+          });
+
+    }
+
+    private async loginWithNostrAccount(): Promise<void> {
+        launchNostrLoginDialog(
+            'welcome-login',
+           );
+    }
+
+    private async signUpWithNostrAccount(): Promise<void> {
+        launchNostrLoginDialog(
+            'welcome-signup',
+           );
     }
 
     private async initializeAppState(): Promise<void> {

@@ -1,21 +1,31 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
     "compileOnSave": false,
     "compilerOptions": {
         "baseUrl": "./src",
         "outDir": "./dist/out-tsc",
+        "paths": {
+            "@blockcore/*": ["node_modules/@blockcore/*"]
+        },
         "esModuleInterop": true,
         "sourceMap": true,
-        "declaration": false,
+        "declaration": true,
         "experimentalDecorators": true,
         "moduleResolution": "bundler",
         "importHelpers": true,
         "target": "ES2022",
         "module": "ES2022",
         "useDefineForClassFields": false,
-        "lib": ["ES2022", "dom"]
+        "lib": ["ES2022", "dom"],
+        "strict": false,
+        "noImplicitOverride": false,
+        "noImplicitReturns": false,
+        "noFallthroughCasesInSwitch": false,
+        "skipLibCheck": true
     },
     "angularCompilerOptions": {
-        "enableI18nLegacyMessageIdFormat": false
+        "enableI18nLegacyMessageIdFormat": false,
+        "strictInjectionParameters": false,
+        "strictInputAccessModifiers": false,
+        "strictTemplates": false
     }
 }

@@ -11,277 +11,317 @@
             >
                 Login
             </div>
-            <div class="mt-0.5 flex items-baseline font-medium">
-                <div>Don't have an account?</div>
-                <a
-                    class="ml-1 text-primary-500 hover:underline"
-                    [routerLink]="['/register']"
-                    >Register</a
+            <div *ngIf="!useNostrLogin">
+                <div class="mt-0.5 flex items-baseline font-medium">
+                    <div>Don't have an account?</div>
+                    <a
+                        class="ml-1 text-primary-500 hover:underline"
+                        [routerLink]="['/register']"
+                        >Register</a
+                    >
+                </div>
+
+                <angor-alert
+                    *ngIf="showSecAlert"
+                    class="mt-8"
+                    [appearance]="'outline'"
+                    [showIcon]="false"
+                    [type]="secAlert.type"
+                    [@shake]="secAlert.type === 'error'"
                 >
-            </div>
+                    {{ secAlert.message }}
+                </angor-alert>
 
-            <angor-alert
-                *ngIf="showSecAlert"
-                class="mt-8"
-                [appearance]="'outline'"
-                [showIcon]="false"
-                [type]="secAlert.type"
-                [@shake]="secAlert.type === 'error'"
-            >
-                {{ secAlert.message }}
-            </angor-alert>
+                <div>
+                    <!-- Separator -->
+                    <div class="mt-8 flex items-center">
+                        <div class="mt-px flex-auto border-t"></div>
+                        <div class="text-secondary mx-2">
+                            Login with extension
+                        </div>
+                        <div class="mt-px flex-auto border-t"></div>
+                    </div>
 
-            <div *ngIf="isInstalledExtension">
-                <!-- Separator -->
+                    <!-- extension login buttons -->
+                    <div class="mt-8 flex items-center space-x-4">
+                        <button
+                            class="flex-auto space-x-2"
+                            type="button"
+                            mat-stroked-button
+                            (click)="loginWithNostrExtension()"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'feather:zap'"
+                            ></mat-icon>
+                            <span>Login with Nostr Extension</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-8 flex items-center">
+                        <div class="mt-px flex-auto border-t"></div>
+                        <div class="text-secondary mx-2">Or</div>
+                        <div class="mt-px flex-auto border-t"></div>
+                    </div>
+                </div>
+
+                <!-- Login form with Secret Key -->
+                <form
+                    class="mt-8"
+                    [formGroup]="SecretKeyLoginForm"
+                    (ngSubmit)="loginWithSecretKey()"
+                >
+                    <!-- secret key field -->
+                    <div class="mt-8 flex items-center">
+                        <div class="mt-px flex-auto border-t"></div>
+                        <div class="text-secondary mx-2">Enter secret key</div>
+                        <div class="mt-px flex-auto border-t"></div>
+                    </div>
+                    <mat-form-field class="w-full">
+                        <mat-label>Secret Key</mat-label>
+                        <input
+                            matInput
+                            formControlName="secretKey"
+                            autocomplete="secretKey"
+                        />
+                        @if (
+                            SecretKeyLoginForm.get('secretKey').hasError(
+                                'required'
+                            )
+                        ) {
+                            <mat-error> Secret key is required </mat-error>
+                        }
+                    </mat-form-field>
+
+                    <!-- Password field -->
+                    <mat-form-field class="w-full">
+                        <mat-label>Password</mat-label>
+                        <input
+                            matInput
+                            type="password"
+                            [formControlName]="'password'"
+                            autocomplete="current-password-seckey"
+                            #secretPasswordField
+                        />
+                        <button
+                            mat-icon-button
+                            type="button"
+                            (click)="
+                                secretPasswordField.type === 'password'
+                                    ? (secretPasswordField.type = 'text')
+                                    : (secretPasswordField.type = 'password')
+                            "
+                            matSuffix
+                        >
+                            <mat-icon
+                                *ngIf="secretPasswordField.type === 'password'"
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:eye'"
+                            ></mat-icon>
+                            <mat-icon
+                                *ngIf="secretPasswordField.type === 'text'"
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:eye-slash'"
+                            ></mat-icon>
+                        </button>
+                        <mat-error
+                            *ngIf="
+                                SecretKeyLoginForm.get('password').hasError(
+                                    'required'
+                                )
+                            "
+                        >
+                            Password is required
+                        </mat-error>
+                    </mat-form-field>
+
+                    <!-- Submit button -->
+                    <button
+                        class="angor-mat-button-large mt-6 w-full"
+                        mat-flat-button
+                        color="primary"
+                        [disabled]="SecretKeyLoginForm.invalid"
+                    >
+                        <span *ngIf="!loading">Login</span>
+                        <mat-progress-spinner
+                            *ngIf="loading"
+                            diameter="24"
+                            mode="indeterminate"
+                        ></mat-progress-spinner>
+                    </button>
+                </form>
+
                 <div class="mt-8 flex items-center">
                     <div class="mt-px flex-auto border-t"></div>
-                    <div class="text-secondary mx-2">Login with extension</div>
+                    <div class="text-secondary mx-2">Or enter menemonic</div>
                     <div class="mt-px flex-auto border-t"></div>
                 </div>
 
-                <!-- extension login buttons -->
+                <angor-alert
+                    *ngIf="showMenemonicAlert"
+                    class="mt-8"
+                    [appearance]="'outline'"
+                    [showIcon]="false"
+                    [type]="menemonicAlert.type"
+                    [@shake]="menemonicAlert.type === 'error'"
+                >
+                    {{ menemonicAlert.message }}
+                </angor-alert>
+                <!-- Login form with Menemonic -->
+                <form
+                    class="mt-8"
+                    [formGroup]="MenemonicLoginForm"
+                    (ngSubmit)="loginWithMenemonic()"
+                >
+                    <!-- Menemonic field -->
+                    <mat-form-field class="w-full">
+                        <mat-label>Menemonic</mat-label>
+                        <input
+                            matInput
+                            formControlName="menemonic"
+                            autocomplete="menemonic"
+                        />
+                        @if (
+                            MenemonicLoginForm.get('menemonic').hasError(
+                                'required'
+                            )
+                        ) {
+                            <mat-error> Menemonic is required </mat-error>
+                        }
+                    </mat-form-field>
+
+                    <!-- Passphrase field -->
+                    <mat-form-field class="w-full">
+                        <mat-label>Passphrase (Optional)</mat-label>
+                        <input
+                            matInput
+                            type="password"
+                            [formControlName]="'passphrase'"
+                            autocomplete="current-passphrase-menemonic"
+                            #passphraseField
+                        />
+                        <button
+                            mat-icon-button
+                            type="button"
+                            (click)="
+                                passphraseField.type === 'password'
+                                    ? (passphraseField.type = 'text')
+                                    : (passphraseField.type = 'password')
+                            "
+                            matSuffix
+                        >
+                            <mat-icon
+                                *ngIf="passphraseField.type === 'password'"
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:eye'"
+                            ></mat-icon>
+                            <mat-icon
+                                *ngIf="passphraseField.type === 'text'"
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:eye-slash'"
+                            ></mat-icon>
+                        </button>
+                        <mat-error
+                            *ngIf="
+                                MenemonicLoginForm.get('passphrase').hasError(
+                                    'required'
+                                )
+                            "
+                        >
+                            Passphrase is required
+                        </mat-error>
+                    </mat-form-field>
+
+                    <!-- Password field -->
+                    <mat-form-field class="w-full">
+                        <mat-label>Password</mat-label>
+                        <input
+                            matInput
+                            type="password"
+                            [formControlName]="'password'"
+                            autocomplete="current-password-menemonic"
+                            #menemonicPasswordField
+                        />
+                        <button
+                            mat-icon-button
+                            type="button"
+                            (click)="
+                                menemonicPasswordField.type === 'password'
+                                    ? (menemonicPasswordField.type = 'text')
+                                    : (menemonicPasswordField.type = 'password')
+                            "
+                            matSuffix
+                        >
+                            <mat-icon
+                                *ngIf="
+                                    menemonicPasswordField.type === 'password'
+                                "
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:eye'"
+                            ></mat-icon>
+                            <mat-icon
+                                *ngIf="menemonicPasswordField.type === 'text'"
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:eye-slash'"
+                            ></mat-icon>
+                        </button>
+                        <mat-error
+                            *ngIf="
+                                MenemonicLoginForm.get('password').hasError(
+                                    'required'
+                                )
+                            "
+                        >
+                            Password is required
+                        </mat-error>
+                    </mat-form-field>
+
+                    <!-- Submit button -->
+                    <button
+                        class="angor-mat-button-large mt-6 w-full"
+                        mat-flat-button
+                        color="primary"
+                        [disabled]="MenemonicLoginForm.invalid"
+                    >
+                        <span *ngIf="!loading">Login</span>
+                        <mat-progress-spinner
+                            *ngIf="loading"
+                            diameter="24"
+                            mode="indeterminate"
+                        ></mat-progress-spinner>
+                    </button>
+                </form>
+            </div>
+            <div *ngIf="useNostrLogin">
                 <div class="mt-8 flex items-center space-x-4">
                     <button
                         class="flex-auto space-x-2"
                         type="button"
                         mat-stroked-button
-                        (click)="loginWithNostrExtension()"
+                        (click)="loginWithNostrAccount()"
                     >
                         <mat-icon
                             class="icon-size-5"
                             [svgIcon]="'feather:zap'"
                         ></mat-icon>
-                        <span>Login with Nostr Extension</span>
+                        <span>Login with Nostr Account</span>
                     </button>
                 </div>
-
-                <div class="mt-8 flex items-center">
-                    <div class="mt-px flex-auto border-t"></div>
-                    <div class="text-secondary mx-2">Or</div>
-                    <div class="mt-px flex-auto border-t"></div>
+                <div class="mt-8 flex items-center space-x-4">
+                    <button
+                        class="flex-auto space-x-2"
+                        type="button"
+                        mat-stroked-button
+                        (click)="signUpWithNostrAccount()"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="'feather:zap'"
+                        ></mat-icon>
+                        <span>Sign up with Nostr Account</span>
+                    </button>
                 </div>
             </div>
-
-            <!-- Login form with Secret Key -->
-            <form
-                class="mt-8"
-                [formGroup]="SecretKeyLoginForm"
-                (ngSubmit)="loginWithSecretKey()"
-            >
-                <!-- secret key field -->
-                <div class="mt-8 flex items-center">
-                    <div class="mt-px flex-auto border-t"></div>
-                    <div class="text-secondary mx-2">Enter secret key</div>
-                    <div class="mt-px flex-auto border-t"></div>
-                </div>
-                <mat-form-field class="w-full">
-                    <mat-label>Secret Key</mat-label>
-                    <input
-                        matInput
-                        formControlName="secretKey"
-                        autocomplete="secretKey"
-                    />
-                    @if (
-                        SecretKeyLoginForm.get('secretKey').hasError('required')
-                    ) {
-                        <mat-error> Secret key is required </mat-error>
-                    }
-                </mat-form-field>
-
-                <!-- Password field -->
-                <mat-form-field class="w-full">
-                    <mat-label>Password</mat-label>
-                    <input
-                        matInput
-                        type="password"
-                        [formControlName]="'password'"
-                        autocomplete="current-password-seckey"
-                        #secretPasswordField
-                    />
-                    <button
-                        mat-icon-button
-                        type="button"
-                        (click)="
-                            secretPasswordField.type === 'password'
-                                ? (secretPasswordField.type = 'text')
-                                : (secretPasswordField.type = 'password')
-                        "
-                        matSuffix
-                    >
-                        <mat-icon
-                            *ngIf="secretPasswordField.type === 'password'"
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:eye'"
-                        ></mat-icon>
-                        <mat-icon
-                            *ngIf="secretPasswordField.type === 'text'"
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:eye-slash'"
-                        ></mat-icon>
-                    </button>
-                    <mat-error
-                        *ngIf="
-                            SecretKeyLoginForm.get('password').hasError(
-                                'required'
-                            )
-                        "
-                    >
-                        Password is required
-                    </mat-error>
-                </mat-form-field>
-
-                <!-- Submit button -->
-                <button
-                    class="angor-mat-button-large mt-6 w-full"
-                    mat-flat-button
-                    color="primary"
-                    [disabled]="SecretKeyLoginForm.invalid"
-                >
-                    <span *ngIf="!loading">Login</span>
-                    <mat-progress-spinner
-                        *ngIf="loading"
-                        diameter="24"
-                        mode="indeterminate"
-                    ></mat-progress-spinner>
-                </button>
-            </form>
-
-            <div class="mt-8 flex items-center">
-                <div class="mt-px flex-auto border-t"></div>
-                <div class="text-secondary mx-2">Or enter menemonic</div>
-                <div class="mt-px flex-auto border-t"></div>
-            </div>
-
-            <angor-alert
-                *ngIf="showMenemonicAlert"
-                class="mt-8"
-                [appearance]="'outline'"
-                [showIcon]="false"
-                [type]="menemonicAlert.type"
-                [@shake]="menemonicAlert.type === 'error'"
-            >
-                {{ menemonicAlert.message }}
-            </angor-alert>
-            <!-- Login form with Menemonic -->
-            <form
-                class="mt-8"
-                [formGroup]="MenemonicLoginForm"
-                (ngSubmit)="loginWithMenemonic()"
-            >
-                <!-- Menemonic field -->
-                <mat-form-field class="w-full">
-                    <mat-label>Menemonic</mat-label>
-                    <input
-                        matInput
-                        formControlName="menemonic"
-                        autocomplete="menemonic"
-                    />
-                    @if (
-                        MenemonicLoginForm.get('menemonic').hasError('required')
-                    ) {
-                        <mat-error> Menemonic is required </mat-error>
-                    }
-                </mat-form-field>
-
-                <!-- Passphrase field -->
-                <mat-form-field class="w-full">
-                    <mat-label>Passphrase (Optional)</mat-label>
-                    <input
-                        matInput
-                        type="password"
-                        [formControlName]="'passphrase'"
-                        autocomplete="current-passphrase-menemonic"
-                        #passphraseField
-                    />
-                    <button
-                        mat-icon-button
-                        type="button"
-                        (click)="
-                            passphraseField.type === 'password'
-                                ? (passphraseField.type = 'text')
-                                : (passphraseField.type = 'password')
-                        "
-                        matSuffix
-                    >
-                        <mat-icon
-                            *ngIf="passphraseField.type === 'password'"
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:eye'"
-                        ></mat-icon>
-                        <mat-icon
-                            *ngIf="passphraseField.type === 'text'"
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:eye-slash'"
-                        ></mat-icon>
-                    </button>
-                    <mat-error
-                        *ngIf="
-                            MenemonicLoginForm.get('passphrase').hasError(
-                                'required'
-                            )
-                        "
-                    >
-                        Passphrase is required
-                    </mat-error>
-                </mat-form-field>
-
-                <!-- Password field -->
-                <mat-form-field class="w-full">
-                    <mat-label>Password</mat-label>
-                    <input
-                        matInput
-                        type="password"
-                        [formControlName]="'password'"
-                        autocomplete="current-password-menemonic"
-                        #menemonicPasswordField
-                    />
-                    <button
-                        mat-icon-button
-                        type="button"
-                        (click)="
-                            menemonicPasswordField.type === 'password'
-                                ? (menemonicPasswordField.type = 'text')
-                                : (menemonicPasswordField.type = 'password')
-                        "
-                        matSuffix
-                    >
-                        <mat-icon
-                            *ngIf="menemonicPasswordField.type === 'password'"
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:eye'"
-                        ></mat-icon>
-                        <mat-icon
-                            *ngIf="menemonicPasswordField.type === 'text'"
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:eye-slash'"
-                        ></mat-icon>
-                    </button>
-                    <mat-error
-                        *ngIf="
-                            MenemonicLoginForm.get('password').hasError(
-                                'required'
-                            )
-                        "
-                    >
-                        Password is required
-                    </mat-error>
-                </mat-form-field>
-
-                <!-- Submit button -->
-                <button
-                    class="angor-mat-button-large mt-6 w-full"
-                    mat-flat-button
-                    color="primary"
-                    [disabled]="MenemonicLoginForm.invalid"
-                >
-                    <span *ngIf="!loading">Login</span>
-                    <mat-progress-spinner
-                        *ngIf="loading"
-                        diameter="24"
-                        mode="indeterminate"
-                    ></mat-progress-spinner>
-                </button>
-            </form>
         </div>
     </div>
     <div

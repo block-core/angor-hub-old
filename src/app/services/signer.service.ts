@@ -145,42 +145,48 @@ export class SignerService {
     }
 
     //seckey===============
-    async setSecretKey(secretKey: string, password: string) {
-        const encryptedSecretKey = await this.securityService.encryptData(
-            secretKey,
-            password
-        );
-        localStorage.setItem(
-            this.localStorageSecretKeyName,
-            encryptedSecretKey
-        );
+    async setSecretKey(secretKey: string, password: string = "") {
+        if (password === "") {
+            localStorage.setItem(this.localStorageSecretKeyName, secretKey);
+            localStorage.setItem('usePassword', 'false');
+        } else {
+            const encryptedSecretKey = await this.securityService.encryptData(secretKey, password);
+            localStorage.setItem(this.localStorageSecretKeyName, encryptedSecretKey);
+            localStorage.setItem('usePassword', 'true');
+        }
     }
 
-    async getSecretKey(password: string) {
-        const encryptedSecretKey = localStorage.getItem(
-            this.localStorageSecretKeyName
-        );
+    async getSecretKey(password: string = "") {
+        const encryptedSecretKey = localStorage.getItem(this.localStorageSecretKeyName);
+        const usePassword = localStorage.getItem('usePassword') === 'true';
         if (!encryptedSecretKey) {
             return null;
         }
-        return await this.securityService.decryptData(
-            encryptedSecretKey,
-            password
-        );
+
+        if (!usePassword) {
+            return encryptedSecretKey;
+        }
+
+        return await this.securityService.decryptData(encryptedSecretKey, password);
     }
+
 
     async getDecryptedSecretKey(): Promise<string | null> {
         try {
-            const storedPassword = this.getPassword(); // Ensure this retrieves a valid password
-            if (storedPassword) {
-                return await this.getSecretKey(storedPassword); // Ensure getSecretKey returns a valid private key
+            const usePassword = localStorage.getItem('usePassword') === 'true';
+
+            if (!usePassword) {
+                return this.getSecretKey();
             }
 
-            const result = await this.requestPassword(); // Prompt user for password if not stored
+            const storedPassword = this.getPassword();
+            if (storedPassword) {
+                return await this.getSecretKey(storedPassword);
+            }
+
+            const result = await this.requestPassword();
             if (result?.password) {
-                const decryptedPrivateKey = await this.getSecretKey(
-                    result.password
-                ); // Check that the private key is decrypted properly
+                const decryptedPrivateKey = await this.getSecretKey(result.password);
                 if (result.duration !== 0) {
                     this.savePassword(result.password, result.duration);
                 }
@@ -195,28 +201,41 @@ export class SignerService {
         }
     }
 
+
     //nsec===============
-    async setNsec(nsec: string, password: string) {
-        const encryptedNsec = await this.securityService.encryptData(
-            nsec,
-            password
-        );
-        localStorage.setItem(this.localStorageNsecName, encryptedNsec);
+
+    async setNsec(nsec: string, password: string = "") {
+        if (password === "") {
+             localStorage.setItem(this.localStorageNsecName, nsec);
+            localStorage.setItem('usePassword', 'false');
+        } else {
+             const encryptedNsec = await this.securityService.encryptData(nsec, password);
+            localStorage.setItem(this.localStorageNsecName, encryptedNsec);
+            localStorage.setItem('usePassword', 'true');
+        }
     }
 
-    async getNsec(password: string) {
+    async getNsec(password: string = "") {
         const encryptedNsec = localStorage.getItem(this.localStorageNsecName);
+        const usePassword = localStorage.getItem('usePassword') === 'true';
+
         if (!encryptedNsec) {
             return null;
         }
-        return await this.securityService.decryptData(encryptedNsec, password);
+
+        if (!usePassword) {
+            return encryptedNsec;
+        }
+
+         return await this.securityService.decryptData(encryptedNsec, password);
     }
+
 
     setPublicKeyFromExtension(publicKey: string) {
         this.setPublicKey(publicKey);
     }
 
-    handleLoginWithKey(key: string, password: string): boolean {
+    handleLoginWithKey(key: string, password: string=""): boolean {
         let secretKey: string;
         let pubkey: string;
         let nsec: string;

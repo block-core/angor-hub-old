@@ -89,14 +89,6 @@ export class Utilities {
     }
   }
 
-  ensureHexIdentifier(pubkey: string) {
-    if (pubkey.startsWith('npub')) {
-      pubkey = this.arrayToHex(this.convertFromBech32(pubkey));
-    }
-
-    return pubkey;
-  }
-
   copy(text: string) {
     this.copyToClipboard(text);
 
@@ -168,25 +160,6 @@ export class Utilities {
 
   arrayToHex(value: Uint8Array) {
     return bytesToHex(value);
-  }
-
-  convertFromBech32(address: string) {
-    const decoded = bech32.decode(address);
-    const key = bech32.fromWords(decoded.words);
-
-    return key;
-  }
-
-  convertFromBech32ToHex(address: string) {
-    const decoded = bech32.decode(address);
-    const key = bech32.fromWords(decoded.words);
-    return this.arrayToHex(key);
-  }
-
-  convertBech32ToText(str: string) {
-    const decoded = bech32.decode(str, 1000);
-    const buf = bech32.fromWords(decoded.words);
-    return new TextDecoder().decode(Uint8Array.from(buf));
   }
 
   keyToHex(publicKey: Uint8Array) {
