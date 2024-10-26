@@ -7,7 +7,9 @@
                 class="h-40 object-cover lg:h-80"
                 [src]="profileUser?.banner || '/images/pages/profile/cover.jpg'"
                 onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';"
-                alt="{{ profileUser?.display_name || profileUser?.name || 'Banner' }}"
+                alt="{{
+                    profileUser?.display_name || profileUser?.name || 'Banner'
+                }}"
             />
         </div>
 
@@ -53,7 +55,7 @@
                 >
                     {{
                         profileUser?.display_name ||
-                        profileUser?.name ||
+                            profileUser?.name ||
                             'Unknown User'
                     }}
                 </div>
@@ -71,121 +73,165 @@
 
             <!-- Separator -->
             <div class="mx-8 hidden h-8 flex-shrink-0 border-l-2 lg:flex"></div>
-
-            <!-- Stats -->
-            <div *ngIf="stats$ | async as stats" class="mt-6 flex flex-shrink-0 items-center space-x-6 lg:mt-0">
-                <div class="flex flex-col items-center">
-                    <span [matTooltip]="'Total contact: ' + stats.totalContacts" class="font-bold">{{ stats.followersCount }}</span>
-                    <span class="text-secondary text-sm font-medium"
-                        >FOLLOWERS</span
-                    >
-                </div>
-
-                <div class="flex flex-col items-center">
-                    <span class="font-bold">{{ stats.followingCount }}</span>
-                    <span [matTooltip]="'Total contact: ' + stats.totalContacts" class="text-secondary text-sm font-medium"
-                        >FOLLOWING</span
-                    >
-                </div>
-            </div>
-
-            <!-- Separator -->
-            <div class="mx-8 hidden h-8 flex-shrink-0 border-l-2 lg:flex"></div>
-
-            <!-- Tools -->
-            <div
-                class="mb-4 mt-8 flex flex-shrink-0 items-center space-x-6 lg:m-0 lg:ml-auto"
-            >
-                <div *ngIf="!isCurrentUserProfile">
-                    <button
-                        mat-icon-button
-                        (click)="toggleFollow()"
-                        [matTooltip]="isFollowing ? 'Unfollow' : 'Follow'"
-                    >
-                        <mat-icon
-                            [svgIcon]="
-                                isFollowing
-                                    ? 'heroicons_outline:user-minus'
-                                    : 'heroicons_outline:user-plus'
+            <div class="flex flex-shrink-0 items-center space-x-6 lg:mt-0">
+                <!-- Stats -->
+                <div
+                    *ngIf="stats$ | async as stats"
+                    class="mt-6 flex flex-shrink-0 items-center space-x-6 lg:mt-0"
+                >
+                    <div class="flex flex-col items-center">
+                        <span
+                            [matTooltip]="
+                                'Total contact: ' + stats.totalContacts
                             "
+                            class="font-bold"
+                            >{{ stats.followersCount }}</span
                         >
-                        </mat-icon>
-                    </button>
+                        <span class="text-secondary text-sm font-medium"
+                            >FOLLOWERS</span
+                        >
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <span class="font-bold">{{
+                            stats.followingCount
+                        }}</span>
+                        <span
+                            [matTooltip]="
+                                'Total contact: ' + stats.totalContacts
+                            "
+                            class="text-secondary text-sm font-medium"
+                            >FOLLOWING</span
+                        >
+                    </div>
                 </div>
-                <div>
-                    <button mat-icon-button [matMenuTriggerFor]="profileMenu">
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:ellipsis-vertical'"
-                        ></mat-icon>
-                    </button>
-                    <mat-menu #profileMenu="matMenu">
-                        <button
-                            *ngIf="!isCurrentUserProfile"
-                            mat-menu-item
-                            (click)="zap()"
-                        >
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="'feather:zap'"
-                                ></mat-icon>
-                                <span>Send Zap</span>
-                            </span>
-                        </button>
 
-                        <button
-                            *ngIf="isCurrentUserProfile"
-                            mat-menu-item
-                            (click)="openReceiveZapDialog()"
-                        >
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="'heroicons_outline:qr-code'"
-                                ></mat-icon>
-                                <span>Receive Zap</span>
-                            </span>
-                        </button>
+                <!-- Separator -->
+                <div
+                    class="mx-8 hidden h-8 flex-shrink-0 border-l-2 lg:flex"
+                ></div>
 
-                        <mat-divider class="my-2"></mat-divider>
+                <!-- Tools -->
+                <div
+                    class="mb-4 mt-8 flex flex-shrink-0 items-center space-x-6 lg:m-0 lg:ml-auto"
+                >
+                    <div *ngIf="!isCurrentUserProfile">
                         <button
-                            *ngIf="isCurrentUserProfile"
-                            mat-menu-item
-                            [routerLink]="'/settings/profile'"
+                            mat-icon-button
+                            (click)="toggleFollow()"
+                            [matTooltip]="isFollowing ? 'Unfollow' : 'Follow'"
                         >
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="
-                                        'heroicons_outline:pencil-square'
-                                    "
-                                ></mat-icon>
-                                <span>Edit your profile</span>
-                            </span>
+                            <mat-icon
+                                [svgIcon]="
+                                    isFollowing
+                                        ? 'heroicons_outline:user-minus'
+                                        : 'heroicons_outline:user-plus'
+                                "
+                            >
+                            </mat-icon>
                         </button>
+                    </div>
+                    <div>
+                        <button
+                            mat-icon-button
+                            [matMenuTriggerFor]="profileMenu"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:ellipsis-vertical'"
+                            ></mat-icon>
+                        </button>
+                        <mat-menu #profileMenu="matMenu">
+                            <button
+                                *ngIf="!isCurrentUserProfile"
+                                mat-menu-item
+                                (click)="zap()"
+                            >
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="'feather:zap'"
+                                    ></mat-icon>
+                                    <span>Send Zap</span>
+                                </span>
+                            </button>
+                            <button mat-menu-item (click)="copyHex()">
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_outline:clipboard-document'
+                                        "
+                                    ></mat-icon>
+                                    <span>Copy Public key (hex)</span>
+                                </span>
+                            </button>
 
-                        <button *ngIf="!isCurrentUserProfile" mat-menu-item>
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="
-                                        'heroicons_solid:exclamation-triangle'
-                                    "
-                                ></mat-icon>
-                                <span>Report</span>
-                            </span>
-                        </button>
-                        <button *ngIf="!isCurrentUserProfile" mat-menu-item>
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="'heroicons_solid:bell'"
-                                ></mat-icon>
-                                <span>Turn on notifications</span>
-                            </span>
-                        </button>
-                    </mat-menu>
+                            <button mat-menu-item (click)="copyNpub()">
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_outline:clipboard-document'
+                                        "
+                                    ></mat-icon>
+                                    <span>Copy Public key (npub)</span>
+                                </span>
+                            </button>
+
+                            <button
+                                *ngIf="isCurrentUserProfile"
+                                mat-menu-item
+                                (click)="openReceiveZapDialog()"
+                            >
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="'heroicons_outline:qr-code'"
+                                    ></mat-icon>
+                                    <span>Receive Zap</span>
+                                </span>
+                            </button>
+
+                            <mat-divider class="my-2"></mat-divider>
+                            <button
+                                *ngIf="isCurrentUserProfile"
+                                mat-menu-item
+                                [routerLink]="'/settings/profile'"
+                            >
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_outline:pencil-square'
+                                        "
+                                    ></mat-icon>
+                                    <span>Edit your profile</span>
+                                </span>
+                            </button>
+
+                            <button *ngIf="!isCurrentUserProfile" mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_solid:exclamation-triangle'
+                                        "
+                                    ></mat-icon>
+                                    <span>Report</span>
+                                </span>
+                            </button>
+                            <button *ngIf="!isCurrentUserProfile" mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="'heroicons_solid:bell'"
+                                    ></mat-icon>
+                                    <span>Turn on notifications</span>
+                                </span>
+                            </button>
+                        </mat-menu>
+                    </div>
                 </div>
             </div>
         </div>
@@ -215,8 +261,6 @@
                     See complete about
                 </a>
             </angor-card>
-
-
         </div>
 
         <!-- Column -->
@@ -242,13 +286,13 @@
                         <img
                             class="mr-4 h-12 w-12 min-w-12 rounded-full object-cover"
                             [src]="
-                            currentUser?.picture ||
+                                currentUser?.picture ||
                                 'images/avatars/avatar-placeholder.png'
                             "
                             onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
                             alt="{{
                                 currentUser?.display_name ||
-                                currentUser?.name ||
+                                    currentUser?.name ||
                                     'Avatar'
                             }}"
                         />
@@ -403,20 +447,19 @@
                     <img
                         class="mr-4 h-10 w-10 rounded-full"
                         [src]="
-                        currentUser?.picture ||
+                            currentUser?.picture ||
                             'images/avatars/avatar-placeholder.png'
                         "
                         onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
                         alt="{{
                             currentUser?.display_name ||
-                            currentUser?.name ||
+                                currentUser?.name ||
                                 'Avatar'
                         }}"
                     />
                     <div class="flex flex-col">
                         <span class="font-semibold leading-none">{{
-                            currentUser?.display_name ||
-                            currentUser?.name
+                            currentUser?.display_name || currentUser?.name
                         }}</span>
                         <span class="text-secondary mt-1 text-sm leading-none"
                             >1 minutes ago</span
@@ -600,13 +643,13 @@
                             <img
                                 class="mr-5 h-12 w-12 rounded-full object-cover"
                                 [src]="
-                                currentUser?.picture ||
+                                    currentUser?.picture ||
                                     'images/avatars/avatar-placeholder.png'
                                 "
                                 onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
                                 alt="{{
                                     currentUser?.display_name ||
-                                    currentUser?.name ||
+                                        currentUser?.name ||
                                         'Avatar'
                                 }}"
                             />
@@ -670,8 +713,6 @@
             </angor-card>
 
             <!-- <app-event-list class="mb-8 w-full max-w-5xl" [pubkeys]="[routePubKey]"></app-event-list> -->
-
-
         </div>
     </div>
 </div>

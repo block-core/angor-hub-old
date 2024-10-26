@@ -553,4 +553,26 @@ export class SignerService {
         const secretKey = localStorage.getItem(this.localStorageSecretKeyName);
         return !!secretKey;
     }
+
+
+    getNpubFromPubkey(hexKey: string): string {
+        try {
+            return nip19.npubEncode(hexKey);
+        } catch (error) {
+            console.error('Error converting hex to npub:', error);
+            return '';
+        }
+    }
+
+    getNsecFromSeckey(hexKey: string): string {
+        try {
+            const secretKeyUint8Array = Uint8Array.from(Buffer.from(hexKey, 'hex'));
+            return nip19.nsecEncode(secretKeyUint8Array);
+        } catch (error) {
+            console.error('Error converting hex to nsec:', error);
+            return '';
+        }
+    }
+
+
 }

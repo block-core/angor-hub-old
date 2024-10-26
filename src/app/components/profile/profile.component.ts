@@ -46,6 +46,7 @@ import { EventListComponent } from '../event-list/event-list.component';
 import { ReceiveDialogComponent } from './zap/receive-dialog/receive-dialog.component';
 import { SendDialogComponent } from './zap/send-dialog/send-dialog.component';
 import { SubscriptionService } from 'app/services/subscription.service';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 interface Chip {
     color?: string;
@@ -84,6 +85,7 @@ interface Chip {
     ],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
+
     @ViewChild('eventInput', { static: false }) eventInput: ElementRef;
     @ViewChild('commentInput') commentInput: ElementRef;
 
@@ -145,6 +147,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _angorConfirmationService: AngorConfirmationService,
         private _eventService: PaginatedEventService,
         private _subscriptionService: SubscriptionService,
+        private _clipboard: Clipboard
     ) { }
 
     async ngOnInit(): Promise<void> {
@@ -181,8 +184,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         if (this.subscriptionId) {
-             this._subscriptionService.removeSubscriptionById(this.subscriptionId);
-          }
+            this._subscriptionService.removeSubscriptionById(this.subscriptionId);
+        }
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }
@@ -225,41 +228,41 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
             const cachedMetadata = await this._storageService.getProfile(publicKey);
             if (cachedMetadata) {
-              this.profileUser = cachedMetadata;
-              this._changeDetectorRef.detectChanges();
+                this.profileUser = cachedMetadata;
+                this._changeDetectorRef.detectChanges();
             }
 
 
             this.subscribeToUserProfile(publicKey);
-          } catch (error) {
+        } catch (error) {
             console.error('Error loading user profile:', error);
-          }
+        }
 
     }
 
 
     private subscribeToUserProfile(pubKey: string): void {
         const filters: Filter[] = [
-          { authors: [pubKey], kinds: [0], limit: 1 }
+            { authors: [pubKey], kinds: [0], limit: 1 }
         ];
 
 
         this.subscriptionId = this._subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
-          try {
+            try {
 
-            const newMetadata = JSON.parse(event.content);
-            this.profileUser = newMetadata;
-
-
-            await this._storageService.saveProfile(pubKey, newMetadata);
+                const newMetadata = JSON.parse(event.content);
+                this.profileUser = newMetadata;
 
 
-            this._changeDetectorRef.detectChanges();
-          } catch (error) {
-            console.error('Error processing metadata event:', error);
-          }
+                await this._storageService.saveProfile(pubKey, newMetadata);
+
+
+                this._changeDetectorRef.detectChanges();
+            } catch (error) {
+                console.error('Error processing metadata event:', error);
+            }
         });
-      }
+    }
 
 
 
@@ -403,35 +406,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     togglePreview() {
         this.isPreview = !this.isPreview;
     }
@@ -448,4 +422,16 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 });
         }
     }
+
+    copyHex() {
+        this._clipboard.copy(this.routePubKey);
+        this.openSnackBar('hex public key copied', 'dismiss');
+    }
+
+    copyNpub() {
+        var npub= this._signerService.getNpubFromPubkey(this.routePubKey)
+        this._clipboard.copy(npub);
+        this.openSnackBar('npub public key copied', 'dismiss');
+    }
+
 }
