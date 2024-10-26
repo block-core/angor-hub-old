@@ -62,7 +62,7 @@ export class LoginComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
- 
+
         this.initializeForms();
         this.checkNostrExtensionAvailability();
 
@@ -71,9 +71,8 @@ export class LoginComponent implements OnInit {
             noBanner: true,
             title:'Angor Hub',
             onAuth: (npub: string, options: any) => {
-              console.log('User authenticated:', npub);
-              alert('User authenticated: ' + npub);
-            },
+                this.initializeAppState();
+                this._router.navigateByUrl('/home');            },
           });
 
     }
