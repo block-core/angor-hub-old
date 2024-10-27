@@ -174,7 +174,7 @@ export class LoginComponent implements OnInit {
         this.loading = true;
         this.showMenemonicAlert = false;
 
-        const success = this._signerService.handleLoginWithMenemonic(
+        const success = this._signerService.handleLoginWithMnemonic(
             menemonic,
             passphrase,
             password

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { hexToBytes } from '@noble/hashes/utils';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { PasswordDialogComponent } from 'app/shared/password-dialog/password-dialog.component';
 import { Buffer } from 'buffer';
 import {
@@ -275,36 +275,35 @@ export class SignerService {
         }
     }
 
-    handleLoginWithMenemonic(
+
+    handleLoginWithMnemonic(
         mnemonic: string,
         passphrase: string = '',
-        password: string
+        password: string=''
     ): boolean {
         try {
             const accountIndex = 0;
-            const secretKey = privateKeyFromSeedWords(
-                mnemonic,
-                passphrase,
-                accountIndex
-            );
-            const secretKeyUint8Array = Uint8Array.from(
-                Buffer.from(secretKey, 'hex')
-            );
-            const pubkey = getPublicKey(secretKeyUint8Array);
+            const secretKey = privateKeyFromSeedWords(mnemonic, passphrase, accountIndex);
+            const secretKeyHex = bytesToHex(secretKey);
+            const pubkey = getPublicKey(secretKey);
             const npub = nip19.npubEncode(pubkey);
-            const nsec = nip19.nsecEncode(secretKeyUint8Array);
-            this.setSecretKey(secretKey, password);
-            this.setNsec(npub, password);
+            const nsec = nip19.nsecEncode(secretKey);
+
+            this.setSecretKey(secretKeyHex, password);
+            this.setNsec(nsec, password);
             this.setPublicKey(pubkey);
             this.setNpub(npub);
 
             window.localStorage.setItem(this.localStorageNsecName, nsec);
+
             return true;
         } catch (error) {
             console.error('Error during login with mnemonic:', error);
             return false;
         }
     }
+
+
 
     logout(): void {
         window.localStorage.removeItem(this.localStorageSecretKeyName);
