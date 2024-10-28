@@ -59,7 +59,7 @@
                             [svgIcon]="'heroicons_solid:magnifying-glass'"
                         ></mat-icon>
                         <input
-                            (keyup.enter)="filterByQuery(query.value)"
+
                             placeholder="Search ..."
                             matInput
                             #query
@@ -93,7 +93,7 @@
                 <mat-slide-toggle
                     class="mt-8 sm:ml-auto sm:mt-0"
                     [color]="'primary'"
-                    (change)="toggleCompleted($event)"
+
                 >
                     Hide completed
                 </mat-slide-toggle>
@@ -105,15 +105,15 @@
                 class="mt-10 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2"
             >
                 <!-- Loop through projects and render cards -->
-                <ng-container *ngFor="let project of filteredProjects">
+                <ng-container *ngFor="let project of projects; trackBy: trackByFn">
                     <angor-card class="filter-info flex w-full flex-col">
                         <div class="flex h-32">
                             <img
                                 class="object-cover"
-                                [src]="
-                                    getSafeUrl(project?.banner, true) ||
-                                    'images/pages/profile/cover.jpg'
-                                "
+                                [src]="'images/pages/profile/cover.jpg'"
+
+
+
                                 onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';"
                                 alt="Card cover image"
                             />
@@ -123,7 +123,7 @@
                                 <img
                                     class="h-24 w-24 rounded-full object-cover"
                                     [src]="
-                                        getSafeUrl(project?.picture, false) ||
+
                                         'images/avatars/avatar-placeholder.png'
                                     "
                                     onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
@@ -227,7 +227,7 @@
                     </angor-card>
                 </ng-container>
             </div>
-            <ng-container *ngIf="filteredProjects.length == 0">
+            <ng-container *ngIf="projects.length == 0">
                 <div
                     class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent"
                 >
@@ -244,13 +244,13 @@
             </ng-container>
             <!-- Load More Button -->
             <div
-                *ngIf="filteredProjects.length > 0"
+                *ngIf="projects.length > 0"
                 class="mt-10 flex justify-center"
             >
                 <button
                     mat-raised-button
                     color="primary"
-                    (click)="loadProjects()"
+                    (click)="loadMoreProjects()"
                     [disabled]="loading"
                 >
                     {{ loading ? 'Loading...' : 'Load More Projects' }}
