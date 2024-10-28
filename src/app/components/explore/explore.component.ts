@@ -28,8 +28,8 @@ import { Router, RouterLink } from '@angular/router';
 import { Project } from 'app/interface/project.interface';
 import { StorageService } from 'app/services/storage.service';
 import { MetadataService } from 'app/services/metadata.service';
-import { Subject, takeUntil } from 'rxjs';
-import { ProjectsService } from '../../services/projects.service';
+import { catchError, of, Subject, takeUntil, tap } from 'rxjs';
+import { ProjectsService, ProjectStats } from '../../services/projects.service';
 import { ChatService } from '../chat/chat.service';
 import { Contact } from '../chat/chat.types';
 
@@ -70,7 +70,8 @@ export class ExploreComponent implements OnInit, OnDestroy {
     constructor(
         private _projectsService: ProjectsService,
         private _storageService: StorageService,
-        private _changeDetectorRef: ChangeDetectorRef
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _router: Router,
     ) {}
 
     ngOnInit(): void {
@@ -179,6 +180,31 @@ export class ExploreComponent implements OnInit, OnDestroy {
     trackByFn(index: number, item: Project): string | number {
         return item.projectIdentifier || index;
     }
+
+    // Implementation for opening chat with the specified public key
+    openChat(pubKey: string): void {
+
+    }
+
+
+   // Navigate to project details page with the specified project
+   goToProjectDetails(project: Project): void {
+    this._projectsService.fetchProjectStats(project.projectIdentifier).pipe(
+        tap((stats: ProjectStats) => {
+            // Save stats in storage before navigating
+            this._storageService.saveProjectStats(project.projectIdentifier, stats);
+        }),
+        tap(() => {
+            // Navigate to the profile/details page once stats are saved
+            this._router.navigate(['/profile', project.nostrPubKey]);
+        }),
+        catchError((error) => {
+            console.error(`Failed to navigate to project details for ${project.projectIdentifier}:`, error);
+            return of(null);
+        })
+    ).subscribe();
+}
+
 
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
