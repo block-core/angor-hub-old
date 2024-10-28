@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, of, from } from 'rxjs';
 import { catchError, map, mergeMap, switchMap, tap, toArray, filter } from 'rxjs/operators';
 import { StorageService } from './storage.service';
 import { IndexerService } from './indexer.service';
+import { SubscriptionService } from './subscription.service';
 
 export interface Project {
     founderKey: string;
@@ -34,7 +35,7 @@ export class ProjectsService {
     private totalProjectsFetched = false;
     private selectedNetwork: 'mainnet' | 'testnet' = 'testnet';
 
-    // BehaviorSubjects for managing project data and loading status
+    // BehaviorSubjects to manage state and updates
     private projectsSubject = new BehaviorSubject<Project[]>([]);
     public projects$: Observable<Project[]> = this.projectsSubject.asObservable();
 
@@ -44,14 +45,14 @@ export class ProjectsService {
     private noMoreProjectsSubject = new BehaviorSubject<boolean>(false);
     public noMoreProjects$: Observable<boolean> = this.noMoreProjectsSubject.asObservable();
 
-    // BehaviorSubject to store project statistics
     private projectStatsSubject = new BehaviorSubject<{ [key: string]: ProjectStats }>({});
     public projectStats$: Observable<{ [key: string]: ProjectStats }> = this.projectStatsSubject.asObservable();
 
     constructor(
         private http: HttpClient,
         private indexerService: IndexerService,
-        private storageService: StorageService
+        private storageService: StorageService,
+        private subscriptionService: SubscriptionService // Adding subscription service
     ) {
         this.loadNetwork();
     }
@@ -59,7 +60,7 @@ export class ProjectsService {
     // Load network type from indexerService (mainnet/testnet)
     loadNetwork() {
         this.selectedNetwork = this.indexerService.getNetwork();
-        console.log('Selected network:', this.selectedNetwork); // Log the selected network
+        console.log('Selected network:', this.selectedNetwork);
     }
 
     // Fetch projects from the API and update the BehaviorSubject
@@ -77,17 +78,14 @@ export class ProjectsService {
 
         return this.http.get<Project[]>(url, { observe: 'response' }).pipe(
             tap((response) => {
-                console.log('Received project data from API:', response.body);
                 if (!this.totalProjectsFetched && response && response.headers) {
                     const paginationTotal = response.headers.get('pagination-total');
                     this.totalProjects = paginationTotal ? +paginationTotal : 0;
                     this.totalProjectsFetched = true;
                     this.offset = Math.max(this.totalProjects - this.limit, 0);
-                    console.log('Total projects available:', this.totalProjects);
                 }
             }),
             map((response) => response.body || []),
-            // Filter out duplicate projects
             mergeMap((newProjects) => from(newProjects).pipe(
                 filter(newProject =>
                     !this.projectsSubject.value.some(
@@ -103,20 +101,17 @@ export class ProjectsService {
                     return of([]);
                 }
 
-                // Save new projects to storage
                 const saveProjects$ = from(uniqueNewProjects).pipe(
                     mergeMap(project => from(this.storageService.saveProject(project))),
                     toArray()
                 );
 
-                // Load additional stats for each project
                 const projectDetails$ = from(uniqueNewProjects).pipe(
                     mergeMap(project =>
                         from(this.storageService.getProjectStats(project.projectIdentifier)).pipe(
                             map((projectStats: ProjectStats) => {
                                 project.totalInvestmentsCount = projectStats?.investorCount ?? 0;
 
-                                // Update project stats subject
                                 const currentStats = this.projectStatsSubject.value;
                                 this.projectStatsSubject.next({
                                     ...currentStats,
@@ -139,8 +134,10 @@ export class ProjectsService {
                     map((updatedProjects) => {
                         const updatedProjectList = [...this.projectsSubject.value, ...uniqueNewProjects];
                         this.projectsSubject.next(updatedProjectList);
+
+                        this.subscribeToProjectsMetadata(uniqueNewProjects.map(proj => proj.nostrPubKey));
+
                         this.offset = Math.max(this.offset - this.limit, 0);
-                        console.log('Updated projects list:', updatedProjectList);
                         return updatedProjects;
                     })
                 );
@@ -151,6 +148,25 @@ export class ProjectsService {
             }),
             tap(() => this.loadingSubject.next(false))
         );
+    }
+
+    // Subscribe to metadata for all nostrPubKeys
+    private subscribeToProjectsMetadata(pubKeys: string[]): void {
+        const metadataFilter = { kinds: [0], authors: pubKeys };
+        this.subscriptionService.addSubscriptions([metadataFilter], (event) => {
+            const metadata = this.parseMetadataEvent(event);
+            this.storageService.saveProfile(event.pubkey, metadata); // Save each metadata in database
+        });
+    }
+
+    // Example: Parsing metadata event from Nostr
+    private parseMetadataEvent(event: any): any {
+        try {
+            return JSON.parse(event.content);
+        } catch (e) {
+            console.error('Error parsing metadata event:', e);
+            return {};
+        }
     }
 
     // Fetch project stats and save them to storage
@@ -164,7 +180,6 @@ export class ProjectsService {
                     ...currentStats,
                     [projectIdentifier]: stats
                 });
-                console.log('Fetched stats for project:', projectIdentifier, stats);
             }),
             catchError((error) => {
                 console.error(`Error fetching stats for project ${projectIdentifier}:`, error);
@@ -193,6 +208,5 @@ export class ProjectsService {
         this.projectStatsSubject.next({});
         this.offset = 0;
         this.totalProjectsFetched = false;
-        console.log('Projects and states have been reset.');
     }
 }
