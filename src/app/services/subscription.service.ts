@@ -23,7 +23,7 @@ export class SubscriptionService {
 
   private subscriptionQueue: Subscription[] = [];
   private isProcessingQueue = false;
-  private queueInterval = 3000; 
+  private queueInterval = 3000;
   private maxSubscriptionsPerBatch = 5;
   private debounceInterval = 5000;
   private lastActionTimestamp: Map<string, number> = new Map();
@@ -94,19 +94,25 @@ export class SubscriptionService {
 
   private processSubscriptionQueue(): void {
     if (this.isProcessingQueue) return;
-
     this.isProcessingQueue = true;
 
-    setInterval(() => {
-      if (this.subscriptionQueue.length > 0) {
-        const subscriptionsBatch = this.subscriptionQueue.splice(0, this.maxSubscriptionsPerBatch);
+    const processQueue = () => {
+        if (this.subscriptionQueue.length > 0) {
+            const subscriptionsBatch = this.subscriptionQueue.splice(0, this.maxSubscriptionsPerBatch);
 
-        subscriptionsBatch.forEach((subscription) => {
-          this.subscribeToRelays(subscription.filter, subscription);
-        });
-      }
-    }, this.queueInterval);
-  }
+            subscriptionsBatch.forEach((subscription) => {
+                try {
+                    this.subscribeToRelays(subscription.filter, subscription);
+                } catch (error) {
+                    console.error('Failed to subscribe:', error);
+                }
+            });
+        }
+    };
+
+    setInterval(processQueue, this.queueInterval);
+}
+
 
 
   private subscribeToRelays(filters: Filter[], subscription: Subscription): void {
