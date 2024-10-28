@@ -61,47 +61,76 @@ import { Contact } from '../chat/chat.types';
 })
 export class ExploreComponent implements OnInit, OnDestroy {
 
-    filteredProjects: Project[] = [];
-    showCloseSearchButton: boolean = false;
-
-
-
-
     projects: Project[] = [];
     loading: boolean = false;
     errorMessage: string = '';
-    noMoreProjects: boolean = false; // Track if more projects are available
+    noMoreProjects: boolean = false;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
         private _projectsService: ProjectsService,
+        private _storageService: StorageService,
         private _changeDetectorRef: ChangeDetectorRef
     ) {}
 
     ngOnInit(): void {
         this.loadInitialProjects();
-        this.subscribeToProjects();
+        this.subscribeToProjectsUpdates();
         this.subscribeToLoading();
         this.subscribeToNoMoreProjects();
     }
 
-    // Load initial projects and reset state
+    // Load initial projects and fetch metadata for each
     private loadInitialProjects(): void {
-        this._projectsService.resetProjects(); // Reset service state to start fresh
+        this._projectsService.resetProjects();
         this._projectsService.fetchProjects().pipe(
             takeUntil(this._unsubscribeAll)
         ).subscribe({
             next: (projects: Project[]) => {
                 this.projects = projects;
-                console.log('Initial projects loaded:', projects);
+                this.fetchMetadataForProjects(projects);
                 this._changeDetectorRef.detectChanges();
             },
             error: (error) => {
                 this.errorMessage = 'Error loading projects';
-                console.error(this.errorMessage, error);
                 this._changeDetectorRef.detectChanges();
             }
         });
+    }
+
+    // Load metadata for each project by public key
+    private fetchMetadataForProjects(projects: Project[]): void {
+        projects.forEach(project => {
+            this._storageService.getProfile(project.nostrPubKey)
+                .then(profileMetadata => {
+                    if (profileMetadata) {
+                        this.updateProjectMetadata(project, profileMetadata);
+                    }
+                });
+        });
+    }
+
+    // Real-time subscription to updates on project metadata
+    private subscribeToProjectsUpdates(): void {
+        this._storageService.profile$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((data) => {
+                if (data && data.pubKey) {
+                    const project = this.projects.find(proj => proj.nostrPubKey === data.pubKey);
+                    if (project) {
+                        this.updateProjectMetadata(project, data.metadata);
+                        this._changeDetectorRef.detectChanges();
+                    }
+                }
+            });
+    }
+
+    // Method to update project metadata
+    private updateProjectMetadata(project: Project, metadata: any): void {
+        project.displayName = metadata.name || project.displayName;
+        project.about = metadata.about || project.about;
+        project.picture = metadata.picture || project.picture;
+        project.banner= metadata.banner || project.banner;
     }
 
     // Load the next page of projects and add them to the existing list
@@ -110,37 +139,20 @@ export class ExploreComponent implements OnInit, OnDestroy {
             takeUntil(this._unsubscribeAll)
         ).subscribe({
             next: (newProjects: Project[]) => {
-                if (newProjects.length > 0) {
-                    // Filter out duplicate projects
-                    const uniqueNewProjects = newProjects.filter(newProject =>
-                        !this.projects.some(existingProject =>
-                            existingProject.projectIdentifier === newProject.projectIdentifier
-                        )
-                    );
-                    // Add only unique new projects to the list
-                    this.projects = [...this.projects, ...uniqueNewProjects];
-                    console.log('Loaded more projects:', uniqueNewProjects);
-                } else {
-                    this.noMoreProjects = true; // No more projects to load
-                }
+                const uniqueNewProjects = newProjects.filter(newProject =>
+                    !this.projects.some(existingProject =>
+                        existingProject.projectIdentifier === newProject.projectIdentifier
+                    )
+                );
+                this.projects = [...this.projects, ...uniqueNewProjects];
+                this.fetchMetadataForProjects(uniqueNewProjects);
                 this._changeDetectorRef.detectChanges();
             },
             error: (error) => {
                 this.errorMessage = 'Error loading more projects';
-                console.error(this.errorMessage, error);
                 this._changeDetectorRef.detectChanges();
             }
         });
-    }
-
-    // Subscribe to projects observable for updates
-    private subscribeToProjects(): void {
-        this._projectsService.projects$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((projects) => {
-                this.projects = projects;
-                this._changeDetectorRef.detectChanges();
-            });
     }
 
     // Subscribe to loading status observable for updates
@@ -163,14 +175,13 @@ export class ExploreComponent implements OnInit, OnDestroy {
             });
     }
 
+    // Track by function for ngFor to optimize rendering
     trackByFn(index: number, item: Project): string | number {
         return item.projectIdentifier || index;
     }
-
 
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }
-
 }
