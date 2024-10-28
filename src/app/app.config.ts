@@ -27,6 +27,7 @@ import { HashService } from './services/hash.service';
 import { NostrWindow } from './types/nostr';
 import { SignerService } from './services/signer.service';
 import { StateService } from './services/state.service';
+import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@blockcore/nostr-login';
 
 
 export function initializeState(signerService: SignerService, stateService: StateService): () => Promise<void> {
@@ -39,6 +40,21 @@ export function initializeState(signerService: SignerService, stateService: Stat
       }
     };
   }
+
+  export function initializeNostrLogin(): () => void {
+    return () => {
+        initNostrLogin({
+            theme: 'ocean',
+            noBanner: true,
+            title: 'Angor Hub',
+            onAuth: (npub: string, options: any) => {
+                console.log('Nostr Login successful:', npub, options);
+
+            },
+        });
+    };
+}
+
 
 export function initializeApp(hashService: HashService) {
     return (): Promise<void> => hashService.load();
@@ -63,6 +79,11 @@ export const appConfig: ApplicationConfig = {
             deps: [SignerService, StateService],
             multi: true,
           },
+        {
+            provide: APP_INITIALIZER,
+            useFactory: initializeNostrLogin,
+            multi: true,
+        },
         provideRouter(
             appRoutes,
             withPreloading(PreloadAllModules),

@@ -14,6 +14,7 @@ import {
 } from 'nostr-tools';
 import { privateKeyFromSeedWords } from 'nostr-tools/nip06';
 import { SecurityService } from './security.service';
+import { NostrLoginService } from './nostr-login.service';
 
 @Injectable({
     providedIn: 'root',
@@ -27,7 +28,8 @@ export class SignerService {
 
     constructor(
         private securityService: SecurityService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private _nostrLoginService: NostrLoginService
     ) {}
 
     savePassword(password: string, durationInMinutes: number): void {
@@ -131,9 +133,20 @@ export class SignerService {
         window.localStorage.setItem(this.localStorageNpubName, npub);
     }
 
-    getPublicKey() {
+    getPublicKey(): string {
+        const nostrLoginData = localStorage.getItem('__nostrlogin_nip46');
+        if (nostrLoginData) {
+            try {
+                const parsedData = JSON.parse(nostrLoginData);
+                return parsedData.pubkey || '';
+            } catch (error) {
+                console.error('Error parsing nostr login data:', error);
+            }
+        }
+
         return localStorage.getItem(this.localStoragePublicKeyName) || '';
     }
+
 
     //npub===============
     setNpub(npub: string) {
@@ -310,6 +323,7 @@ export class SignerService {
         window.localStorage.removeItem(this.localStoragePublicKeyName);
         window.localStorage.removeItem(this.localStorageNpubName);
         window.localStorage.removeItem(this.localStorageNsecName);
+        this._nostrLoginService.logout();
     }
 
     usingNostrBrowserExtension() {

@@ -18,6 +18,8 @@ import { Router, RouterLink } from '@angular/router';
 import { SignerService } from 'app/services/signer.service';
 import { StateService } from 'app/services/state.service';
 import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@blockcore/nostr-login';
+import { NostrLoginService } from 'app/services/nostr-login.service';
+import { Subscription } from 'rxjs';
 @Component({
     selector: 'auth-sign-in',
     templateUrl: './login.component.html',
@@ -34,7 +36,7 @@ import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@block
         MatCheckboxModule,
         MatProgressSpinnerModule,
         CommonModule,
-     ],
+    ],
 })
 export class LoginComponent implements OnInit {
     SecretKeyLoginForm: FormGroup;
@@ -52,44 +54,44 @@ export class LoginComponent implements OnInit {
     npub: string = '';
     nsec: string = '';
 
-    useNostrLogin = false;
+    useNostrLogin = true;
+
+
+    private subscription: Subscription;
 
     constructor(
         private _formBuilder: FormBuilder,
         private _router: Router,
         private _signerService: SignerService,
-        private _stateService: StateService
-    ) {}
+        private _stateService: StateService,
+        private _nostrLoginService: NostrLoginService
+    ) { }
+
 
     ngOnInit(): void {
-
+        this.subscription = this._nostrLoginService.getPublicKeyObservable().subscribe({
+            next: (pubkey: string) => {
+                this.publicKey = pubkey;
+                this._signerService.setPublicKey(pubkey);
+                this.initializeAppState();
+                this._router.navigateByUrl('/home');
+            },
+            error: (error) => console.error('Error receiving public key:', error),
+        });
         this.initializeForms();
         this.checkNostrExtensionAvailability();
-
-        initNostrLogin({
-            theme: 'ocean',
-            noBanner: true,
-            title:'Angor Hub',
-            onAuth: (npub: string, options: any) => {
-                this.initializeAppState();
-                this._router.navigateByUrl('/home');            },
-          });
-
     }
 
-    private async loginWithNostrAccount(): Promise<void> {
-        launchNostrLoginDialog(
-            'welcome-login',
-           );
+
+    login(): void {
+        this._nostrLoginService.launchLoginScreen();
     }
 
-    private async signUpWithNostrAccount(): Promise<void> {
-        launchNostrLoginDialog(
-            'welcome-signup',
-           );
+    signup(): void {
+        this._nostrLoginService.launchSignupScreen();
     }
 
-    private async initializeAppState(): Promise<void> {
+     private async initializeAppState(): Promise<void> {
         const publicKey = this._signerService.getPublicKey();
         if (publicKey) {
             await this._stateService.loadUserProfile(publicKey);
@@ -191,12 +193,18 @@ export class LoginComponent implements OnInit {
     }
 
     async loginWithNostrExtension(): Promise<void> {
-        const success = await this._signerService.handleLoginWithExtension();
-        if (success) {
-            this.initializeAppState();
-            this._router.navigateByUrl('/home');
-        } else {
-            console.error('Failed to log in using Nostr extension');
+        try {
+            const success = await this._signerService.handleLoginWithExtension();
+
+            if (success) {
+                this.initializeAppState();
+                this._router.navigateByUrl('/home');
+            } else {
+                console.error('Failed to log in using Nostr extension');
+            }
+        } catch (error) {
+            console.error('An error occurred during login with Nostr extension', error);
         }
     }
+
 }

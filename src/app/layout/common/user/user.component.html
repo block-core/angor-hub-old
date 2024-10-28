@@ -24,6 +24,10 @@
         </span>
     </button>
     <mat-divider class="my-2"></mat-divider>
+    <button mat-menu-item (click)="Switch()">
+        <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+        <span>Switch account</span>
+    </button>
     <button mat-menu-item (click)="profile()">
         <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
         <span>Profile</span>

@@ -27,6 +27,8 @@ import { SubscriptionService } from 'app/services/subscription.service';
 import { Filter, NostrEvent } from 'nostr-tools';
 import { Subject, takeUntil } from 'rxjs';
 import { StateService } from 'app/services/state.service';
+import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@blockcore/nostr-login';
+import { NostrLoginService } from 'app/services/nostr-login.service';
 
 @Component({
     selector: 'user',
@@ -44,6 +46,7 @@ import { StateService } from 'app/services/state.service';
     ],
 })
 export class UserComponent implements OnInit, OnDestroy {
+
     user: any;
     isLoading: boolean = true;
     errorMessage: string | null = null;
@@ -64,6 +67,7 @@ export class UserComponent implements OnInit, OnDestroy {
         private _storageService: StorageService,
         private sanitizer: DomSanitizer,
         private _changeDetectorRefef: ChangeDetectorRef,
+        private _nostrLoginService: NostrLoginService
     ) { }
 
 
@@ -78,12 +82,12 @@ export class UserComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.detectChanges();
             });
 
-            this._storageService.profile$.subscribe((data) => {
-                if (data && data.pubKey === this.userPubKey) {
-                  this.user = data.metadata;
-                  this._changeDetectorRefef.detectChanges();
-                }
-              });
+        this._storageService.profile$.subscribe((data) => {
+            if (data && data.pubKey === this.userPubKey) {
+                this.user = data.metadata;
+                this._changeDetectorRefef.detectChanges();
+            }
+        });
 
 
 
@@ -129,5 +133,9 @@ export class UserComponent implements OnInit, OnDestroy {
 
     getSafeUrl(url: string): SafeUrl {
         return this.sanitizer.bypassSecurityTrustUrl(url);
+    }
+
+    Switch() {
+        this._nostrLoginService.switchAccount();
     }
 }

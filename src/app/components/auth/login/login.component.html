@@ -11,7 +11,7 @@
             >
                 Login
             </div>
-            <div *ngIf="!useNostrLogin">
+            <div>
                 <div class="mt-0.5 flex items-baseline font-medium">
                     <div>Don't have an account?</div>
                     <a
@@ -48,7 +48,7 @@
                             class="flex-auto space-x-2"
                             type="button"
                             mat-stroked-button
-                            (click)="loginWithNostrExtension()"
+                            (click)="login()"
                         >
                             <mat-icon
                                 class="icon-size-5"
@@ -58,11 +58,6 @@
                         </button>
                     </div>
 
-                    <div class="mt-8 flex items-center">
-                        <div class="mt-px flex-auto border-t"></div>
-                        <div class="text-secondary mx-2">Or</div>
-                        <div class="mt-px flex-auto border-t"></div>
-                    </div>
                 </div>
 
                 <!-- Login form with Secret Key -->
@@ -74,7 +69,7 @@
                     <!-- secret key field -->
                     <div class="mt-8 flex items-center">
                         <div class="mt-px flex-auto border-t"></div>
-                        <div class="text-secondary mx-2">Enter secret key</div>
+                        <div class="text-secondary mx-2">Or enter secret key</div>
                         <div class="mt-px flex-auto border-t"></div>
                     </div>
                     <mat-form-field class="w-full">
@@ -292,36 +287,7 @@
                     </button>
                 </form>
             </div>
-            <div *ngIf="useNostrLogin">
-                <div class="mt-8 flex items-center space-x-4">
-                    <button
-                        class="flex-auto space-x-2"
-                        type="button"
-                        mat-stroked-button
-                        (click)="loginWithNostrAccount()"
-                    >
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'feather:zap'"
-                        ></mat-icon>
-                        <span>Login with Nostr Account</span>
-                    </button>
-                </div>
-                <div class="mt-8 flex items-center space-x-4">
-                    <button
-                        class="flex-auto space-x-2"
-                        type="button"
-                        mat-stroked-button
-                        (click)="signUpWithNostrAccount()"
-                    >
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'feather:zap'"
-                        ></mat-icon>
-                        <span>Sign up with Nostr Account</span>
-                    </button>
-                </div>
-            </div>
+
         </div>
     </div>
     <div

@@ -152,9 +152,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
 
-
-
-
         this._angorConfigService.config$.subscribe((config) => {
             if (config.scheme === 'auto') {
                 this.detectSystemTheme();
@@ -263,10 +260,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
             }
         });
     }
-
-
-
-
 
     getSafeUrl(url: string): SafeUrl {
         return this._sanitizer.bypassSecurityTrustUrl(url);
