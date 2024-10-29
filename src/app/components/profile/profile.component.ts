@@ -129,8 +129,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
     totalContacts: number = 0;
     followersCount: number = 0;
     followingCount: number = 0;
+    aboutExpanded: boolean = true;
 
-    // تعریف Observable برای نگه‌داشتن اطلاعات آماری
+
     stats$!: Observable<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }>;
 
     constructor(
@@ -179,6 +180,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     }
 
+    toggleAbout(): void {
+        this.aboutExpanded = !this.aboutExpanded;
+    }
     ngOnDestroy(): void {
         if (this.subscriptionId) {
             this._subscriptionService.removeSubscriptionById(this.subscriptionId);

@@ -46,17 +46,17 @@ import { ProfileComponent } from '../profile/profile.component';
     ],
 })
 export class ChatsComponent implements OnInit, OnDestroy {
-    // Variables to store chat list, filtered chats, user profile, and selected chat
+
     chats: Chat[] = [];
     filteredChats: Chat[] = [];
     profile: Profile;
     selectedChat: Chat;
 
-    // Drawer management for profile and new chat views
+
     drawerComponent: 'profile' | 'new-chat';
     drawerOpened: boolean = false;
 
-    // Subject for managing unsubscriptions
+
     private _unsubscribeAll: Subject<void> = new Subject<void>();
 
     /**
@@ -75,7 +75,7 @@ export class ChatsComponent implements OnInit, OnDestroy {
      * Subscribes to chat list, profile, and selected chat updates, and initializes the chat list subscription.
      */
     ngOnInit(): void {
-        // Subscribe to chat updates
+
         this._chatService.chats$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((chats: Chat[]) => {
@@ -83,7 +83,7 @@ export class ChatsComponent implements OnInit, OnDestroy {
                 this._markForCheck();
             });
 
-        // Subscribe to profile updates
+
         this._chatService.profile$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((profile: Profile) => {
@@ -91,7 +91,7 @@ export class ChatsComponent implements OnInit, OnDestroy {
                 this._markForCheck();
             });
 
-        // Subscribe to selected chat updates
+
         this._chatService.chat$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((chat: Chat) => {
@@ -108,11 +108,11 @@ export class ChatsComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        // Unsubscribe from all observables
+
         this._unsubscribeAll.next();
         this._unsubscribeAll.complete();
 
-        // Reset the selected chat in the service
+
         this._chatService.resetChat();
         localStorage.removeItem('currentChatId');
     }
