@@ -99,7 +99,6 @@ export class ChatsComponent implements OnInit, OnDestroy {
                 this._markForCheck();
             });
 
-        this._chatService.InitSubscribeToChatList();
 
         const savedChatId = localStorage.getItem('currentChatId');
 

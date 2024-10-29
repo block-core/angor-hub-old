@@ -73,7 +73,7 @@ export class SubscriptionService {
     const lastActionTime = this.lastActionTimestamp.get(subscriptionId);
 
     if (lastActionTime && now - lastActionTime < this.debounceInterval) {
-      console.warn('Skipping removal due to rapid toggling');
+    //   console.warn('Skipping removal due to rapid toggling');
       return;
     }
 
