@@ -80,6 +80,11 @@ export const appRoutes: Route[] = [
                     import('app/components/explore/explore.routes'),
             },
             {
+                path: 'bookmark',
+                loadChildren: () =>
+                    import('app/components/bookmark/bookmark.routes'),
+            },
+            {
                 path: 'profile',
                 loadChildren: () =>
                     import('app/components/profile/profile.routes'),

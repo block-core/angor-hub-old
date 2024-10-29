@@ -17,6 +17,13 @@ export const defaultNavigation: AngorNavigationItem[] = [
         link: '/explore',
     },
     {
+        id: 'bookmark',
+        title: 'Bookmark',
+        type: 'basic',
+        icon: 'heroicons_outline:bookmark',
+        link: '/bookmark',
+    },
+    {
         id: 'settings',
         title: 'Settings',
         type: 'basic',
@@ -36,6 +43,10 @@ export const defaultNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:chat-bubble-left-right',
         link: '/chat',
+        badge: {
+            title: '27',
+            classes: 'px-2 bg-pink-600 text-white rounded-full',
+        },
     },
 ];
 
@@ -53,6 +64,13 @@ export const compactNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:magnifying-glass',
         link: '/explore',
+    },
+    {
+        id: 'bookmark',
+        title: 'Bookmark',
+        type: 'basic',
+        icon: 'heroicons_outline:bookmark',
+        link: '/bookmark',
     },
     {
         id: 'settings',
@@ -93,6 +111,13 @@ export const futuristicNavigation: AngorNavigationItem[] = [
         link: '/explore',
     },
     {
+        id: 'bookmark',
+        title: 'Bookmark',
+        type: 'basic',
+        icon: 'heroicons_outline:bookmark',
+        link: '/bookmark',
+    },
+    {
         id: 'settings',
         title: 'Settings',
         type: 'basic',
@@ -129,6 +154,13 @@ export const horizontalNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:magnifying-glass',
         link: '/explore',
+    },
+    {
+        id: 'bookmark',
+        title: 'Bookmark',
+        type: 'basic',
+        icon: 'heroicons_outline:bookmark',
+        link: '/bookmark',
     },
     {
         id: 'settings',
