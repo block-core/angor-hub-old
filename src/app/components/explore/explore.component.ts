@@ -61,10 +61,14 @@ import { Contact } from '../chat/chat.types';
 })
 export class ExploreComponent implements OnInit, OnDestroy {
 
+
     projects: Project[] = [];
+    filteredProjects: Project[] = []
     loading: boolean = false;
     errorMessage: string = '';
     noMoreProjects: boolean = false;
+    showCloseSearchButton: boolean;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
@@ -79,6 +83,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
         this.subscribeToProjectsUpdates();
         this.subscribeToLoading();
         this.subscribeToNoMoreProjects();
+
     }
 
     // Load initial projects and fetch metadata for each
@@ -89,6 +94,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
         ).subscribe({
             next: (projects: Project[]) => {
                 this.projects = projects;
+                this.filteredProjects = this.projects;
                 this.fetchMetadataForProjects(projects);
                 this._changeDetectorRef.detectChanges();
             },
@@ -146,6 +152,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
                     )
                 );
                 this.projects = [...this.projects, ...uniqueNewProjects];
+                this.filteredProjects = [...this.projects];
                 this.fetchMetadataForProjects(uniqueNewProjects);
                 this._changeDetectorRef.detectChanges();
             },
@@ -205,6 +212,50 @@ export class ExploreComponent implements OnInit, OnDestroy {
     ).subscribe();
 }
 
+
+    filterByQuery(query: string): void {
+        if (!query || query.trim() === '') {
+            this.filteredProjects = [...this.projects];
+            this.showCloseSearchButton = false;
+            this._changeDetectorRef.detectChanges();
+            return;
+        }
+
+        const lowerCaseQuery = query.toLowerCase();
+
+        this.filteredProjects = this.projects.filter((project) => {
+            return (
+                (project.displayName &&
+                    project.displayName
+                        .toLowerCase()
+                        .includes(lowerCaseQuery)) ||
+                (project.about &&
+                    project.about.toLowerCase().includes(lowerCaseQuery)) ||
+                (project.displayName &&
+                    project.displayName
+                        .toLowerCase()
+                        .includes(lowerCaseQuery)) ||
+                (project.nostrPubKey &&
+                    project.nostrPubKey
+                        .toLowerCase()
+                        .includes(lowerCaseQuery)) ||
+                (project.projectIdentifier &&
+                    project.projectIdentifier
+                        .toLowerCase()
+                        .includes(lowerCaseQuery))
+            );
+        });
+
+        this.showCloseSearchButton = this.projects.length > 0;
+
+        this._changeDetectorRef.detectChanges();
+    }
+
+    resetSearch(queryInput: HTMLInputElement): void {
+        queryInput.value = '';
+        this.filterByQuery('');
+        this.showCloseSearchButton = false;
+    }
 
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);

@@ -28,16 +28,18 @@
             <div class="flex w-full max-w-xs flex-col items-center justify-between sm:max-w-none sm:flex-row">
                 <!-- Search bar with clear button -->
                 <div class="flex w-full items-center space-x-2 sm:w-auto">
-                    <mat-form-field class="mt-4 w-full sm:w-80" [subscriptSizing]="'dynamic'">
+                    <mat-form-field class="mt-4 w-full sm:w-80" [subscriptSizing]="'dynamic'" (keyup.enter)="filterByQuery(query.value)">
                         <mat-icon matPrefix class="icon-size-5"
                             [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                         <input placeholder="Search ..." matInput #query />
                     </mat-form-field>
                     <!-- Clear search button -->
-                    <button mat-icon-button color="warn" class="mt-4">
+                    <button mat-icon-button color="warn" class="mt-4"  *ngIf="showCloseSearchButton"
+                    (click)="resetSearch(query)">
                         <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
                     </button>
-                    <button mat-icon-button color="success" class="mt-4">
+                    <button mat-icon-button color="success" class="mt-4" *ngIf="!showCloseSearchButton"
+                    (click)="filterByQuery(query.value)">
                         <mat-icon [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                     </button>
                 </div>
@@ -51,7 +53,7 @@
             <!-- Project Cards -->
             <div class="mt-10 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
                 <!-- Loop through projects and render cards -->
-                <ng-container *ngFor="let project of projects; trackBy: trackByFn">
+                <ng-container *ngFor="let project of filteredProjects; trackBy: trackByFn">
                     <angor-card class="filter-info flex w-full flex-col">
                         <div class="flex h-32">
                             <img class="object-cover" [src]="project.banner || '/images/pages/profile/cover.jpg'" alt="Card cover image"
@@ -141,7 +143,7 @@
                     </angor-card>
                 </ng-container>
             </div>
-            <ng-container *ngIf="projects.length == 0">
+            <ng-container *ngIf="filteredProjects.length == 0">
                 <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
                     <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
                     <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
@@ -150,7 +152,7 @@
                 </div>
             </ng-container>
             <!-- Load More Button -->
-            <div *ngIf="projects.length > 0" class="mt-10 flex justify-center">
+            <div *ngIf="filteredProjects.length > 0" class="mt-10 flex justify-center">
                 <button mat-raised-button color="primary" (click)="loadMoreProjects()" [disabled]="loading">
                     {{ loading ? 'Loading...' : 'Load More Projects' }}
                 </button>
