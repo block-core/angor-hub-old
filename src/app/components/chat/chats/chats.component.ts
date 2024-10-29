@@ -21,6 +21,7 @@ import { ChatService } from '../chat.service';
 import { Chat, Profile } from '../chat.types';
 import { NewChatComponent } from '../new-chat/new-chat.component';
 import { ProfileComponent } from '../profile/profile.component';
+import { AngorNavigationService, AngorVerticalNavigationComponent } from '@angor/components/navigation';
 
 @Component({
     selector: 'chat-chats',
@@ -59,23 +60,39 @@ export class ChatsComponent implements OnInit, OnDestroy {
 
     private _unsubscribeAll: Subject<void> = new Subject<void>();
 
-    /**
-     * Constructor for ChatsComponent
-     * @param _chatService - The service managing chats
-     * @param _changeDetectorRef - Reference for change detection in Angular
-     */
     constructor(
         private _chatService: ChatService,
         private _changeDetectorRef: ChangeDetectorRef,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private _angorNavigationService: AngorNavigationService
+
     ) {}
 
-    /**
-     * Angular lifecycle hook (ngOnInit) for component initialization.
-     * Subscribes to chat list, profile, and selected chat updates, and initializes the chat list subscription.
-     */
-    ngOnInit(): void {
 
+    private updateNavigationBadge(): void {
+
+
+        const mainNavigationComponent =
+            this._angorNavigationService.getComponent<AngorVerticalNavigationComponent>(
+                'mainNavigation'
+            );
+
+        if (mainNavigationComponent) {
+            const mainNavigation = mainNavigationComponent.navigation;
+            const menuItem = this._angorNavigationService.getItem(
+                'chat',
+                mainNavigation
+            );
+
+            menuItem.badge.title = '0';
+
+            mainNavigationComponent.refresh();
+        }
+    }
+
+
+    ngOnInit(): void {
+        this.updateNavigationBadge();
         this._chatService.chats$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((chats: Chat[]) => {

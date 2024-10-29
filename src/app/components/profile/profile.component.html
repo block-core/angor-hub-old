@@ -243,7 +243,19 @@
 <!-- Main -->
 <div class="mx-auto w-full max-w-5xl p-6 sm:p-8">
 <!-- About Section -->
-
+<!-- <mat-accordion class="mb-8 max-w-4xl w-full about-section p-6 transition-all duration-300">
+        <mat-expansion-panel>
+            <mat-expansion-panel-header
+                [collapsedHeight]="'56px'"
+            >
+                <mat-panel-title
+                    class="font-medium leading-tight"
+                    >About</mat-panel-title
+                >
+            </mat-expansion-panel-header>
+            {{ profileUser?.about || '' }}
+        </mat-expansion-panel>
+</mat-accordion> -->
 
 <angor-card
     *ngIf="profileUser?.about && profileUser.about.trim() !== ''"

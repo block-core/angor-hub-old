@@ -45,7 +45,7 @@ export const defaultNavigation: AngorNavigationItem[] = [
         link: '/chat',
         badge: {
             title: '27',
-            classes: 'px-2 bg-pink-600 text-white rounded-full',
+            classes: 'px-2 bg-[#086c81] text-white rounded-full',
         },
     },
 ];
@@ -92,6 +92,10 @@ export const compactNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:chat-bubble-left-right',
         link: '/chat',
+        badge: {
+            title: '27',
+            classes: 'px-2 bg-[#086c81] text-white rounded-full',
+        },
     },
 ];
 
@@ -137,6 +141,10 @@ export const futuristicNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:chat-bubble-left-right',
         link: '/chat',
+        badge: {
+            title: '27',
+            classes: 'px-2 bg-[#086c81] text-white rounded-full',
+        },
     },
 ];
 
@@ -182,5 +190,9 @@ export const horizontalNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:chat-bubble-left-right',
         link: '/chat',
+        badge: {
+            title: '27',
+            classes: 'px-2 bg-[#086c81] text-white rounded-full',
+        },
     },
 ];

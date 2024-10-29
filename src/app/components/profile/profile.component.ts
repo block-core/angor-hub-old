@@ -47,7 +47,7 @@ import { ReceiveDialogComponent } from './zap/receive-dialog/receive-dialog.comp
 import { SendDialogComponent } from './zap/send-dialog/send-dialog.component';
 import { SubscriptionService } from 'app/services/subscription.service';
 import { Clipboard } from '@angular/cdk/clipboard';
-
+import {MatExpansionModule} from '@angular/material/expansion';
 interface Chip {
     color?: string;
     selected?: string;
@@ -82,6 +82,9 @@ interface Chip {
         MatProgressSpinnerModule,
         InfiniteScrollModule,
         EventListComponent,
+        MatIconModule,
+        MatExpansionModule
+
     ],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
