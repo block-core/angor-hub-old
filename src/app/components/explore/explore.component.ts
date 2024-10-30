@@ -28,10 +28,11 @@ import { Router, RouterLink } from '@angular/router';
 import { Project } from 'app/interface/project.interface';
 import { StorageService } from 'app/services/storage.service';
 import { MetadataService } from 'app/services/metadata.service';
-import { catchError, of, Subject, takeUntil, tap } from 'rxjs';
+import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
 import { ProjectsService, ProjectStats } from '../../services/projects.service';
 import { ChatService } from '../chat/chat.service';
 import { Contact } from '../chat/chat.types';
+import { BookmarkService } from 'app/services/bookmark.service';
 
 @Component({
     selector: 'explore',
@@ -68,6 +69,8 @@ export class ExploreComponent implements OnInit, OnDestroy {
     errorMessage: string = '';
     noMoreProjects: boolean = false;
     showCloseSearchButton: boolean;
+    bookmarks$: Observable<string[]>;
+
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -76,7 +79,11 @@ export class ExploreComponent implements OnInit, OnDestroy {
         private _storageService: StorageService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
-    ) {}
+        private _bookmarkService: BookmarkService,
+    ) {
+
+        this.bookmarks$ = this._bookmarkService.bookmarks$;
+    }
 
     ngOnInit(): void {
         this.loadInitialProjects();
@@ -86,7 +93,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
     }
 
-    // Load initial projects and fetch metadata for each
+
     private loadInitialProjects(): void {
         this._projectsService.resetProjects();
         this._projectsService.fetchProjects().pipe(
@@ -105,7 +112,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
         });
     }
 
-    // Load metadata for each project by public key
+
     private fetchMetadataForProjects(projects: Project[]): void {
         projects.forEach(project => {
             this._storageService.getProfile(project.nostrPubKey)
@@ -117,7 +124,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
         });
     }
 
-    // Real-time subscription to updates on project metadata
+
     private subscribeToProjectsUpdates(): void {
         this._storageService.profile$
             .pipe(takeUntil(this._unsubscribeAll))
@@ -132,7 +139,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
             });
     }
 
-    // Method to update project metadata
+
     private updateProjectMetadata(project: Project, metadata: any): void {
         project.displayName = metadata.name || project.displayName;
         project.about = metadata.about || project.about;
@@ -140,7 +147,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
         project.banner= metadata.banner || project.banner;
     }
 
-    // Load the next page of projects and add them to the existing list
+
     loadMoreProjects(): void {
         this._projectsService.fetchProjects().pipe(
             takeUntil(this._unsubscribeAll)
@@ -163,7 +170,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
         });
     }
 
-    // Subscribe to loading status observable for updates
+
     private subscribeToLoading(): void {
         this._projectsService.loading$
             .pipe(takeUntil(this._unsubscribeAll))
@@ -173,7 +180,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
             });
     }
 
-    // Subscribe to noMoreProjects to hide Load More button when no more data is available
+
     private subscribeToNoMoreProjects(): void {
         this._projectsService.noMoreProjects$
             .pipe(takeUntil(this._unsubscribeAll))
@@ -183,26 +190,26 @@ export class ExploreComponent implements OnInit, OnDestroy {
             });
     }
 
-    // Track by function for ngFor to optimize rendering
+
     trackByFn(index: number, item: Project): string | number {
         return item.projectIdentifier || index;
     }
 
-    // Implementation for opening chat with the specified public key
+
     openChat(pubKey: string): void {
 
     }
 
 
-   // Navigate to project details page with the specified project
+
    goToProjectDetails(project: Project): void {
     this._projectsService.fetchProjectStats(project.projectIdentifier).pipe(
         tap((stats: ProjectStats) => {
-            // Save stats in storage before navigating
+
             this._storageService.saveProjectStats(project.projectIdentifier, stats);
         }),
         tap(() => {
-            // Navigate to the profile/details page once stats are saved
+
             this._router.navigate(['/profile', project.nostrPubKey]);
         }),
         catchError((error) => {
@@ -257,6 +264,18 @@ export class ExploreComponent implements OnInit, OnDestroy {
         this.showCloseSearchButton = false;
     }
 
+    toggleBookmark(projectId: string): void {
+        if (this._bookmarkService.isBookmarked(projectId)) {
+            this._bookmarkService.removeBookmark(projectId);
+        } else {
+            this._bookmarkService.addBookmark(projectId);
+        }
+    }
+
+    isProjectBookmarked(projectId: string): boolean {
+        return this._bookmarkService.isBookmarked(projectId);
+    }
+    
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();

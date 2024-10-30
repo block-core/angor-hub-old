@@ -100,15 +100,26 @@
                                     </div>
                                 </div>
                                 @if (project.displayName || project.name) {
-                                <!-- Chat Button -->
-                                <div
-                                    class="absolute top-2 right-2 flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
-                                    <button mat-icon-button (click)="openChat(project.nostrPubKey)">
-                                        <mat-icon class="icon-size-5"
-                                            [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
-                                    </button>
+                                <!-- Buttons -->
+                                <div class="absolute top-2 right-2 flex space-x-2">
+                                    <div
+                                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                                        <button mat-icon-button (click)="openChat(project.nostrPubKey)">
+                                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                                        <button mat-icon-button (click)="toggleBookmark(project.projectIdentifier)">
+                                            <mat-icon class="icon-size-5"
+                                                      [svgIcon]="(bookmarks$ | async)?.includes(project.projectIdentifier) ? 'heroicons_solid:bookmark' : 'heroicons_outline:bookmark'">
+                                            </mat-icon>
+                                        </button>
+                                    </div>
                                 </div>
+
                                 }
+
                             </div>
                             <hr class="my-6 w-full border-t" />
                             <div class="flex items-center justify-between">

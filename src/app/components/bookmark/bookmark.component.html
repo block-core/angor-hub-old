@@ -1,1 +1,140 @@
-<p>bookmark works!</p>
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto">
+    <!-- Header -->
+    <div class="dark relative flex-0 overflow-hidden bg-gray-800 px-4 py-8 sm:p-16">
+        <!-- Background -->
+        <svg class="pointer-events-none absolute inset-0" viewBox="0 0 960 540" width="100%" height="100%"
+            preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+            <g class="text-gray-700 opacity-25" fill="none" stroke="currentColor" stroke-width="100">
+                <circle r="234" cx="196" cy="23"></circle>
+                <circle r="234" cx="790" cy="491"></circle>
+            </g>
+        </svg>
+        <div class="relative z-10 flex flex-col items-center">
+            <h2 class="text-xl font-semibold">Bookmark</h2>
+            <div class="mt-1 text-center text-4xl font-extrabold leading-tight tracking-tight sm:text-7xl">
+                Explore Your Saved Projects
+            </div>
+            <div class="text-secondary mt-6 max-w-2xl text-center tracking-tight sm:text-2xl">
+                Review and manage your bookmarked projects below.
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="p-6 sm:p-10">
+
+        <div class="mx-auto flex w-full flex-auto flex-col sm:max-w-5xl">
+            <!-- Project Cards -->
+            <div class="mt-10 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
+                <!-- Loop through projects and render cards -->
+                <ng-container *ngFor="let project of savedProjects; trackBy: trackByFn">
+                    <angor-card class="filter-info flex w-full flex-col">
+                        <div class="flex h-32">
+                            <img class="object-cover" [src]="project.banner || '/images/pages/profile/cover.jpg'" alt="Card cover image"
+                                onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';"
+                                alt="Card cover image" />
+                        </div>
+                        <div class="flex px-8">
+                            <div class="bg-card -mt-12 rounded-full p-1">
+                                <img class="h-24 w-24 rounded-full object-cover" [src]="
+                                project.picture ||
+                                        'images/avatars/avatar-placeholder.png'
+                                    " onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
+                                    alt="Project logo" />
+                            </div>
+                        </div>
+                        <div class="flex flex-col px-8 pb-6 pt-4">
+                            <div class="flex items-center justify-between">
+                                <div class="min-w-0 flex-1">
+                                    @if (project.displayName || project.name) {
+                                    <div class="truncate text-2xl font-semibold leading-tight" role="button" (click)="
+                                                goToProjectDetails(project)
+                                            ">
+                                        {{
+                                        project.displayName ||
+                                        project.nostrPubKey
+                                        }}
+                                    </div>
+                                    }
+                                    @if (
+                                    !project.name && !project.displayName
+                                    ) {
+                                    <div class="truncate text-2xl font-semibold leading-tight">
+                                        {{
+                                        project.displayName ||
+                                        project.nostrPubKey
+                                        }}
+                                    </div>
+                                    }
+                                    <div class="text-secondary mt-1 truncate leading-tight">
+                                        {{
+                                        project.about ||
+                                        'No description available'
+                                        }}
+                                    </div>
+                                </div>
+                                @if (project.displayName || project.name) {
+                                <!-- Buttons -->
+                                <div class="absolute top-2 right-2 flex space-x-2">
+                                    <div
+                                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                                        <button mat-icon-button (click)="openChat(project.nostrPubKey)">
+                                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                                        <button mat-icon-button (click)="toggleBookmark(project.projectIdentifier)">
+                                            <mat-icon class="icon-size-5"
+                                                      [svgIcon]="(bookmarks$ | async)?.includes(project.projectIdentifier) ? 'heroicons_solid:bookmark' : 'heroicons_outline:bookmark'">
+                                            </mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                            <hr class="my-6 w-full border-t" />
+                            <div class="flex items-center justify-between">
+                                <div class="text-secondary mr-3 text-md font-medium">
+                                    {{ project.totalInvestmentsCount || 0 }}
+                                    investors
+                                </div>
+                                <div class="flex items-center">
+                                    <ng-container *ngFor="
+                                            let investor of [].constructor(
+                                                project.totalInvestmentsCount ||
+                                                    0
+                                            );
+                                            let i = index
+                                        ">
+                                        <ng-container *ngIf="i < 10">
+                                            <img class="text-card ring-bg-card m-0.5 h-6 w-6 rounded-full ring-2"
+                                                [ngClass]="{
+                                                    '-ml-3':
+                                                        project.totalInvestmentsCount >
+                                                            1 && i > 0,
+                                                }" [src]="
+                                                    'images/avatars/avatar-placeholder.png'
+                                                " alt="Investor avatar {{
+                                                    i + 1
+                                                }}" />
+                                        </ng-container>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </angor-card>
+                </ng-container>
+            </div>
+            <ng-container *ngIf="savedProjects.length == 0">
+                <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
+                    <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
+                    <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
+                        No project
+                    </div>
+                </div>
+            </ng-container>
+
+        </div>
+    </div>
+</div>

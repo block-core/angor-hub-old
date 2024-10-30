@@ -13,6 +13,7 @@ export interface Project {
     createdOnBlock: number;
     trxId: string;
     totalInvestmentsCount: number;
+    isBookmarked: boolean
 }
 
 export interface ProjectStats {

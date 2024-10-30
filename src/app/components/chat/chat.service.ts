@@ -461,7 +461,6 @@ export class ChatService implements OnDestroy {
                 }
             );
 
-        // اگر `collectMessages` فعال باشد، پیام‌های گردآوری شده را برگرداند
         if (collectMessages) {
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return messages;
