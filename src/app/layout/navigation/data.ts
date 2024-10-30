@@ -24,20 +24,6 @@ export const defaultNavigation: AngorNavigationItem[] = [
         link: '/bookmark',
     },
     {
-        id: 'settings',
-        title: 'Settings',
-        type: 'basic',
-        icon: 'heroicons_outline:cog-6-tooth',
-        link: '/settings',
-    },
-    {
-        id: 'profile',
-        title: 'Profile',
-        type: 'basic',
-        icon: 'heroicons_outline:user',
-        link: '/profile',
-    },
-    {
         id: 'chat',
         title: 'Chat',
         type: 'basic',
@@ -48,37 +34,6 @@ export const defaultNavigation: AngorNavigationItem[] = [
             classes: 'px-2 bg-[#086c81] text-white rounded-full',
         },
     },
-];
-
-export const compactNavigation: AngorNavigationItem[] = [
-    {
-        id: 'home',
-        title: 'Home',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/home',
-    },
-    {
-        id: 'explore',
-        title: 'Explore',
-        type: 'basic',
-        icon: 'heroicons_outline:magnifying-glass',
-        link: '/explore',
-    },
-    {
-        id: 'bookmark',
-        title: 'Bookmark',
-        type: 'basic',
-        icon: 'heroicons_outline:bookmark',
-        link: '/bookmark',
-    },
-    {
-        id: 'settings',
-        title: 'Settings',
-        type: 'basic',
-        icon: 'heroicons_outline:cog-6-tooth',
-        link: '/settings',
-    },
     {
         id: 'profile',
         title: 'Profile',
@@ -87,65 +42,12 @@ export const compactNavigation: AngorNavigationItem[] = [
         link: '/profile',
     },
     {
-        id: 'chat',
-        title: 'Chat',
-        type: 'basic',
-        icon: 'heroicons_outline:chat-bubble-left-right',
-        link: '/chat',
-        badge: {
-            title: '27',
-            classes: 'px-2 bg-[#086c81] text-white rounded-full',
-        },
-    },
-];
-
-export const futuristicNavigation: AngorNavigationItem[] = [
-    {
-        id: 'home',
-        title: 'Home',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/home',
-    },
-    {
-        id: 'explore',
-        title: 'Explore',
-        type: 'basic',
-        icon: 'heroicons_outline:magnifying-glass',
-        link: '/explore',
-    },
-    {
-        id: 'bookmark',
-        title: 'Bookmark',
-        type: 'basic',
-        icon: 'heroicons_outline:bookmark',
-        link: '/bookmark',
-    },
-    {
         id: 'settings',
         title: 'Settings',
         type: 'basic',
         icon: 'heroicons_outline:cog-6-tooth',
         link: '/settings',
-    },
-    {
-        id: 'profile',
-        title: 'Profile',
-        type: 'basic',
-        icon: 'heroicons_outline:user',
-        link: '/profile',
-    },
-    {
-        id: 'chat',
-        title: 'Chat',
-        type: 'basic',
-        icon: 'heroicons_outline:chat-bubble-left-right',
-        link: '/chat',
-        badge: {
-            title: '27',
-            classes: 'px-2 bg-[#086c81] text-white rounded-full',
-        },
-    },
+    }
 ];
 
 export const horizontalNavigation: AngorNavigationItem[] = [
@@ -171,20 +73,6 @@ export const horizontalNavigation: AngorNavigationItem[] = [
         link: '/bookmark',
     },
     {
-        id: 'settings',
-        title: 'Settings',
-        type: 'basic',
-        icon: 'heroicons_outline:cog-6-tooth',
-        link: '/settings',
-    },
-    {
-        id: 'profile',
-        title: 'Profile',
-        type: 'basic',
-        icon: 'heroicons_outline:user',
-        link: '/profile',
-    },
-    {
         id: 'chat',
         title: 'Chat',
         type: 'basic',
@@ -195,4 +83,18 @@ export const horizontalNavigation: AngorNavigationItem[] = [
             classes: 'px-2 bg-[#086c81] text-white rounded-full',
         },
     },
+    {
+        id: 'profile',
+        title: 'Profile',
+        type: 'basic',
+        icon: 'heroicons_outline:user',
+        link: '/profile',
+    },
+    {
+        id: 'settings',
+        title: 'Settings',
+        type: 'basic',
+        icon: 'heroicons_outline:cog-6-tooth',
+        link: '/settings',
+    }
 ];
