@@ -48,6 +48,7 @@ export class RegisterComponent implements OnInit {
     };
     registerForm: UntypedFormGroup;
     showAlert: boolean = false;
+    generatedKeys: { secretKey: string; pubkey: string; npub: string; nsec: string } | null = null;
 
     constructor(
         private _formBuilder: UntypedFormBuilder,
@@ -57,70 +58,58 @@ export class RegisterComponent implements OnInit {
 
     ngOnInit(): void {
         this.registerForm = this._formBuilder.group({
-            name: ['', Validators.required],
-            username: ['', Validators.required],
-            about: [''],
-            avatarUrl: [''],
-            password: ['', Validators.required],
-            agreements: ['', Validators.requiredTrue],
+            confirmation: [false, Validators.requiredTrue]
         });
     }
 
-    register(): void {
-        if (this.registerForm.invalid) {
-            return;
-        }
-
-        this.registerForm.disable();
-
-        this.showAlert = false;
-
-        // Get form values
-        const name = this.registerForm.get('name')?.value;
-        const username = this.registerForm.get('username')?.value;
-        const about = this.registerForm.get('about')?.value;
-        const avatarUrl = this.registerForm.get('avatarUrl')?.value;
+    generateKeys(): void {
         const password = this.registerForm.get('password')?.value;
-
-        // Generate keys using the security service
         const keys = this._signerService.generateAndStoreKeys(password);
-
-        if (!keys) {
-            // If key generation failed, enable the form and show an error
-            this.registerForm.enable();
+        if (keys) {
+            this.generatedKeys = keys;
+            this.alert = {
+                type: 'success',
+                message: 'Keys generated and stored successfully!',
+            };
+        } else {
             this.alert = {
                 type: 'error',
                 message: 'Error generating keys. Please try again.',
             };
-            this.showAlert = true;
+        }
+        this.showAlert = true;
+    }
+
+    register(): void {
+        if (this.registerForm.invalid || !this.generatedKeys) {
             return;
         }
 
-        const { secretKey, pubkey, npub, nsec } = keys;
+        this.registerForm.disable();
+        this.showAlert = false;
 
-        // Simulate saving user metadata along with keys
-        const userMetadata = {
-            secretKey,
-            name,
-            username,
-            about,
-            avatarUrl,
-            password,
-            pubkey,
-            npub,
-            nsec,
-        };
-
+        // Simulate saving user metadata
+        const userMetadata = { ...this.generatedKeys, password: this.registerForm.get('password')?.value };
         console.log('User Metadata:', userMetadata);
 
-        // Display success alert
+        // Display success alert and navigate to home
         this.alert = {
             type: 'success',
             message: 'Account created successfully!',
         };
         this.showAlert = true;
-
-        // Redirect to home
         this._router.navigateByUrl('/home');
     }
+
+    copyToClipboard(value: string): void {
+        navigator.clipboard.writeText(value).then(
+            () => {
+                console.log('Copied to clipboard successfully!');
+            },
+            (err) => {
+                console.error('Could not copy text: ', err);
+            }
+        );
+    }
+
 }

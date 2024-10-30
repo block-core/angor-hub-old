@@ -13,7 +13,7 @@ import {
     PreloadAllModules,
     provideRouter,
     withInMemoryScrolling,
-    withPreloading,
+   
 } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { TranslocoService, provideTransloco } from '@ngneat/transloco';
@@ -86,7 +86,6 @@ export const appConfig: ApplicationConfig = {
         },
         provideRouter(
             appRoutes,
-            withPreloading(PreloadAllModules),
             withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })
         ),
 

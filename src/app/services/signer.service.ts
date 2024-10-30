@@ -338,7 +338,7 @@ export class SignerService {
         return !!localStorage.getItem(this.localStorageSecretKeyName);
     }
 
-    generateAndStoreKeys(password: string): {
+    generateAndStoreKeys(password: string = ""): {
         secretKey: string;
         pubkey: string;
         npub: string;
@@ -350,8 +350,9 @@ export class SignerService {
             const pubkey = getPublicKey(privateKeyUint8Array);
             const npub = nip19.npubEncode(pubkey);
             const nsec = nip19.nsecEncode(privateKeyUint8Array);
+
             this.setSecretKey(secretKey, password);
-            this.setNsec(npub, password);
+            this.setNsec(nsec, password);
             this.setPublicKey(pubkey);
             this.setNpub(npub);
 
@@ -361,6 +362,7 @@ export class SignerService {
             return null;
         }
     }
+
 
     async handleLoginWithExtension(): Promise<boolean> {
         const globalContext = globalThis as unknown as {
