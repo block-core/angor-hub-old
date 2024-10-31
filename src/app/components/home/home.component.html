@@ -1,36 +1,118 @@
-<div class="flex h-full w-full flex-col items-center justify-center p-10">
-    <div class="w-full max-w-3xl">
-        <div class="prose prose-sm mx-auto max-w-none">
-            <h1>Angor Hub</h1>
-            <p>
-                Angor Hub is a Nostr client that is customized around the Angor
-                protocol, a decentralized crowdfunding platform. Leveraging the
-                power of Nostr the platform allows you to explore projects that
-                are raising funds using Angor, engage with investors, and
-                connect directly with founders.
-            </p>
-            <p>
-                Whether you're an investor looking for the next big opportunity
-                or a project founder seeking funding, Angor Hub offers the tools
-                you need to succeed. From project pages, secure messaging to
-                group channels, Angor Hub ensures seamless interaction within a
-                decentralized Nostr.
-            </p>
-        </div>
-        <div>
-            <a
-                class="mt-8"
-                mat-flat-button
-                [color]="'primary'"
-                [routerLink]="'/explore'"
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div
+        class="dark relative overflow-hidden bg-gray-800 px-4 pb-28 pt-8 dark:bg-gray-900 sm:px-16 sm:pb-48 sm:pt-20"
+    >
+        <!-- Background -->
+        <!-- Rings -->
+        <svg class="absolute inset-0 pointer-events-none"
+             viewBox="0 0 960 540" width="100%" height="100%" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+            <g class="text-gray-700 opacity-25" fill="none" stroke="currentColor" stroke-width="100">
+                <circle r="234" cx="196" cy="23"></circle>
+                <circle r="234" cx="790" cy="491"></circle>
+            </g>
+        </svg>
+        <div class="relative z-10 flex flex-col items-center">
+            <h2 class="text-xl font-semibold">ANGOR HUB</h2>
+            <div
+                class="mt-1 text-center text-4xl font-extrabold leading-tight tracking-tight sm:text-7xl"
             >
-                <span>Explore Projects</span>
+                Discover the Latest Project Updates
+            </div>
+            <div
+                class="text-secondary mt-3 text-center tracking-tight sm:text-2xl"
+            >
+                Browse through real-time events, insights, and updates from projects you follow or bookmark.
+            </div>
+            <mat-form-field
+                class="angor-mat-rounded angor-mat-bold mt-10 w-full max-w-80 sm:mt-20 sm:max-w-120"
+                [subscriptSizing]="'dynamic'"
+            >
+                <input
+                    matInput
+                    [placeholder]="'Search projects, events, or keywords'"
+                />
                 <mat-icon
-                    class="ml-2 mr-2 icon-size-5"
-                    [svgIcon]="'heroicons_mini:arrow-long-right'"
+                    matPrefix
+                    [svgIcon]="'heroicons_outline:magnifying-glass'"
                 ></mat-icon>
-            </a>
+            </mat-form-field>
         </div>
+    </div>
 
+    <div class="flex flex-col items-center px-6 pb-6 sm:px-10 sm:pb-10">
+<!-- Cards -->
+<div
+    class="-mt-16 grid w-full max-w-sm grid-cols-1 gap-y-8 sm:-mt-24 md:max-w-4xl md:grid-cols-3 md:gap-x-6 md:gap-y-0"
+>
+    <!-- All Events card -->
+    <div
+        class="bg-card relative flex flex-col overflow-hidden rounded-2xl shadow transition-shadow duration-150 ease-in-out hover:shadow-lg"
+    >
+        <div
+            class="flex flex-auto flex-col items-center p-8 text-center"
+        >
+            <div class="text-2xl font-semibold">All Events</div>
+
+        </div>
+        <div
+            class="flex items-center justify-center bg-gray-50 px-8 py-4 text-primary-500 dark:border-t dark:bg-transparent dark:text-primary-400"
+        >
+            <span role="button" class="flex items-center">
+                <span class="absolute inset-0"></span>
+                <span class="font-medium">View All Events</span>
+
+            </span>
+        </div>
+    </div>
+    <!-- Followed Projects Events card -->
+    <div
+        class="bg-card relative flex flex-col overflow-hidden rounded-2xl shadow transition-shadow duration-150 ease-in-out hover:shadow-lg"
+    >
+        <div
+            class="flex flex-auto flex-col items-center p-8 text-center"
+        >
+            <div class="text-2xl font-semibold">Followed Projects</div>
+
+        </div>
+        <div
+            class="flex items-center justify-center bg-gray-50 px-8 py-4 text-primary-500 dark:border-t dark:bg-transparent dark:text-primary-400"
+        >
+            <span role="button" class="flex items-center">
+                <span class="absolute inset-0"></span>
+                <span class="font-medium">View Followed Projects</span>
+
+            </span>
+        </div>
+    </div>
+    <!-- Bookmarked Projects Events card -->
+    <div
+        class="bg-card relative flex flex-col overflow-hidden rounded-2xl shadow transition-shadow duration-150 ease-in-out hover:shadow-lg"
+    >
+        <div
+            class="flex flex-auto flex-col items-center p-8 text-center"
+        >
+            <div class="text-2xl font-semibold">Bookmarked Projects</div>
+
+        </div>
+        <div
+            class="flex items-center justify-center bg-gray-50 px-8 py-4 text-primary-500 dark:border-t dark:bg-transparent dark:text-primary-400"
+        >
+            <span role="button" class="flex items-center">
+                <span class="absolute inset-0"></span>
+                <span class="font-medium">View Bookmarked Projects</span>
+            </span>
+        </div>
+    </div>
+</div>
+
+
+        <!-- Here show projects event -->
+        <div class="mt-12 text-center text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+            Latest Project Events
+        </div>
+        <div class="text-secondary mt-2 text-center text-lg">
+            Explore updates, milestones, and activities from projects you follow and bookmark
+        </div>
     </div>
 </div>
