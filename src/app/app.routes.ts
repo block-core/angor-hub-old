@@ -39,9 +39,9 @@ export const appRoutes: Route[] = [
                     import('app/components/auth/login/login.routes'),
             },
             {
-                path: 'register',
+                path: 'create',
                 loadChildren: () =>
-                    import('app/components/auth/register/register.routes'),
+                    import('app/components/auth/create/create.routes'),
             },
         ],
     },

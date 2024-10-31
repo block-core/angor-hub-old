@@ -20,8 +20,8 @@ import { Router, RouterLink } from '@angular/router';
 import { SignerService } from 'app/services/signer.service';
 
 @Component({
-    selector: 'auth-register',
-    templateUrl: './register.component.html',
+    selector: 'auth-create',
+    templateUrl: './create.component.html',
     encapsulation: ViewEncapsulation.None,
     animations: angorAnimations,
     standalone: true,

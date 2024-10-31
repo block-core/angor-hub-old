@@ -9,7 +9,7 @@
         <div
             class="mt-8 text-4xl font-extrabold leading-tight tracking-tight"
         >
-            Register
+        Create account
         </div>
         <div class="mt-0.5 flex items-baseline font-medium">
             <div>Already have an account?</div>
@@ -97,7 +97,7 @@
                 [disabled]="!registerForm.valid || !generatedKeys"
                 (click)="register()"
             >
-                <span>Create your account</span>
+                <span>Create account</span>
                 <mat-progress-spinner
                     *ngIf="registerForm.disabled"
                     [diameter]="24"

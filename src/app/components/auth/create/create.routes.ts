@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { RegisterComponent } from 'app/components/auth/register/register.component';
+import { RegisterComponent } from 'app/components/auth/create/create.component';
 
 export default [
     {

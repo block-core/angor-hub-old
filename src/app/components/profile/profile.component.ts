@@ -250,23 +250,27 @@ export class ProfileComponent implements OnInit, OnDestroy {
             { authors: [pubKey], kinds: [0], limit: 1 }
         ];
 
-
         this.subscriptionId = this._subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
             try {
-
                 const newMetadata = JSON.parse(event.content);
                 this.profileUser = newMetadata;
 
+                // Set followers and following counts, ensure they're integers and not null or undefined
+                this.followersCount = newMetadata.followersCount ?? 0;
+                this.followingCount = newMetadata.followingCount ?? 0;
 
+                // Save profile data
                 await this._storageService.saveProfile(pubKey, newMetadata);
 
-
-                this._changeDetectorRef.detectChanges();
+                // Mark for check to force UI update
+                this._changeDetectorRef.markForCheck();
             } catch (error) {
                 console.error('Error processing metadata event:', error);
             }
         });
     }
+
+
 
     getSafeUrl(url: string): SafeUrl {
         return this._sanitizer.bypassSecurityTrustUrl(url);
