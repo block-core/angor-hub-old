@@ -264,18 +264,19 @@ export class ExploreComponent implements OnInit, OnDestroy {
         this.showCloseSearchButton = false;
     }
 
-    toggleBookmark(projectId: string): void {
-        if (this._bookmarkService.isBookmarked(projectId)) {
-            this._bookmarkService.removeBookmark(projectId);
+    async toggleBookmark(projectId: string): Promise<void> {
+        const isBookmarked = await this._bookmarkService.isBookmarked(projectId);
+        if (isBookmarked) {
+            await this._bookmarkService.removeBookmark(projectId);
         } else {
-            this._bookmarkService.addBookmark(projectId);
+            await this._bookmarkService.addBookmark(projectId);
         }
     }
 
-    isProjectBookmarked(projectId: string): boolean {
-        return this._bookmarkService.isBookmarked(projectId);
+    async isProjectBookmarked(projectId: string): Promise<boolean> {
+        return await this._bookmarkService.isBookmarked(projectId);
     }
-    
+
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();

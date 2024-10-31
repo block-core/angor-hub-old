@@ -16,7 +16,7 @@ import { RouterLink } from '@angular/router';
 import { BookmarkService } from 'app/services/bookmark.service';
 import { Project } from 'app/interface/project.interface';
 import { StorageService } from 'app/services/storage.service';
-import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-bookmark',
@@ -39,59 +39,52 @@ import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
     PercentPipe,
     I18nPluralPipe,
     CommonModule,
-
-],
+  ],
   templateUrl: './bookmark.component.html',
-  styleUrl: './bookmark.component.scss'
+  styleUrls: ['./bookmark.component.scss']
 })
 export class BookmarkComponent implements OnInit, OnDestroy {
     savedProjects: Project[] = [];
     bookmarks$: Observable<string[]>;
-    private _unsubscribeAll: Subject<any> = new Subject<any>();
+    private _unsubscribeAll = new Subject<any>();
 
     constructor(
         private _bookmarkService: BookmarkService,
         private _storageService: StorageService,
-        private _changeDetectorRef: ChangeDetectorRef
     ) {
         this.bookmarks$ = this._bookmarkService.bookmarks$;
     }
 
-    ngOnInit(): void {
-        this.loadBookmarkedProjects();
+    async ngOnInit(): Promise<void> {
+        await this._bookmarkService.initializeForCurrentUser(); // Clear previous bookmarks and load current user's bookmarks
+        await this.loadBookmarkedProjects();
         this.subscribeToBookmarkChanges();
     }
-
-
-    private loadBookmarkedProjects(): void {
-        const bookmarkIds = this._bookmarkService.getBookmarks();
-        this._storageService.getProjectsByIds(bookmarkIds).then((projects: Project[]) => {
-            this.savedProjects = projects;
-            this.fetchMetadataForProjects(this.savedProjects);
-        });
-    }
-
 
     trackByFn(index: number, item: Project): string | number {
         return item.projectIdentifier || index;
     }
 
-    private subscribeToBookmarkChanges(): void {
-        this.bookmarks$.pipe(takeUntil(this._unsubscribeAll)).subscribe((bookmarkIds: string[]) => {
-            this._storageService.getProjectsByIds(bookmarkIds).then((projects: Project[]) => {
-                this.savedProjects = projects;
-                this.fetchMetadataForProjects(this.savedProjects);
-            });
-        });
+    private async loadBookmarkedProjects(): Promise<void> {
+        const bookmarkIds = await this._bookmarkService.getBookmarks();
+        const projects = await this._storageService.getProjectsByIds(bookmarkIds);
+        this.savedProjects = projects;
+        this.fetchMetadataForProjects(this.savedProjects); // Fetch metadata for loaded projects
     }
 
+    private subscribeToBookmarkChanges(): void {
+        this.bookmarks$.pipe(takeUntil(this._unsubscribeAll)).subscribe(async (bookmarkIds) => {
+            const projects = await this._storageService.getProjectsByIds(bookmarkIds);
+            this.savedProjects = projects;
+            this.fetchMetadataForProjects(this.savedProjects); // Fetch metadata for updated projects
+        });
+    }
 
     private fetchMetadataForProjects(projects: Project[]): void {
         projects.forEach(project => {
             this._storageService.getProfile(project.nostrPubKey).then(profileMetadata => {
                 if (profileMetadata) {
                     this.updateProjectMetadata(project, profileMetadata);
-                    this._changeDetectorRef.detectChanges();
                 }
             });
         });
@@ -104,16 +97,13 @@ export class BookmarkComponent implements OnInit, OnDestroy {
         project.banner = metadata.banner || project.banner;
     }
 
-    toggleBookmark(projectId: string): void {
-        if (this._bookmarkService.isBookmarked(projectId)) {
-            this._bookmarkService.removeBookmark(projectId);
+    async toggleBookmark(projectId: string): Promise<void> {
+        const isBookmarked = await this._bookmarkService.isBookmarked(projectId);
+        if (isBookmarked) {
+            await this._bookmarkService.removeBookmark(projectId);
         } else {
-            this._bookmarkService.addBookmark(projectId);
+            await this._bookmarkService.addBookmark(projectId);
         }
-    }
-
-    isProjectBookmarked(projectId: string): boolean {
-        return this._bookmarkService.isBookmarked(projectId);
     }
 
     ngOnDestroy(): void {
