@@ -5,4 +5,5 @@ export interface Project {
     about?: string;
     picture?: string;
     banner?: string;
+    isBookmarked?: boolean
 }

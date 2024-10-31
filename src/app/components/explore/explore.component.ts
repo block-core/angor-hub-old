@@ -70,7 +70,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
     noMoreProjects: boolean = false;
     showCloseSearchButton: boolean;
     bookmarks$: Observable<string[]>;
-
+    bookmarkedProjectIds: string[] = [];
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -85,11 +85,13 @@ export class ExploreComponent implements OnInit, OnDestroy {
         this.bookmarks$ = this._bookmarkService.bookmarks$;
     }
 
-    ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
+        await this._bookmarkService.initializeForCurrentUser();
         this.loadInitialProjects();
         this.subscribeToProjectsUpdates();
         this.subscribeToLoading();
         this.subscribeToNoMoreProjects();
+        this.subscribeToBookmarkChanges();
 
     }
 
@@ -102,6 +104,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
             next: (projects: Project[]) => {
                 this.projects = projects;
                 this.filteredProjects = this.projects;
+                this.updateBookmarkStatus();
                 this.fetchMetadataForProjects(projects);
                 this._changeDetectorRef.detectChanges();
             },
@@ -110,6 +113,22 @@ export class ExploreComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.detectChanges();
             }
         });
+    }
+
+    private subscribeToBookmarkChanges(): void {
+        this.bookmarks$.pipe(takeUntil(this._unsubscribeAll)).subscribe(bookmarkIds => {
+            this.bookmarkedProjectIds = bookmarkIds;
+            this.updateBookmarkStatus();
+            this._changeDetectorRef.detectChanges();
+        });
+    }
+
+    private updateBookmarkStatus(): void {
+        this.projects.forEach(project => {
+            project.isBookmarked = this.bookmarkedProjectIds.includes(project.projectIdentifier);
+        });
+        this.filteredProjects = [...this.projects];
+
     }
 
 
