@@ -1,61 +1,39 @@
 import { Injectable, OnDestroy } from '@angular/core';
+import { BehaviorSubject, from, Observable, of, Subject, throwError } from 'rxjs';
+import { filter, map, switchMap, take, catchError } from 'rxjs/operators';
 import { Chat, Contact, Profile } from 'app/components/chat/chat.types';
 import { StorageService } from 'app/services/storage.service';
 import { MetadataService } from 'app/services/metadata.service';
 import { RelayService } from 'app/services/relay.service';
 import { SignerService } from 'app/services/signer.service';
+import { MetadataQueueService } from 'app/services/metadata-queue.service';
 import { Filter, getEventHash, NostrEvent } from 'nostr-tools';
 import { EncryptedDirectMessage } from 'nostr-tools/kinds';
-import {
-    BehaviorSubject,
-    from,
-    Observable,
-    of,
-    Subject,
-    throwError,
-} from 'rxjs';
-import {
-    catchError,
-    filter,
-    map,
-    switchMap,
-    take,
-    takeUntil,
-    tap,
-} from 'rxjs/operators';
-import { StateService } from 'app/services/state.service';
-import { MetadataQueueService } from 'app/services/metadata-queue.service';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService implements OnDestroy {
-    private chatList: Chat[] = [];
-    private latestMessageTimestamps: { [pubKey: string]: number } = {};
-    private messageQueue: NostrEvent[] = [];
-    private isDecrypting = false;
-    private recipientPublicKey: string;
-    private message: string;
-    private decryptedPrivateKey: string = '';
-    private _chat: BehaviorSubject<Chat | null> = new BehaviorSubject(null);
-    private _chats: BehaviorSubject<Chat[] | null> = new BehaviorSubject(null);
-    private _contact: BehaviorSubject<Contact | null> = new BehaviorSubject(
-        null
-    );
-    private _contacts: BehaviorSubject<Contact[] | null> = new BehaviorSubject(
-        null
-    );
-    private _profile: BehaviorSubject<Profile | null> = new BehaviorSubject(
-        null
-    );
-    private _unsubscribeAll: Subject<void> = new Subject<void>();
+  private chatList: Chat[] = [];
+  private latestMessageTimestamps: { [pubKey: string]: number } = {};
+  private messageQueue: NostrEvent[] = [];
+  private isDecrypting = false;
+  private recipientPublicKey: string;
+  private message: string;
+  private decryptedPrivateKey: string = '';
+  private _chat: BehaviorSubject<Chat | null> = new BehaviorSubject(null);
+  private _chats: BehaviorSubject<Chat[] | null> = new BehaviorSubject(null);
+  private _contact: BehaviorSubject<Contact | null> = new BehaviorSubject(null);
+  private _contacts: BehaviorSubject<Contact[] | null> = new BehaviorSubject(null);
+  private _profile: BehaviorSubject<Profile | null> = new BehaviorSubject(null);
+  private _unsubscribeAll: Subject<void> = new Subject<void>();
 
-    constructor(
-        private _metadataService: MetadataService,
-        private _signerService: SignerService,
-        private _storageService: StorageService,
-        private _relayService: RelayService,
-        private _metadataQueueService: MetadataQueueService,
-
-    ) { }
+  constructor(
+    private _metadataService: MetadataService,
+    private _signerService: SignerService,
+    private _storageService: StorageService,
+    private _relayService: RelayService,
+    private _metadataQueueService: MetadataQueueService
+  ) {}
+  
     get profile$(): Observable<Profile | null> {
         return this._profile.asObservable();
     }

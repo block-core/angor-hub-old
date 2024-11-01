@@ -237,13 +237,10 @@
         </div>
     </div>
 
-
-
-
-<!-- Main -->
-<div class="mx-auto w-full max-w-5xl p-6 sm:p-8">
-<!-- About Section -->
-<!-- <mat-accordion class="mb-8 max-w-4xl w-full about-section p-6 transition-all duration-300">
+    <!-- Main -->
+    <div class="mx-auto w-full max-w-5xl p-6 sm:p-8">
+        <!-- About Section -->
+        <!-- <mat-accordion class="mb-8 max-w-4xl w-full about-section p-6 transition-all duration-300">
         <mat-expansion-panel>
             <mat-expansion-panel-header
                 [collapsedHeight]="'56px'"
@@ -254,422 +251,68 @@
                 >
             </mat-expansion-panel-header>
             {{ profileUser?.about || '' }}
-        </mat-expansion-panel>
-</mat-accordion> -->
+           </mat-expansion-panel>
+         </mat-accordion> -->
 
-<angor-card
-    *ngIf="profileUser?.about && profileUser.about.trim() !== ''"
-    class="about-section flex flex-col items-start p-6 mb-6 transition-all duration-300"
-    [ngStyle]="{ height: aboutExpanded ? 'auto' : '80px', overflow: aboutExpanded ? 'visible' : 'hidden' }"
-    style="position: relative;"
->
-    <div class="flex justify-between items-center w-full mb-2">
-        <div class="text-2xl font-semibold leading-tight">About</div>
-        <button
-            mat-icon-button
-            color="primary"
-            (click)="toggleAbout()"
-            style="position: absolute; top: 16px; right: 16px;"
-            aria-label="Toggle about section"
-        >
-            <mat-icon>{{ aboutExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-        </button>
-    </div>
-
-    <div
-        class="about-content text-base text-gray-700 transition-all duration-300"
-        [ngStyle]="{
-            'white-space': aboutExpanded ? 'normal' : 'nowrap',
-            'max-height': aboutExpanded ? 'none' : '1.5em',
-            'overflow': 'hidden'
-        }"
-    >
-        {{ profileUser?.about || '' }}
-        <span *ngIf="!aboutExpanded" class="text-gray-500">...</span>
-    </div>
-</angor-card>
-
-
-
-    <!-- Create Post Section -->
-    <div class="flex w-full flex-col items-start">
-        <!-- Create Post -->
         <angor-card
-            *ngIf="isCurrentUserProfile"
-            class="mb-8 flex w-full flex-col p-6 pb-6 sm:p-8"
+            *ngIf="profileUser?.about && profileUser.about.trim() !== ''"
+            class="about-section mb-6 flex flex-col items-start p-6 transition-all duration-300"
+            [ngStyle]="{
+                height: aboutExpanded ? 'auto' : '80px',
+                overflow: aboutExpanded ? 'visible' : 'hidden',
+            }"
+            style="position: relative"
         >
-            <div class="flex justify-between">
-                <div class="text-xl font-semibold">Create Post</div>
-                <!-- Toggle preview -->
-                <mat-slide-toggle
-                    class="-mr-4 ml-auto"
-                    [color]="'primary'"
-                    (change)="togglePreview()"
-                >
-                    Preview
-                </mat-slide-toggle>
-            </div>
-            <div class="mt-8 flex flex-col items-start sm:flex-row">
-                <div class="mb-6 flex items-center sm:mb-0">
-                    <img
-                        class="mr-4 h-12 w-12 min-w-12 rounded-full object-cover"
-                        [src]="
-                            currentUser?.picture ||
-                            'images/avatars/avatar-placeholder.png'
-                        "
-                        onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-                        alt="{{
-                            currentUser?.display_name ||
-                                currentUser?.name ||
-                                'Avatar'
-                        }}"
-                    />
-                    <div class="sm:hidden">
-                        {{ currentUser?.name || 'Unknown User' }}
-                    </div>
-                </div>
-                <mat-form-field
-                    class="w-full"
-                    [subscriptSizing]="'dynamic'"
-                >
-                    <textarea
-                        matInput
-                        [placeholder]="'What\'s on your mind?'"
-                        [rows]="3"
-                        #eventInput
-                        cdkTextareaAutosize
-                    ></textarea>
-                </mat-form-field>
-            </div>
-            <div
-                class="-mx-3 mt-6 flex items-center justify-between sm:mt-8"
-            >
-                <div class="flex items-center">
-                    <button
-                        class="mr-1 px-3"
-                        mat-button
-                        (click)="toggleEmojiPicker()"
-                    >
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:face-smile'"
-                        ></mat-icon>
-                        <span class="ml-2">Feeling</span>
-                    </button>
-                    <div
-                        *ngIf="showEmojiPicker"
-                        class="emoji-picker-container-global"
-                    >
-                        <emoji-mart
-                            (emojiClick)="addEmoji($event)"
-                            [darkMode]="darkMode"
-                        ></emoji-mart>
-                    </div>
-                    <button
-                        class="mr-1 hidden px-3 sm:inline-flex"
-                        mat-button
-                    >
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:photo'"
-                        ></mat-icon>
-                        <span class="ml-2">Media</span>
-                    </button>
-
-                    <button
-                        class="mr-1 hidden px-3 sm:inline-flex"
-                        mat-button
-                    >
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:user-circle'"
-                        ></mat-icon>
-                        <span class="ml-2">Tag</span>
-                    </button>
-
-                    <button
-                        class="px-3"
-                        mat-button
-                        [matMenuTriggerFor]="postCardMenu01"
-                    >
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="
-                                'heroicons_solid:ellipsis-horizontal'
-                            "
-                        ></mat-icon>
-                    </button>
-
-                    <mat-menu #postCardMenu01="matMenu">
-                        <button class="sm:hidden" mat-menu-item>
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="
-                                        'heroicons_solid:user-circle'
-                                    "
-                                ></mat-icon>
-                                <span>Tag</span>
-                            </span>
-                        </button>
-                        <button class="sm:hidden" mat-menu-item>
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="'heroicons_solid:face-smile'"
-                                ></mat-icon>
-                                <span>Feeling</span>
-                            </span>
-                        </button>
-                        <button mat-menu-item>
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="'heroicons_solid:play'"
-                                ></mat-icon>
-                                <span>Live</span>
-                            </span>
-                        </button>
-                        <button mat-menu-item>
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="'heroicons_solid:sparkles'"
-                                ></mat-icon>
-                                <span>Gif</span>
-                            </span>
-                        </button>
-                        <button mat-menu-item>
-                            <span class="flex items-center">
-                                <mat-icon
-                                    class="mr-3 icon-size-5"
-                                    [svgIcon]="'heroicons_solid:map-pin'"
-                                ></mat-icon>
-                                <span>Check in</span>
-                            </span>
-                        </button>
-                    </mat-menu>
-                </div>
-
+            <div class="mb-2 flex w-full items-center justify-between">
+                <div class="text-2xl font-semibold leading-tight">About</div>
                 <button
-                    class="mr-1 flex px-3"
-                    mat-button
-                    (click)="sendEvent()"
+                    mat-icon-button
+                    color="primary"
+                    (click)="toggleAbout()"
+                    style="position: absolute; top: 16px; right: 16px"
+                    aria-label="Toggle about section"
                 >
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:paper-airplane'"
-                    ></mat-icon>
-                    <span class="ml-2">Send</span>
+                    <mat-icon>{{
+                        aboutExpanded ? 'expand_less' : 'expand_more'
+                    }}</mat-icon>
                 </button>
+            </div>
+
+            <div
+                class="about-content text-base text-gray-700 transition-all duration-300"
+                [ngStyle]="{
+                    'white-space': aboutExpanded ? 'normal' : 'nowrap',
+                    'max-height': aboutExpanded ? 'none' : '1.5em',
+                    overflow: 'hidden',
+                }"
+            >
+                {{ profileUser?.about || '' }}
+                <span *ngIf="!aboutExpanded" class="text-gray-500">...</span>
             </div>
         </angor-card>
 
-        <!-- preview -->
-        <angor-card
-            *ngIf="isPreview"
-            class="mb-8 flex w-full flex-col bg-primary-50 dark:bg-primary-800"
-            #expandableComments="angorCard"
-        >
-            <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-                <img
-                    class="mr-4 h-10 w-10 rounded-full"
-                    [src]="
-                        currentUser?.picture ||
-                        'images/avatars/avatar-placeholder.png'
-                    "
-                    onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-                    alt="{{
-                        currentUser?.display_name ||
-                            currentUser?.name ||
-                            'Avatar'
-                    }}"
-                />
-                <div class="flex flex-col">
-                    <span class="font-semibold leading-none">{{
-                        currentUser?.display_name || currentUser?.name
-                    }}</span>
-                    <span class="text-secondary mt-1 text-sm leading-none"
-                        >1 minutes ago</span
-                    >
-                </div>
-                <button
-                    class="-mr-4 ml-auto"
-                    mat-icon-button
-                    [matMenuTriggerFor]="postCardMenu02"
-                >
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:ellipsis-vertical'"
-                    ></mat-icon>
-                </button>
-                <mat-menu #postCardMenu02="matMenu">
-                    <button mat-menu-item>
-                        <span class="flex items-center">
-                            <mat-icon
-                                class="mr-3 icon-size-5"
-                                [svgIcon]="'heroicons_solid:arrow-up-tray'"
-                            ></mat-icon>
-                            <span>Save post</span>
-                        </span>
-                    </button>
-                    <button mat-menu-item>
-                        <span class="flex items-center">
-                            <mat-icon
-                                class="mr-3 icon-size-5"
-                                [svgIcon]="'heroicons_solid:eye-slash'"
-                            ></mat-icon>
-                            <span>Hide post</span>
-                        </span>
-                    </button>
-                    <button mat-menu-item>
-                        <span class="flex items-center">
-                            <mat-icon
-                                class="mr-3 icon-size-5"
-                                [svgIcon]="'heroicons_solid:clock'"
-                            ></mat-icon>
-                            <span>Snooze for 30 days</span>
-                        </span>
-                    </button>
-                    <button mat-menu-item>
-                        <span class="flex items-center">
-                            <mat-icon
-                                class="mr-3 icon-size-5"
-                                [svgIcon]="'heroicons_solid:minus-circle'"
-                            ></mat-icon>
-                            <span>Hide all</span>
-                        </span>
-                    </button>
-                    <mat-divider class="my-2"></mat-divider>
-                    <button mat-menu-item>
-                        <span class="flex items-center">
-                            <mat-icon
-                                class="mr-3 icon-size-5"
-                                [svgIcon]="
-                                    'heroicons_solid:exclamation-triangle'
-                                "
-                            ></mat-icon>
-                            <span>Report post</span>
-                        </span>
-                    </button>
-                    <button mat-menu-item>
-                        <span class="flex items-center">
-                            <mat-icon
-                                class="mr-3 icon-size-5"
-                                [svgIcon]="'heroicons_solid:bell'"
-                            ></mat-icon>
-                            <span>Turn on notifications for this post</span>
-                        </span>
-                    </button>
-                </mat-menu>
-            </div>
-            <div class="mx-6 mb-6 mt-2 sm:mx-8">
-                <!-- text -->
-                {{ eventInput.nativeElement.value }}
-            </div>
-            <div class="relative mb-4">
-                <!-- image or video -->
-            </div>
-            <div class="mx-3 flex items-center sm:mx-5">
-                <button class="mr-1 px-3" mat-button (click)="toggleLike()">
-                    <mat-icon
-                        class="text-red-500 icon-size-5"
-                        [ngClass]="{ 'heart-beat': isLiked }"
-                        [svgIcon]="
-                            isLiked
-                                ? 'heroicons_solid:heart'
-                                : 'heroicons_outline:heart'
-                        "
-                    >
-                    </mat-icon>
-                    <span class="ml-2">{{
-                        isLiked ? 'Unlike' : 'Like'
-                    }}</span>
-                </button>
-                <button
-                    class="mr-1 px-3"
-                    mat-button
-                    (click)="
-                        expandableComments.expanded =
-                            !expandableComments.expanded
-                    "
-                >
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="
-                            'heroicons_solid:chat-bubble-left-ellipsis'
-                        "
-                    ></mat-icon>
-                    <span class="ml-2">Comment</span>
-                </button>
-                <button class="mr-1 px-3" mat-button>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:share'"
-                    ></mat-icon>
-                    <span class="ml-2">Share</span>
-                </button>
-            </div>
-            <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
-            <div
-                class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center"
+        <!-- Main Section -->
+        <div class="flex w-full flex-col items-start">
+            <!-- Create Post -->
+            <angor-card
+                *ngIf="isCurrentUserProfile"
+                class="mb-8 flex w-full flex-col p-6 pb-6 sm:p-8"
             >
-                <div class="flex items-center">
-                    <img
-                        class="text-card m-0.5 h-6 w-6 rounded-full ring-2 ring-white"
-                        src="images/avatars/avatar-placeholder.png"
-                        alt="Card cover image"
-                    />
-                    <img
-                        class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
-                        src="images/avatars/avatar-placeholder.png"
-                        alt="Card cover image"
-                    />
-                    <img
-                        class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
-                        src="images/avatars/avatar-placeholder.png"
-                        alt="Card cover image"
-                    />
-                    <img
-                        class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
-                        src="images/avatars/avatar-placeholder.png"
-                        alt="Card cover image"
-                    />
-                    <div class="ml-3 text-md tracking-tight">
-                        You and 4 more liked this
-                    </div>
-                </div>
-                <div class="hidden flex-auto sm:flex"></div>
-                <div class="mt-4 flex items-center sm:mt-0">
-                    <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
-                        0 shares
-                    </button>
-                    <button
-                        class="px-3 sm:-mr-4"
-                        mat-button
-                        (click)="
-                            expandableComments.expanded =
-                                !expandableComments.expanded
-                        "
+                <div class="flex justify-between">
+                    <div class="text-xl font-semibold">Create Post</div>
+                    <!-- Toggle preview -->
+                    <mat-slide-toggle
+                        class="-mr-4 ml-auto"
+                        [color]="'primary'"
+                        (change)="togglePreview()"
                     >
-                        <span class="mr-1">0 Comments</span>
-                        <mat-icon
-                            class="rotate-0 transition-transform duration-150 ease-in-out icon-size-5"
-                            [ngClass]="{
-                                'rotate-180': expandableComments.expanded,
-                            }"
-                            [svgIcon]="'heroicons_mini:chevron-down'"
-                        ></mat-icon>
-                    </button>
+                        Preview
+                    </mat-slide-toggle>
                 </div>
-            </div>
-
-            <ng-container angorCardExpansion>
-                <hr class="m-0 border-b" />
-                <div class="mx-4 mb-3 mt-6 flex flex-col sm:mx-8">
-                    <div class="flex items-start">
+                <div class="mt-8 flex flex-col items-start sm:flex-row">
+                    <div class="mb-6 flex items-center sm:mb-0">
                         <img
-                            class="mr-5 h-12 w-12 rounded-full object-cover"
+                            class="mr-4 h-12 w-12 min-w-12 rounded-full object-cover"
                             [src]="
                                 currentUser?.picture ||
                                 'images/avatars/avatar-placeholder.png'
@@ -681,70 +324,1083 @@
                                     'Avatar'
                             }}"
                         />
-
-                        <mat-form-field
-                            class="w-full"
-                            [subscriptSizing]="'dynamic'"
-                        >
-                            <textarea
-                                matInput
-                                [placeholder]="'Write a comment...'"
-                                [rows]="3"
-                                #commentInput
-                                cdkTextareaAutosize
-                            ></textarea>
-                        </mat-form-field>
-                    </div>
-                    <div class="mt-3 flex items-center justify-between">
-                        <div class="flex items-center">
-                            <button
-                                mat-icon-button
-                                (click)="toggleCommentEmojiPicker()"
-                            >
-                                <mat-icon
-                                    class="icon-size-5"
-                                    [svgIcon]="'heroicons_solid:face-smile'"
-                                ></mat-icon>
-                            </button>
-                            <div
-                                *ngIf="showCommentEmojiPicker"
-                                class="emoji-picker-container-global"
-                            >
-                                <emoji-mart
-                                    (emojiClick)="addEmojiTocomment($event)"
-                                    [darkMode]="darkMode"
-                                ></emoji-mart>
-                            </div>
-                            <button mat-icon-button>
-                                <mat-icon
-                                    class="icon-size-5"
-                                    [svgIcon]="'heroicons_solid:photo'"
-                                ></mat-icon>
-                            </button>
-                            <button mat-icon-button>
-                                <mat-icon
-                                    class="icon-size-5"
-                                    [svgIcon]="'heroicons_solid:sparkles'"
-                                ></mat-icon>
-                            </button>
+                        <div class="sm:hidden">
+                            {{ currentUser?.name || 'Unknown User' }}
                         </div>
-                        <button class="mr-1 flex px-3" mat-button>
+                    </div>
+                    <mat-form-field
+                        class="w-full"
+                        [subscriptSizing]="'dynamic'"
+                    >
+                        <textarea
+                            matInput
+                            [placeholder]="'What\'s on your mind?'"
+                            [rows]="3"
+                            #eventInput
+                            cdkTextareaAutosize
+                        ></textarea>
+                    </mat-form-field>
+                </div>
+                <div
+                    class="-mx-3 mt-6 flex items-center justify-between sm:mt-8"
+                >
+                    <div class="flex items-center">
+                        <button
+                            class="mr-1 px-3"
+                            mat-button
+                            (click)="toggleEmojiPicker()"
+                        >
                             <mat-icon
                                 class="icon-size-5"
-                                [svgIcon]="'heroicons_solid:paper-airplane'"
+                                [svgIcon]="'heroicons_solid:face-smile'"
                             ></mat-icon>
-                            <span class="ml-2">Send</span>
+                            <span class="ml-2">Feeling</span>
+                        </button>
+                        <div
+                            *ngIf="showEmojiPicker"
+                            class="emoji-picker-container-global"
+                        >
+                            <emoji-mart
+                                (emojiClick)="addEmoji($event)"
+                                [darkMode]="darkMode"
+                            ></emoji-mart>
+                        </div>
+                        <button
+                            class="mr-1 hidden px-3 sm:inline-flex"
+                            mat-button
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:photo'"
+                            ></mat-icon>
+                            <span class="ml-2">Media</span>
+                        </button>
+
+                        <button
+                            class="mr-1 hidden px-3 sm:inline-flex"
+                            mat-button
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:user-circle'"
+                            ></mat-icon>
+                            <span class="ml-2">Tag</span>
+                        </button>
+
+                        <button
+                            class="px-3"
+                            mat-button
+                            [matMenuTriggerFor]="postCardMenu01"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="
+                                    'heroicons_solid:ellipsis-horizontal'
+                                "
+                            ></mat-icon>
+                        </button>
+
+                        <mat-menu #postCardMenu01="matMenu">
+                            <button class="sm:hidden" mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_solid:user-circle'
+                                        "
+                                    ></mat-icon>
+                                    <span>Tag</span>
+                                </span>
+                            </button>
+                            <button class="sm:hidden" mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="'heroicons_solid:face-smile'"
+                                    ></mat-icon>
+                                    <span>Feeling</span>
+                                </span>
+                            </button>
+                            <button mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="'heroicons_solid:play'"
+                                    ></mat-icon>
+                                    <span>Live</span>
+                                </span>
+                            </button>
+                            <button mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="'heroicons_solid:sparkles'"
+                                    ></mat-icon>
+                                    <span>Gif</span>
+                                </span>
+                            </button>
+                            <button mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon
+                                        class="mr-3 icon-size-5"
+                                        [svgIcon]="'heroicons_solid:map-pin'"
+                                    ></mat-icon>
+                                    <span>Check in</span>
+                                </span>
+                            </button>
+                        </mat-menu>
+                    </div>
+
+                    <button
+                        class="mr-1 flex px-3"
+                        mat-button
+                        (click)="sendEvent()"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="'heroicons_solid:paper-airplane'"
+                        ></mat-icon>
+                        <span class="ml-2">Send</span>
+                    </button>
+                </div>
+            </angor-card>
+
+            <!-- preview -->
+            <angor-card
+                *ngIf="isPreview"
+                class="mb-8 flex w-full flex-col bg-primary-50 dark:bg-primary-800"
+                #expandableComments="angorCard"
+            >
+                <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
+                    <img
+                        class="mr-4 h-10 w-10 rounded-full"
+                        [src]="
+                            currentUser?.picture ||
+                            'images/avatars/avatar-placeholder.png'
+                        "
+                        onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
+                        alt="{{
+                            currentUser?.display_name ||
+                                currentUser?.name ||
+                                'Avatar'
+                        }}"
+                    />
+                    <div class="flex flex-col">
+                        <span class="font-semibold leading-none">{{
+                            currentUser?.display_name || currentUser?.name
+                        }}</span>
+                        <span class="text-secondary mt-1 text-sm leading-none"
+                            >1 minutes ago</span
+                        >
+                    </div>
+                    <button
+                        class="-mr-4 ml-auto"
+                        mat-icon-button
+                        [matMenuTriggerFor]="postCardMenu02"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="'heroicons_solid:ellipsis-vertical'"
+                        ></mat-icon>
+                    </button>
+                    <mat-menu #postCardMenu02="matMenu">
+                        <button mat-menu-item>
+                            <span class="flex items-center">
+                                <mat-icon
+                                    class="mr-3 icon-size-5"
+                                    [svgIcon]="'heroicons_solid:arrow-up-tray'"
+                                ></mat-icon>
+                                <span>Save post</span>
+                            </span>
+                        </button>
+                        <button mat-menu-item>
+                            <span class="flex items-center">
+                                <mat-icon
+                                    class="mr-3 icon-size-5"
+                                    [svgIcon]="'heroicons_solid:eye-slash'"
+                                ></mat-icon>
+                                <span>Hide post</span>
+                            </span>
+                        </button>
+                        <button mat-menu-item>
+                            <span class="flex items-center">
+                                <mat-icon
+                                    class="mr-3 icon-size-5"
+                                    [svgIcon]="'heroicons_solid:clock'"
+                                ></mat-icon>
+                                <span>Snooze for 30 days</span>
+                            </span>
+                        </button>
+                        <button mat-menu-item>
+                            <span class="flex items-center">
+                                <mat-icon
+                                    class="mr-3 icon-size-5"
+                                    [svgIcon]="'heroicons_solid:minus-circle'"
+                                ></mat-icon>
+                                <span>Hide all</span>
+                            </span>
+                        </button>
+                        <mat-divider class="my-2"></mat-divider>
+                        <button mat-menu-item>
+                            <span class="flex items-center">
+                                <mat-icon
+                                    class="mr-3 icon-size-5"
+                                    [svgIcon]="
+                                        'heroicons_solid:exclamation-triangle'
+                                    "
+                                ></mat-icon>
+                                <span>Report post</span>
+                            </span>
+                        </button>
+                        <button mat-menu-item>
+                            <span class="flex items-center">
+                                <mat-icon
+                                    class="mr-3 icon-size-5"
+                                    [svgIcon]="'heroicons_solid:bell'"
+                                ></mat-icon>
+                                <span>Turn on notifications for this post</span>
+                            </span>
+                        </button>
+                    </mat-menu>
+                </div>
+                <div class="mx-6 mb-6 mt-2 sm:mx-8">
+                    <!-- text -->
+                    {{ eventInput.nativeElement.value }}
+                </div>
+                <div class="relative mb-4">
+                    <!-- image or video -->
+                </div>
+                <div class="mx-3 flex items-center sm:mx-5">
+                    <button class="mr-1 px-3" mat-button (click)="toggleLike()">
+                        <mat-icon
+                            class="text-red-500 icon-size-5"
+                            [ngClass]="{ 'heart-beat': isLiked }"
+                            [svgIcon]="
+                                isLiked
+                                    ? 'heroicons_solid:heart'
+                                    : 'heroicons_outline:heart'
+                            "
+                        >
+                        </mat-icon>
+                        <span class="ml-2">{{
+                            isLiked ? 'Unlike' : 'Like'
+                        }}</span>
+                    </button>
+                    <button
+                        class="mr-1 px-3"
+                        mat-button
+                        (click)="
+                            expandableComments.expanded =
+                                !expandableComments.expanded
+                        "
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="
+                                'heroicons_solid:chat-bubble-left-ellipsis'
+                            "
+                        ></mat-icon>
+                        <span class="ml-2">Comment</span>
+                    </button>
+                    <button class="mr-1 px-3" mat-button>
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="'heroicons_solid:share'"
+                        ></mat-icon>
+                        <span class="ml-2">Share</span>
+                    </button>
+                </div>
+                <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
+                <div
+                    class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center"
+                >
+                    <div class="flex items-center">
+                        <img
+                            class="text-card m-0.5 h-6 w-6 rounded-full ring-2 ring-white"
+                            src="images/avatars/avatar-placeholder.png"
+                            alt="Card cover image"
+                        />
+                        <img
+                            class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
+                            src="images/avatars/avatar-placeholder.png"
+                            alt="Card cover image"
+                        />
+                        <img
+                            class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
+                            src="images/avatars/avatar-placeholder.png"
+                            alt="Card cover image"
+                        />
+                        <img
+                            class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
+                            src="images/avatars/avatar-placeholder.png"
+                            alt="Card cover image"
+                        />
+                        <div class="ml-3 text-md tracking-tight">
+                            You and 4 more liked this
+                        </div>
+                    </div>
+                    <div class="hidden flex-auto sm:flex"></div>
+                    <div class="mt-4 flex items-center sm:mt-0">
+                        <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
+                            0 shares
+                        </button>
+                        <button
+                            class="px-3 sm:-mr-4"
+                            mat-button
+                            (click)="
+                                expandableComments.expanded =
+                                    !expandableComments.expanded
+                            "
+                        >
+                            <span class="mr-1">0 Comments</span>
+                            <mat-icon
+                                class="rotate-0 transition-transform duration-150 ease-in-out icon-size-5"
+                                [ngClass]="{
+                                    'rotate-180': expandableComments.expanded,
+                                }"
+                                [svgIcon]="'heroicons_mini:chevron-down'"
+                            ></mat-icon>
                         </button>
                     </div>
                 </div>
-            </ng-container>
-        </angor-card>
 
-        <!-- <app-event-list class="mb-8 w-full max-w-5xl" [pubkeys]="[routePubKey]"></app-event-list> -->
+                <ng-container angorCardExpansion>
+                    <hr class="m-0 border-b" />
+                    <div class="mx-4 mb-3 mt-6 flex flex-col sm:mx-8">
+                        <div class="flex items-start">
+                            <img
+                                class="mr-5 h-12 w-12 rounded-full object-cover"
+                                [src]="
+                                    currentUser?.picture ||
+                                    'images/avatars/avatar-placeholder.png'
+                                "
+                                onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
+                                alt="{{
+                                    currentUser?.display_name ||
+                                        currentUser?.name ||
+                                        'Avatar'
+                                }}"
+                            />
+
+                            <mat-form-field
+                                class="w-full"
+                                [subscriptSizing]="'dynamic'"
+                            >
+                                <textarea
+                                    matInput
+                                    [placeholder]="'Write a comment...'"
+                                    [rows]="3"
+                                    #commentInput
+                                    cdkTextareaAutosize
+                                ></textarea>
+                            </mat-form-field>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <button
+                                    mat-icon-button
+                                    (click)="toggleCommentEmojiPicker()"
+                                >
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="'heroicons_solid:face-smile'"
+                                    ></mat-icon>
+                                </button>
+                                <div
+                                    *ngIf="showCommentEmojiPicker"
+                                    class="emoji-picker-container-global"
+                                >
+                                    <emoji-mart
+                                        (emojiClick)="addEmojiTocomment($event)"
+                                        [darkMode]="darkMode"
+                                    ></emoji-mart>
+                                </div>
+                                <button mat-icon-button>
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="'heroicons_solid:photo'"
+                                    ></mat-icon>
+                                </button>
+                                <button mat-icon-button>
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="'heroicons_solid:sparkles'"
+                                    ></mat-icon>
+                                </button>
+                            </div>
+                            <button class="mr-1 flex px-3" mat-button>
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_solid:paper-airplane'"
+                                ></mat-icon>
+                                <span class="ml-2">Send</span>
+                            </button>
+                        </div>
+                    </div>
+                </ng-container>
+            </angor-card>
+
+
+
+
+
+
+                        <!-- Post 1 -->
+                        <angor-card
+                        class="mt-8 flex w-full flex-col"
+                        #expandableCard02="angorCard"
+                    >
+                        <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
+                            <img
+                                class="mr-4 h-10 w-10 rounded-full"
+                                src="/images/avatars/avatar-placeholder.png"
+                                alt="Card cover image"
+                            />
+                            <div class="flex flex-col">
+                                <span class="font-semibold leading-none"
+                                    >Milad</span
+                                >
+                                <span class="text-secondary mt-1 text-sm leading-none"
+                                    >29 minutes ago</span
+                                >
+                            </div>
+                            <button
+                                class="-mr-4 ml-auto"
+                                mat-icon-button
+                                [matMenuTriggerFor]="postCardMenu02"
+                            >
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_solid:ellipsis-vertical'"
+                                ></mat-icon>
+                            </button>
+                            <mat-menu #postCardMenu02="matMenu">
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:arrow-up-tray'"
+                                        ></mat-icon>
+                                        <span>Save post</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:eye-slash'"
+                                        ></mat-icon>
+                                        <span>Hide post</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:clock'"
+                                        ></mat-icon>
+                                        <span>Snooze for 30 days</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:minus-circle'"
+                                        ></mat-icon>
+                                        <span>Hide all</span>
+                                    </span>
+                                </button>
+                                <mat-divider class="my-2"></mat-divider>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="
+                                                'heroicons_solid:exclamation-triangle'
+                                            "
+                                        ></mat-icon>
+                                        <span>Report post</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:bell'"
+                                        ></mat-icon>
+                                        <span>Turn on notifications for this post</span>
+                                    </span>
+                                </button>
+                            </mat-menu>
+                        </div>
+                        <div class="mx-6 mb-6 mt-2 sm:mx-8">
+                            Look at that sky! I so want to be there.. Can we arrange a
+                            trip? Is that a possibility? Please!!!
+                        </div>
+                        <div class="relative mb-4">
+                            <img
+                                class="h-80 object-cover"
+                                src="/images/pages/profile/cover.jpg"
+                                alt="Card cover image"
+                            />
+                        </div>
+                        <div class="mx-3 flex items-center sm:mx-5">
+                            <button class="mr-1 px-3" mat-button>
+                                <mat-icon
+                                    class="text-red-500 icon-size-5"
+                                    [svgIcon]="'heroicons_solid:heart'"
+                                ></mat-icon>
+                                <span class="ml-2">Unlike</span>
+                            </button>
+                            <button class="mr-1 px-3" mat-button>
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="
+                                        'heroicons_solid:chat-bubble-left-ellipsis'
+                                    "
+                                ></mat-icon>
+                                <span class="ml-2">Comment</span>
+                            </button>
+                            <button class="mr-1 px-3" mat-button>
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_solid:share'"
+                                ></mat-icon>
+                                <span class="ml-2">Share</span>
+                            </button>
+                        </div>
+                        <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
+                        <div
+                            class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center"
+                        >
+                            <div class="flex items-center">
+                                <img
+                                    class="text-card m-0.5 h-6 w-6 rounded-full ring-2 ring-white"
+                                    src="/images/avatars/avatar-placeholder.png"
+                                    alt="Card cover image"
+                                />
+                                <img
+                                    class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
+                                    src="/images/avatars/avatar-placeholder.png"
+                                    alt="Card cover image"
+                                />
+                                <img
+                                    class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
+                                    src="/images/avatars/avatar-placeholder.png"
+                                    alt="Card cover image"
+                                />
+                                <img
+                                    class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
+                                    src="/images/avatars/avatar-placeholder.png"
+                                    alt="Card cover image"
+                                />
+                                <div class="ml-3 text-md tracking-tight">
+                                    You and 24 more liked this
+                                </div>
+                            </div>
+                            <div class="hidden flex-auto sm:flex"></div>
+                            <div class="mt-4 flex items-center sm:mt-0">
+                                <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
+                                    4 shares
+                                </button>
+                                <button
+                                    class="px-3 sm:-mr-4"
+                                    mat-button
+                                    (click)="
+                                        expandableCard02.expanded =
+                                            !expandableCard02.expanded
+                                    "
+                                >
+                                    <span class="mr-1">5 Comments</span>
+                                    <mat-icon
+                                        class="rotate-0 transition-transform duration-150 ease-in-out icon-size-5"
+                                        [ngClass]="{
+                                            'rotate-180': expandableCard02.expanded,
+                                        }"
+                                        [svgIcon]="'heroicons_mini:chevron-down'"
+                                    ></mat-icon>
+                                </button>
+                            </div>
+                        </div>
+
+                        <ng-container angorCardExpansion>
+                            <hr class="m-0 border-b" />
+                            <div class="mx-4 mb-3 mt-6 flex flex-col sm:mx-8">
+                                <div class="flex items-start">
+                                    <img
+                                        class="mr-5 h-12 w-12 rounded-full"
+                                        src="/images/avatars/avatar-placeholder.png"
+                                        alt="Card cover image"
+                                    />
+                                    <mat-form-field
+                                        class="w-full"
+                                        [subscriptSizing]="'dynamic'"
+                                    >
+                                        <textarea
+                                            matInput
+                                            [placeholder]="'Write a comment...'"
+                                            [rows]="3"
+                                            cdkTextareaAutosize
+                                        ></textarea>
+                                    </mat-form-field>
+                                </div>
+                                <div class="-mr-3 ml-auto mt-3 flex items-center">
+                                    <button mat-icon-button>
+                                        <mat-icon
+                                            class="icon-size-5"
+                                            [svgIcon]="'heroicons_solid:sparkles'"
+                                        ></mat-icon>
+                                    </button>
+                                    <button mat-icon-button>
+                                        <mat-icon
+                                            class="icon-size-5"
+                                            [svgIcon]="'heroicons_solid:face-smile'"
+                                        ></mat-icon>
+                                    </button>
+                                    <button mat-icon-button>
+                                        <mat-icon
+                                            class="icon-size-5"
+                                            [svgIcon]="'heroicons_solid:photo'"
+                                        ></mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            <hr class="mx-4 my-0 border-b sm:mx-8" />
+                            <div class="max-h-120 overflow-y-auto">
+                                <div class="relative mx-4 my-6 flex flex-col sm:mx-8">
+                                    <div class="flex items-start">
+                                        <img
+                                            class="mr-4 h-8 w-8 rounded-full"
+                                            src="/images/avatars/avatar-placeholder.png"
+                                            alt="Card cover image"
+                                        />
+                                        <div class="mt-0.5 flex flex-col">
+                                            <span>
+                                                <b>Rutherford Brannan</b> Oh, I’m in..
+                                                Let’s arrange a trip for the next
+                                                weekend if you want!
+                                            </span>
+                                            <div
+                                                class="text-secondary mt-2 flex items-center text-sm"
+                                            >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Like</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Reply</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Hide replies</span
+                                                >
+                                                <span class="mr-2">&bull;</span>
+                                                <span>17 min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-12 mt-8 flex items-start">
+                                        <img
+                                            class="mr-4 h-8 w-8 rounded-full"
+                                            src="/images/avatars/avatar-placeholder.png"
+                                            alt="Card cover image"
+                                        />
+                                        <div class="mt-0.5 flex flex-col">
+                                            <span>
+                                                <b>Milad</b> Yes!! Let's talk
+                                                about it on lunch!
+                                            </span>
+                                            <div
+                                                class="text-secondary mt-2 flex items-center text-sm"
+                                            >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Like</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Reply</span
+                                                >
+                                                <span class="mr-2">&bull;</span>
+                                                <span>15 min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-12 mt-8 flex items-start">
+                                        <img
+                                            class="mr-4 h-8 w-8 rounded-full"
+                                            src="/images/avatars/avatar-placeholder.png"
+                                            alt="Card cover image"
+                                        />
+                                        <div class="mt-0.5 flex flex-col">
+                                            <span>
+                                                <b>Barbara Cotilla</b> Count me in !!!
+                                            </span>
+                                            <div
+                                                class="text-secondary mt-2 flex items-center text-sm"
+                                            >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Like</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Reply</span
+                                                >
+                                                <span class="mr-2">&bull;</span>
+                                                <span>12 min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-8 flex items-start">
+                                        <img
+                                            class="mr-4 h-8 w-8 rounded-full"
+                                            src="/images/avatars/avatar-placeholder.png"
+                                            alt="Card cover image"
+                                        />
+                                        <div class="mt-0.5 flex flex-col">
+                                            <span>
+                                                <b>Alan Marti</b> The color of the sky
+                                                doesn’t look natural at all, do you
+                                                really think this is natural? I’d say
+                                                Photoshop! Your trip isn't going to
+                                                worth it since you won't be seeing this
+                                                exact sky.
+                                            </span>
+                                            <div
+                                                class="text-secondary mt-2 flex items-center text-sm"
+                                            >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Like</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Reply</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Hide replies</span
+                                                >
+                                                <span class="mr-2">&bull;</span>
+                                                <span>24 min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-12 mt-8 flex items-start">
+                                        <img
+                                            class="mr-4 h-8 w-8 rounded-full"
+                                            src="/images/avatars/avatar-placeholder.png"
+                                            alt="Card cover image"
+                                        />
+                                        <div class="mt-0.5 flex flex-col">
+                                            <span>
+                                                <b>Milad</b> Hey, Alan! You
+                                                must be fun at parties!
+                                            </span>
+                                            <div
+                                                class="text-secondary mt-2 flex items-center text-sm"
+                                            >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Like</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Reply</span
+                                                >
+                                                <span class="mr-2">&bull;</span>
+                                                <span>22 min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-12 mt-8 flex items-start">
+                                        <img
+                                            class="mr-4 h-8 w-8 rounded-full"
+                                            src="/images/avatars/avatar-placeholder.png"
+                                            alt="Card cover image"
+                                        />
+                                        <div class="mt-0.5 flex flex-col">
+                                            <span>
+                                                <b>Alan Marti</b> Caroline, I'm telling
+                                                the truth, and if you cannot stand the
+                                                truth, maybe we shouldn't be friends
+                                                anymore...
+                                            </span>
+                                            <div
+                                                class="text-secondary mt-2 flex items-center text-sm"
+                                            >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Like</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Reply</span
+                                                >
+                                                <span class="mr-2">&bull;</span>
+                                                <span>20 min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-12 mt-8 flex items-start">
+                                        <img
+                                            class="mr-4 h-8 w-8 rounded-full"
+                                            src="/images/avatars/avatar-placeholder.png"
+                                            alt="Card cover image"
+                                        />
+                                        <div class="mt-0.5 flex flex-col">
+                                            <span>
+                                                <b>Milad</b> Dude! Relax! I'm
+                                                just messing with you...
+                                            </span>
+                                            <div
+                                                class="text-secondary mt-2 flex items-center text-sm"
+                                            >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Like</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Reply</span
+                                                >
+                                                <span class="mr-2">&bull;</span>
+                                                <span>18 min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-12 mt-8 flex items-start">
+                                        <img
+                                            class="mr-4 h-8 w-8 rounded-full"
+                                            src="/images/avatars/avatar-placeholder.png"
+                                            alt="Card cover image"
+                                        />
+                                        <div class="mt-0.5 flex flex-col">
+                                            <span>
+                                                <b>Alan Marti</b> Sorry! I had a bad
+                                                morning, let's talk about this in couple
+                                                hours, I need to relax a bit :(
+                                            </span>
+                                            <div
+                                                class="text-secondary mt-2 flex items-center text-sm"
+                                            >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Like</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Reply</span
+                                                >
+                                                <span class="mr-2">&bull;</span>
+                                                <span>16 min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-8 flex items-start">
+                                        <img
+                                            class="mr-4 h-8 w-8 rounded-full"
+                                            src="/images/avatars/avatar-placeholder.png"
+                                            alt="Card cover image"
+                                        />
+                                        <div class="mt-0.5 flex flex-col">
+                                            <span>
+                                                <b>Marleah Eagleston</b> Count me in,
+                                                too!
+                                            </span>
+                                            <div
+                                                class="text-secondary mt-2 flex items-center text-sm"
+                                            >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Like</span
+                                                >
+                                                <span
+                                                    class="mr-2 cursor-pointer hover:underline"
+                                                    >Reply</span
+                                                >
+                                                <span class="mr-2">&bull;</span>
+                                                <span>34 min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </angor-card>
+
+                    <!-- Post 2 -->
+                    <angor-card class="mt-8 flex w-full flex-col">
+                        <div class="mx-6 mb-1 mt-6 flex items-center sm:mx-8">
+                            <img
+                                class="mr-4 h-10 w-10 rounded-full"
+                                src="/images/avatars/avatar-placeholder.png"
+                                alt="Card cover image"
+                            />
+                            <div class="flex flex-col">
+                                <span class="font-semibold leading-none"
+                                    >Milad</span
+                                >
+                                <span class="text-secondary mt-1 text-sm leading-none"
+                                    >29 minutes ago</span
+                                >
+                            </div>
+                            <button
+                                class="-mr-4 ml-auto"
+                                mat-icon-button
+                                [matMenuTriggerFor]="postCardMenu08"
+                            >
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_solid:ellipsis-vertical'"
+                                ></mat-icon>
+                            </button>
+                            <mat-menu #postCardMenu08="matMenu">
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:arrow-up-tray'"
+                                        ></mat-icon>
+                                        <span>Save post</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:eye-slash'"
+                                        ></mat-icon>
+                                        <span>Hide post</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:clock'"
+                                        ></mat-icon>
+                                        <span>Snooze for 30 days</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:minus-circle'"
+                                        ></mat-icon>
+                                        <span>Hide all</span>
+                                    </span>
+                                </button>
+                                <mat-divider class="my-2"></mat-divider>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="
+                                                'heroicons_solid:exclamation-triangle'
+                                            "
+                                        ></mat-icon>
+                                        <span>Report post</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:bell'"
+                                        ></mat-icon>
+                                        <span>Turn on notifications for this post</span>
+                                    </span>
+                                </button>
+                            </mat-menu>
+                        </div>
+                        <div class="m-6 sm:mx-8">
+                            <p>
+                                We'll put a happy little sky in here. We touch the
+                                canvas, the canvas takes what it wants. A little happy
+                                sunlight shining through there. Let's build some happy
+                                little clouds up here. I was blessed with a very steady
+                                hand; and it comes in very handy when you're doing these
+                                little delicate things. This is the fun part.
+                            </p>
+                            <p class="mt-4">
+                                Isn't it great to do something you can't fail at? Little
+                                trees and bushes grow however makes them happy. Trees
+                                get lonely too, so we'll give him a little friend. There
+                                are no mistakes. You can fix anything that happens.
+                            </p>
+                        </div>
+                        <div class="mx-3 flex items-center sm:mx-5">
+                            <button class="mr-1 px-3" mat-button>
+                                <mat-icon
+                                    class="text-red-500 icon-size-5"
+                                    [svgIcon]="'heroicons_solid:heart'"
+                                ></mat-icon>
+                                <span class="ml-2">Unlike</span>
+                            </button>
+                            <button class="mr-1 px-3" mat-button>
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="
+                                        'heroicons_solid:chat-bubble-left-ellipsis'
+                                    "
+                                ></mat-icon>
+                                <span class="ml-2">Comment</span>
+                            </button>
+                            <button class="mr-1 px-3" mat-button>
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_solid:share'"
+                                ></mat-icon>
+                                <span class="ml-2">Share</span>
+                            </button>
+                        </div>
+                        <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
+                        <div
+                            class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center"
+                        >
+                            <div class="flex items-center">
+                                <img
+                                    class="text-card m-0.5 h-6 w-6 rounded-full ring-2 ring-white"
+                                    src="/images/avatars/avatar-placeholder.png"
+                                    alt="Card cover image"
+                                />
+                                <img
+                                    class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
+                                    src="/images/avatars/avatar-placeholder.png"
+                                    alt="Card cover image"
+                                />
+                                <img
+                                    class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
+                                    src="/images/avatars/avatar-placeholder.png"
+                                    alt="Card cover image"
+                                />
+                                <img
+                                    class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white"
+                                    src="/images/avatars/avatar-placeholder.png"
+                                    alt="Card cover image"
+                                />
+                                <div class="ml-3 text-md tracking-tight">
+                                    You and 24 more liked this
+                                </div>
+                            </div>
+                            <div class="hidden flex-auto sm:flex"></div>
+                            <div class="mt-4 flex items-center sm:mt-0">
+                                <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
+                                    4 shares
+                                </button>
+                                <button class="px-3 sm:-mr-3" mat-button>
+                                    No comments
+                                </button>
+                            </div>
+                        </div>
+                    </angor-card>
+
+            <!-- <app-event-list class="mb-8 w-full max-w-5xl" [pubkeys]="[routePubKey]"></app-event-list> -->
+        </div>
     </div>
-</div>
-
-
-
-
 </div>
