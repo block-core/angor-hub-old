@@ -12,36 +12,36 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BookmarkService } from 'app/services/bookmark.service';
 import { Project } from 'app/interface/project.interface';
 import { StorageService } from 'app/services/storage.service';
 import { Observable, Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-bookmark',
-  standalone: true,
-  imports: [
-    MatButtonModule,
-    RouterLink,
-    MatIconModule,
-    AngorCardComponent,
-    CdkScrollable,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatInputModule,
-    MatSlideToggleModule,
-    NgClass,
-    MatTooltipModule,
-    MatProgressBarModule,
-    AngorFindByKeyPipe,
-    PercentPipe,
-    I18nPluralPipe,
-    CommonModule,
-  ],
-  templateUrl: './bookmark.component.html',
-  styleUrls: ['./bookmark.component.scss']
+    selector: 'app-bookmark',
+    standalone: true,
+    imports: [
+        MatButtonModule,
+        RouterLink,
+        MatIconModule,
+        AngorCardComponent,
+        CdkScrollable,
+        MatFormFieldModule,
+        MatSelectModule,
+        MatOptionModule,
+        MatInputModule,
+        MatSlideToggleModule,
+        NgClass,
+        MatTooltipModule,
+        MatProgressBarModule,
+        AngorFindByKeyPipe,
+        PercentPipe,
+        I18nPluralPipe,
+        CommonModule,
+    ],
+    templateUrl: './bookmark.component.html',
+    styleUrls: ['./bookmark.component.scss']
 })
 export class BookmarkComponent implements OnInit, OnDestroy {
     savedProjects: Project[] = [];
@@ -51,6 +51,7 @@ export class BookmarkComponent implements OnInit, OnDestroy {
     constructor(
         private _bookmarkService: BookmarkService,
         private _storageService: StorageService,
+        private _router: Router,
     ) {
         this.bookmarks$ = this._bookmarkService.bookmarks$;
     }
@@ -110,4 +111,13 @@ export class BookmarkComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }
+
+    goToProjectDetails(project: Project): void {
+        this._router.navigate(['/profile', project.nostrPubKey]);
+    }
+    openChat(pubKey : string): void
+    {
+        this._router.navigate(['/chat', pubKey]);
+    }
+
 }

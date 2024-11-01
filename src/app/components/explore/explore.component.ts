@@ -215,8 +215,9 @@ export class ExploreComponent implements OnInit, OnDestroy {
     }
 
 
-    openChat(pubKey: string): void {
-
+    openChat(pubKey : string): void
+    {
+        this._router.navigate(['/chat', pubKey]);
     }
 
 
