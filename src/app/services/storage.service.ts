@@ -455,14 +455,20 @@ export class StorageService {
     async savePostForPubKey(event: any): Promise<void> {
         try {
             await this.postsStore.setItem(event.id, event);
-
             await this.setUpdateHistory('posts');
 
-            this.postsSubject.next(event);
+             const currentPosts = this.postsSubject.getValue();
+
+             const updatedPosts = [event, ...currentPosts];
+
+             this.postsSubject.next(updatedPosts);
+
+ 
         } catch (error) {
             console.error('Error saving event type 1 and sending it to clients:', error);
         }
     }
+
 
     async getPostsByPubKey(pubKey: string): Promise<any[]> {
         try {

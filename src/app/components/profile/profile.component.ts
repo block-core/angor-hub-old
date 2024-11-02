@@ -188,11 +188,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
         });
 
-        this._storageService.posts$.subscribe((posts) => {
-             this.posts = posts.sort((a, b) => b.createdAt - a.createdAt);
-             this._changeDetectorRef.detectChanges();
+        this._storageService.posts$.subscribe((data) => {
+            this.posts = data;
+            this._changeDetectorRef.detectChanges();
         });
-
     }
 
     toggleAbout(): void {
@@ -449,5 +448,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this._clipboard.copy(npub);
         this.openSnackBar('npub public key copied', 'dismiss');
     }
+
+    isSingleEmojiOrWord(token: string): boolean {
+        const trimmedToken = token.trim();
+        const isSingleWord = /^\w+$/.test(trimmedToken);
+
+        const isSingleEmoji = /^[\p{Emoji}]+$/u.test(trimmedToken);
+
+        return isSingleWord || isSingleEmoji;
+    }
+
 
 }

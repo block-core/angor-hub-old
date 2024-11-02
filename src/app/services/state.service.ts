@@ -128,7 +128,7 @@ export class StateService {
     const postFilter: Filter = {
       kinds: [1],
       authors: [pubkey],
-      limit: 100
+      limit: 20
     };
 
     if (postsLastUpdate) {
