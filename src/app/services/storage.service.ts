@@ -472,12 +472,15 @@ export class StorageService {
                     events.push(event);
                 }
             });
-            return events;
+            // Sort events by date (assuming 'createdAt' is the timestamp property)
+            return events.sort((a, b) => b.createdAt - a.createdAt);
         } catch (error) {
             console.error('Error retrieving events for pubKey:', error);
             return [];
         }
     }
+
+
 
     async getAllPostsForAllPubKeys(): Promise<any[]> {
         try {
@@ -485,14 +488,14 @@ export class StorageService {
             await this.postsStore.iterate<any, void>((event) => {
                 events.push(event);
             });
-            return events;
+
+            // Sort events by createdAt in descending order to ensure the newest posts are first
+            return events.sort((a, b) => b.created_at - a.created_at);
         } catch (error) {
             console.error('Error retrieving all events:', error);
             return [];
         }
     }
-
-
 
     // ------------------- MyLikes Methods -------------------
     async saveLike(like: any): Promise<void> {
@@ -707,6 +710,8 @@ export class StorageService {
     private async loadAllPostsFromDB(): Promise<void> {
         try {
             const posts = await this.getAllPostsForAllPubKeys();
+
+            // Update postsSubject with sorted posts
             this.postsSubject.next(posts);
         } catch (error) {
             console.error('Error loading posts from DB:', error);

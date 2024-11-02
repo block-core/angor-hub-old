@@ -2,7 +2,7 @@ import { AngorCardComponent } from '@angor/components/card';
 import { AngorConfigService } from '@angor/services/config';
 import { AngorConfirmationService } from '@angor/services/confirmation';
 import { TextFieldModule } from '@angular/cdk/text-field';
-import { CommonModule, NgClass } from '@angular/common';
+import { CommonModule, DatePipe, NgClass, NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -32,10 +32,8 @@ import { bech32 } from '@scure/base';
 import { QRCodeModule } from 'angularx-qrcode';
 import { PaginatedEventService } from 'app/services/event.service';
 import { LightningService } from 'app/services/lightning.service';
-import { MetadataService } from 'app/services/metadata.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
-import { StateService } from 'app/services/state.service';
 import { StorageService } from 'app/services/storage.service';
 import { SafeUrlPipe } from 'app/shared/pipes/safe-url.pipe';
 import { LightningInvoice, LightningResponse, Post } from 'app/types/post';
@@ -48,6 +46,10 @@ import { SendDialogComponent } from './zap/send-dialog/send-dialog.component';
 import { SubscriptionService } from 'app/services/subscription.service';
 import { Clipboard } from '@angular/cdk/clipboard';
 import {MatExpansionModule} from '@angular/material/expansion';
+import { ParseContentService } from 'app/services/parse-content.service';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { ContactInfoComponent } from '../chat/contact-info/contact-info.component';
+import { AgoPipe } from 'app/shared/pipes/ago.pipe';
 interface Chip {
     color?: string;
     selected?: string;
@@ -83,7 +85,12 @@ interface Chip {
         InfiniteScrollModule,
         EventListComponent,
         MatIconModule,
-        MatExpansionModule
+        MatExpansionModule,
+        MatSidenavModule,
+        ContactInfoComponent,
+        NgTemplateOutlet,
+        DatePipe,
+        AgoPipe
 
     ],
 })
@@ -117,7 +124,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     invoiceAmount: string = '?';
     isLiked = false;
     isPreview = false;
-    posts: Post[] = [];
+    posts: any[] = [];
     likes: any[] = [];
 
     myLikes: NostrEvent[] = [];
@@ -151,7 +158,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _angorConfirmationService: AngorConfirmationService,
         private _eventService: PaginatedEventService,
         private _subscriptionService: SubscriptionService,
-        private _clipboard: Clipboard
+        private _clipboard: Clipboard,
+        private parseContent: ParseContentService
     ) { }
 
     async ngOnInit(): Promise<void> {
@@ -180,6 +188,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
         });
 
+        this._storageService.posts$.subscribe((posts) => {
+             this.posts = posts.sort((a, b) => b.createdAt - a.createdAt);
+             this._changeDetectorRef.detectChanges();
+        });
 
     }
 
