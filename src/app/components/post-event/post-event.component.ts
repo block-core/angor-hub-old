@@ -84,11 +84,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
     reposts: PostReaction[] = [];
     zaps: PostReaction[] = [];
     replies: PostReaction[] = [];
-    private reactionQueue: Set<string> = new Set();
-    private processingQueue = false;
-    private reactionBatchSize = 5;
-    private debounceDelay = 3000;
-    subscriptionId:string;
+    subscriptionId: string;
 
     constructor(
         private _route: ActivatedRoute,
@@ -105,8 +101,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
             this.postId = params.get('id');
             if (this.postId) {
                 this.loadPost(this.postId);
-                this.addToQueue(this.postId);
-                this.processQueue();
+                this.subscribeToReactions(this.postId);
             }
         });
     }
@@ -122,35 +117,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
         }
     }
 
-    private addToQueue(postId: string): void {
-        if (!this.reactionQueue.has(postId)) {
-            this.reactionQueue.add(postId);
-        }
-    }
-
-    private processQueue(): void {
-        if (this.processingQueue || this.reactionQueue.size === 0) return;
-
-        this.processingQueue = true;
-        const postIdsToProcess = Array.from(this.reactionQueue).slice(0, this.reactionBatchSize);
-        this.reactionQueue = new Set(Array.from(this.reactionQueue).slice(this.reactionBatchSize));
-
-        from(postIdsToProcess).pipe(
-            concatMap(postId => this.subscribeToReactions(postId).pipe(delay(this.debounceDelay))),
-            takeUntil(this._unsubscribeAll)
-        ).subscribe({
-            complete: () => {
-                this.processingQueue = false;
-                if (this.reactionQueue.size > 0) {
-                    this.processQueue();
-                }
-            }
-        });
-    }
-
-    private subscribeToReactions(postId: string): Subject<void> {
-        const subject = new Subject<void>();
-
+    private subscribeToReactions(postId: string): void {
         const filter: Filter[] = [
             { '#e': [postId], kinds: [1] },
             { '#e': [postId], kinds: [7] },
@@ -168,17 +135,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
 
             this.addReaction(postId, event.kind, reaction);
             this.metadataQueueService.addPublicKey(event.pubkey);
-            subject.next();
-
-            if (this.reactionQueue.has(postId)) {
-                this.reactionQueue.delete(postId);
-            }
-
-            this.subscriptionService.removeSubscriptionById(this.subscriptionId);
-            subject.complete();
         });
-
-        return subject;
     }
 
     private async getUserProfile(pubkey: string): Promise<UserProfile> {
@@ -205,7 +162,6 @@ export class PostEventComponent implements OnInit, OnDestroy {
         this._changeDetectorRef.detectChanges();
     }
 
-
     isSingleEmojiOrWord(token: string): boolean {
         const trimmedToken = token.trim();
         const isSingleWord = /^\w+$/.test(trimmedToken);
@@ -214,8 +170,10 @@ export class PostEventComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        this.subscriptionService.removeSubscriptionById(this.subscriptionId);
         this._unsubscribeAll.next();
         this._unsubscribeAll.complete();
+        if (this.subscriptionId) {
+            this.subscriptionService.removeSubscriptionById(this.subscriptionId);
+        }
     }
 }
