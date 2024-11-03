@@ -70,6 +70,7 @@ export interface PostReaction {
         ContactInfoComponent,
         DatePipe,
         AgoPipe,
+        MatProgressSpinnerModule
     ],
     templateUrl: './post-event.component.html',
     styleUrls: ['./post-event.component.scss']
@@ -78,6 +79,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
     postId: string | null = null;
     post: any = null;
     loading = true;
+    loadingReactions = true;
     private _unsubscribeAll: Subject<void> = new Subject<void>();
 
     likes: PostReaction[] = [];
@@ -118,6 +120,8 @@ export class PostEventComponent implements OnInit, OnDestroy {
     }
 
     private subscribeToReactions(postId: string): void {
+        this.loadingReactions = true; // Start loading reactions
+
         const filter: Filter[] = [
             { '#e': [postId], kinds: [1] },
             { '#e': [postId], kinds: [7] },
@@ -126,6 +130,10 @@ export class PostEventComponent implements OnInit, OnDestroy {
         ];
 
         this.subscriptionId = this.subscriptionService.addSubscriptions(filter, async (event: NostrEvent) => {
+            if (this.loadingReactions) {
+                this.loadingReactions = false; // Stop loading once the first reaction is received
+            }
+
             const userProfile = await this.getUserProfile(event.pubkey);
             const reaction: PostReaction = {
                 user: userProfile,
