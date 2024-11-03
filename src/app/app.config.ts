@@ -32,7 +32,6 @@ import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@block
 export function initializeState(signerService: SignerService, stateService: StateService): () => Promise<void> {
     return async () => {
       const publicKey = signerService.getPublicKey();
-      console.log("publicKey : " + publicKey);
 
       if (publicKey) {
         await stateService.loadUserProfile(publicKey);
@@ -47,8 +46,7 @@ export function initializeState(signerService: SignerService, stateService: Stat
             noBanner: true,
             title: 'Angor Hub',
             onAuth: (npub: string, options: any) => {
-                console.log('Nostr Login successful:', npub, options);
-
+ 
             },
         });
     };

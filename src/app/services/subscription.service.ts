@@ -1,123 +1,172 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, timer } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Filter, NostrEvent } from 'nostr-tools';
 import { RelayService } from './relay.service';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Subscription {
-  filter: Filter[];
-  callbacks: ((event: NostrEvent) => void)[];
-  id: string;
+    filter: Filter[];
+    callbacks: ((event: NostrEvent) => void)[];
+    id: string;
 }
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class SubscriptionService {
-  private subscriptions = new Map<string, Subscription>();
-  private activeRelays: string[] = [];
-  private pendingSubscriptions = new Map<string, Subscription>();
-  private subscriptionsSubject = new BehaviorSubject<Map<string, Subscription>>(new Map());
-  public subscriptions$ = this.subscriptionsSubject.asObservable();
+    private subscriptions: Map<string, Subscription> = new Map();
+    private activeRelays: string[] = [];
+    private pendingSubscriptions: Map<string, Subscription> = new Map();
+    private subscriptionsSubject = new BehaviorSubject<Map<string, Subscription>>(new Map());
 
-  private subscriptionQueue: Subscription[] = [];
-  private isProcessingQueue = false;
-  private readonly queueInterval = 3000;
-  private readonly maxSubscriptionsPerBatch = 5;
-  private readonly debounceInterval = 5000;
-  private lastActionTimestamp = new Map<string, number>();
+    public subscriptions$: Observable<Map<string, Subscription>> = this.subscriptionsSubject.asObservable();
 
-  constructor(private relayService: RelayService) {
-    this.connectToAllRelays();
-    this.initializeQueueProcessing();
-  }
+    private subscriptionQueue: Subscription[] = [];
+    private isProcessingQueue = false;
+    private queueInterval = 3000;
+    private maxSubscriptionsPerBatch = 5;
+    private debounceInterval = 5000;
+    private lastActionTimestamp: Map<string, number> = new Map();
 
-  public addSubscriptions(filters: Filter[], callback: (event: NostrEvent) => void): string {
-    const existingSubscription = this.findExistingSubscription(filters);
-
-    if (existingSubscription) {
-      existingSubscription.callbacks.push(callback);
-      return existingSubscription.id;
+    constructor(private relayService: RelayService) {
+        this.connectToAllRelays();
+        this.processSubscriptionQueue();
     }
 
-    const subscriptionId = uuidv4();
-    this.lastActionTimestamp.set(subscriptionId, Date.now());
 
-    const newSubscription: Subscription = { filter: filters, callbacks: [callback], id: subscriptionId };
-    this.subscriptions.set(subscriptionId, newSubscription);
-    this.subscriptionsSubject.next(this.subscriptions);
+    public addSubscriptions(filters: Filter[], callback: (event: NostrEvent) => void): string {
+        const existingSubscription = this.findExistingSubscription(filters);
 
-    this.addToQueue(newSubscription);
-    return subscriptionId;
-  }
+        if (existingSubscription) {
+            existingSubscription.callbacks.push(callback);
+            return existingSubscription.id;
+        }
 
-  private findExistingSubscription(filters: Filter[]): Subscription | undefined {
-    return Array.from(this.subscriptions.values()).find(sub =>
-      sub.filter.every((f, i) => f === filters[i])
-    );
-  }
+        const subscriptionId = uuidv4();
+        const now = Date.now();
+        this.lastActionTimestamp.set(subscriptionId, now);
 
-  public removeSubscriptionById(subscriptionId: string): void {
-    const lastActionTime = this.lastActionTimestamp.get(subscriptionId);
+        const subscription: Subscription = { filter: filters, callbacks: [callback], id: subscriptionId };
+        this.subscriptions.set(subscription.id, subscription);
+        this.subscriptionsSubject.next(this.subscriptions);
 
-    if (lastActionTime && Date.now() - lastActionTime < this.debounceInterval) return;
 
-    if (this.subscriptions.has(subscriptionId)) {
-      this.subscriptions.delete(subscriptionId);
-      this.subscriptionsSubject.next(this.subscriptions);
+        this.addToQueue(subscription);
+
+        return subscription.id;
     }
 
-    this.lastActionTimestamp.set(subscriptionId, Date.now());
-  }
 
-  private addToQueue(subscription: Subscription): void {
-    this.subscriptionQueue.push(subscription);
-  }
-
-  private initializeQueueProcessing(): void {
-    if (this.isProcessingQueue) return;
-    this.isProcessingQueue = true;
-
-    timer(0, this.queueInterval).subscribe(() => {
-      const subscriptionsBatch = this.subscriptionQueue.splice(0, this.maxSubscriptionsPerBatch);
-      subscriptionsBatch.forEach(subscription => this.subscribeToRelays(subscription.filter, subscription));
-    });
-  }
-
-  private subscribeToRelays(filters: Filter[], subscription: Subscription): void {
-    if (this.activeRelays.length === 0) {
-      this.pendingSubscriptions.set(subscription.id, subscription);
-      return;
+    private findExistingSubscription(filters: Filter[]): Subscription | undefined {
+        for (let subscription of this.subscriptions.values()) {
+            if (JSON.stringify(subscription.filter) === JSON.stringify(filters)) {
+                return subscription;
+            }
+        }
+        return undefined;
     }
 
-    this.relayService.ensureConnectedRelays().then(() => {
-      const connectedRelays = this.relayService.getConnectedRelays();
-      this.relayService.getPool().subscribeMany(connectedRelays, filters, {
-        onevent: (event: NostrEvent) => subscription.callbacks.forEach(callback => callback(event)),
-        onclose: () => console.log('Subscription closed'),
-      });
-    }).catch(error => console.error('Error subscribing to relays:', error));
-  }
 
-  private subscribeToAllRelays(): void {
-    this.pendingSubscriptions.forEach(subscription => this.subscribeToRelays(subscription.filter, subscription));
-    this.pendingSubscriptions.clear();
-  }
+    public removeSubscriptionById(subscriptionId: string): void {
+        const now = Date.now();
+        const lastActionTime = this.lastActionTimestamp.get(subscriptionId);
 
-  private connectToAllRelays(): void {
-    this.relayService.ensureConnectedRelays().then(() => {
-      this.activeRelays = this.relayService.getConnectedRelays();
-      this.subscribeToAllRelays();
-    }).catch(error => console.error('Error connecting to relays:', error));
-  }
+        if (lastActionTime && now - lastActionTime < this.debounceInterval) {
+            //   console.warn('Skipping removal due to rapid toggling');
+            return;
+        }
 
-  public clearAllSubscriptions(): void {
-    this.subscriptions.clear();
-    this.pendingSubscriptions.clear();
-    this.subscriptionsSubject.next(new Map());
-  }
+        if (this.subscriptions.has(subscriptionId)) {
+            this.subscriptions.delete(subscriptionId);
+            this.subscriptionsSubject.next(this.subscriptions);
+        }
 
-  public getSubscriptions(): Subscription[] {
-    return Array.from(this.subscriptions.values());
-  }
+        this.lastActionTimestamp.set(subscriptionId, now);
+    }
+
+
+    private addToQueue(subscription: Subscription): void {
+        this.subscriptionQueue.push(subscription);
+    }
+
+
+    private processSubscriptionQueue(): void {
+        if (this.isProcessingQueue) return;
+        this.isProcessingQueue = true;
+
+        const processQueue = () => {
+            if (this.subscriptionQueue.length > 0) {
+                const subscriptionsBatch = this.subscriptionQueue.splice(0, this.maxSubscriptionsPerBatch);
+
+                subscriptionsBatch.forEach((subscription) => {
+                    try {
+                        this.subscribeToRelays(subscription.filter, subscription);
+                    } catch (error) {
+                        console.error('Failed to subscribe:', error);
+                    }
+                });
+            }
+        };
+
+        setInterval(processQueue, this.queueInterval);
+    }
+
+
+
+    private subscribeToRelays(filters: Filter[], subscription: Subscription): void {
+        if (this.activeRelays.length === 0) {
+            this.pendingSubscriptions.set(subscription.id, subscription);
+            return;
+        }
+
+        this.relayService
+            .ensureConnectedRelays()
+            .then(() => {
+                const connectedRelays = this.relayService.getConnectedRelays();
+                this.relayService.getPool().subscribeMany(connectedRelays, filters, {
+                    onevent: (event: NostrEvent) => {
+                        subscription.callbacks.forEach((callback) => callback(event));
+                    },
+                    onclose: () => {
+                        console.log('Subscription closed');
+                    },
+                });
+            })
+            .catch((error) => {
+                console.error('Error subscribing to relays:', error);
+            });
+    }
+
+
+    private subscribeToAllRelays(): void {
+        this.pendingSubscriptions.forEach((subscription) => {
+            this.subscribeToRelays(subscription.filter, subscription);
+        });
+        this.pendingSubscriptions.clear();
+    }
+
+
+    private connectToAllRelays(): void {
+        this.relayService
+            .ensureConnectedRelays()
+            .then(() => {
+                this.activeRelays = this.relayService.getConnectedRelays();
+                this.subscribeToAllRelays();
+            })
+            .catch((error) => {
+                console.error('Error connecting to relays:', error);
+            });
+    }
+
+
+    public clearAllSubscriptions(): void {
+        this.subscriptions.clear();
+        this.pendingSubscriptions.clear();
+        this.subscriptionsSubject.next(new Map());
+    }
+
+
+    public getSubscriptions(): Subscription[] {
+        return Array.from(this.subscriptions.values());
+    }
 }

@@ -539,6 +539,7 @@
                 </ng-container>
             </angor-card>
 
+
             @for (item of posts; track $index) {
             <!-- Post -->
             <angor-card class="mb-8 flex w-full flex-col" #expandableCard02="angorCard">
@@ -700,210 +701,31 @@
                     </div>
                     <div class="hidden flex-auto sm:flex"></div>
                     <div class="mt-4 flex items-center sm:mt-0">
-                        <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
-                            4 shares
-                        </button>
-                        <button class="px-3 sm:-mr-4" mat-button (click)="
-                                    expandableCard02.expanded =
-                                        !expandableCard02.expanded
-                                ">
-                            <span class="mr-1">5 Comments</span>
-                            <mat-icon class="rotate-0 transition-transform duration-150 ease-in-out icon-size-5"
-                                [ngClass]="{
-                                        'rotate-180': expandableCard02.expanded,
-                                    }" [svgIcon]="'heroicons_mini:chevron-down'"></mat-icon>
-                        </button>
+
+                        <button
+                        class="px-3 sm:-mr-4"
+                        mat-button
+                        (click)="openPost(item.id)"
+                    >
+                        <span class="mr-1">Read More ...</span>
+                    </button>
+
                     </div>
+
+
                 </div>
 
-                <ng-container angorCardExpansion>
-                    <hr class="m-0 border-b" />
-                    <div class="mx-4 mb-3 mt-6 flex flex-col sm:mx-8">
-                        <div class="flex items-start">
-                            <img class="mr-5 h-12 w-12 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                alt="Card cover image" />
-                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                                <textarea matInput [placeholder]="'Write a comment...'" [rows]="3"
-                                    cdkTextareaAutosize></textarea>
-                            </mat-form-field>
-                        </div>
-                        <div class="-mr-3 ml-auto mt-3 flex items-center">
-                            <button mat-icon-button>
-                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:sparkles'"></mat-icon>
-                            </button>
-                            <button mat-icon-button>
-                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:face-smile'"></mat-icon>
-                            </button>
-                            <button mat-icon-button>
-                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:photo'"></mat-icon>
-                            </button>
-                        </div>
-                    </div>
-                    <hr class="mx-4 my-0 border-b sm:mx-8" />
-                    <div class="max-h-120 overflow-y-auto">
-                        <div class="relative mx-4 my-6 flex flex-col sm:mx-8">
-                            <div class="flex items-start">
-                                <img class="mr-4 h-8 w-8 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                    alt="Card cover image" />
-                                <div class="mt-0.5 flex flex-col">
-                                    <span>
-                                        <b>Rutherford Brannan</b> Oh, I’m
-                                        in.. Let’s arrange a trip for the
-                                        next weekend if you want!
-                                    </span>
-                                    <div class="text-secondary mt-2 flex items-center text-sm">
-                                        <span class="mr-2 cursor-pointer hover:underline">Like</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Reply</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Hide replies</span>
-                                        <span class="mr-2">&bull;</span>
-                                        <span>17 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="ml-12 mt-8 flex items-start">
-                                <img class="mr-4 h-8 w-8 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                    alt="Card cover image" />
-                                <div class="mt-0.5 flex flex-col">
-                                    <span>
-                                        <b>Milad</b> Yes!! Let's talk about
-                                        it on lunch!
-                                    </span>
-                                    <div class="text-secondary mt-2 flex items-center text-sm">
-                                        <span class="mr-2 cursor-pointer hover:underline">Like</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Reply</span>
-                                        <span class="mr-2">&bull;</span>
-                                        <span>15 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="ml-12 mt-8 flex items-start">
-                                <img class="mr-4 h-8 w-8 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                    alt="Card cover image" />
-                                <div class="mt-0.5 flex flex-col">
-                                    <span>
-                                        <b>Barbara Cotilla</b> Count me in
-                                        !!!
-                                    </span>
-                                    <div class="text-secondary mt-2 flex items-center text-sm">
-                                        <span class="mr-2 cursor-pointer hover:underline">Like</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Reply</span>
-                                        <span class="mr-2">&bull;</span>
-                                        <span>12 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-8 flex items-start">
-                                <img class="mr-4 h-8 w-8 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                    alt="Card cover image" />
-                                <div class="mt-0.5 flex flex-col">
-                                    <span>
-                                        <b>Alan Marti</b> The color of the
-                                        sky doesn’t look natural at all, do
-                                        you really think this is natural?
-                                        I’d say Photoshop! Your trip isn't
-                                        going to worth it since you won't be
-                                        seeing this exact sky.
-                                    </span>
-                                    <div class="text-secondary mt-2 flex items-center text-sm">
-                                        <span class="mr-2 cursor-pointer hover:underline">Like</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Reply</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Hide replies</span>
-                                        <span class="mr-2">&bull;</span>
-                                        <span>24 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="ml-12 mt-8 flex items-start">
-                                <img class="mr-4 h-8 w-8 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                    alt="Card cover image" />
-                                <div class="mt-0.5 flex flex-col">
-                                    <span>
-                                        <b>Milad</b> Hey, Alan! You must be
-                                        fun at parties!
-                                    </span>
-                                    <div class="text-secondary mt-2 flex items-center text-sm">
-                                        <span class="mr-2 cursor-pointer hover:underline">Like</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Reply</span>
-                                        <span class="mr-2">&bull;</span>
-                                        <span>22 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="ml-12 mt-8 flex items-start">
-                                <img class="mr-4 h-8 w-8 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                    alt="Card cover image" />
-                                <div class="mt-0.5 flex flex-col">
-                                    <span>
-                                        <b>Alan Marti</b> Caroline, I'm
-                                        telling the truth, and if you cannot
-                                        stand the truth, maybe we shouldn't
-                                        be friends anymore...
-                                    </span>
-                                    <div class="text-secondary mt-2 flex items-center text-sm">
-                                        <span class="mr-2 cursor-pointer hover:underline">Like</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Reply</span>
-                                        <span class="mr-2">&bull;</span>
-                                        <span>20 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="ml-12 mt-8 flex items-start">
-                                <img class="mr-4 h-8 w-8 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                    alt="Card cover image" />
-                                <div class="mt-0.5 flex flex-col">
-                                    <span>
-                                        <b>Milad</b> Dude! Relax! I'm just
-                                        messing with you...
-                                    </span>
-                                    <div class="text-secondary mt-2 flex items-center text-sm">
-                                        <span class="mr-2 cursor-pointer hover:underline">Like</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Reply</span>
-                                        <span class="mr-2">&bull;</span>
-                                        <span>18 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="ml-12 mt-8 flex items-start">
-                                <img class="mr-4 h-8 w-8 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                    alt="Card cover image" />
-                                <div class="mt-0.5 flex flex-col">
-                                    <span>
-                                        <b>Alan Marti</b> Sorry! I had a bad
-                                        morning, let's talk about this in
-                                        couple hours, I need to relax a bit
-                                        :(
-                                    </span>
-                                    <div class="text-secondary mt-2 flex items-center text-sm">
-                                        <span class="mr-2 cursor-pointer hover:underline">Like</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Reply</span>
-                                        <span class="mr-2">&bull;</span>
-                                        <span>16 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-8 flex items-start">
-                                <img class="mr-4 h-8 w-8 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                                    alt="Card cover image" />
-                                <div class="mt-0.5 flex flex-col">
-                                    <span>
-                                        <b>Marleah Eagleston</b> Count me
-                                        in, too!
-                                    </span>
-                                    <div class="text-secondary mt-2 flex items-center text-sm">
-                                        <span class="mr-2 cursor-pointer hover:underline">Like</span>
-                                        <span class="mr-2 cursor-pointer hover:underline">Reply</span>
-                                        <span class="mr-2">&bull;</span>
-                                        <span>34 min</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </ng-container>
             </angor-card>
             }
 
-            <!-- <app-event-list class="mb-8 w-full max-w-5xl" [pubkeys]="[routePubKey]"></app-event-list> -->
+            <div  class="mt-10 m-auto flex justify-center">
+                <button mat-raised-button color="primary" (click)="loadNextPage()" [disabled]="loading">
+                    {{ loading ? 'Loading...' : 'Load More Posts' }}
+                </button>
+            </div>
+
+
+
         </div>
     </div>
 </div>

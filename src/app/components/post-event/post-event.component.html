@@ -1,0 +1,313 @@
+<div class="mx-auto w-full max-w-5xl px-6 sm:px-8">
+    <div class="flex min-w-0 flex-auto flex-col">
+        <div *ngIf="loading" class="loading-spinner">
+            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        </div>
+
+        <div *ngIf="!loading && post">
+            <div class="m-auto flex w-full max-w-140 flex-col items-start">
+                <angor-card class="mt-8 flex w-full flex-col">
+                    <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
+                        <img class="mr-4 h-10 w-10 rounded-full" src="/images/avatars/avatar-placeholder.png"
+                            alt="Card cover image" />
+                        <div class="flex flex-col">
+                            <span class="font-semibold leading-none">Milad</span>
+                            <span class="text-secondary mt-1 text-sm leading-none">{{ post.created_at | ago }}</span>
+                        </div>
+                        <button class="-mr-4 ml-auto" mat-icon-button [matMenuTriggerFor]="postCardMenu02">
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
+                        </button>
+                        <mat-menu #postCardMenu02="matMenu">
+                            <button mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
+                                            'heroicons_solid:arrow-up-tray'
+                                        "></mat-icon>
+                                    <span>Save post</span>
+                                </span>
+                            </button>
+                            <button mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon class="mr-3 icon-size-5"
+                                        [svgIcon]="'heroicons_solid:eye-slash'"></mat-icon>
+                                    <span>Hide post</span>
+                                </span>
+                            </button>
+                            <button mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_solid:clock'"></mat-icon>
+                                    <span>Snooze for 30 days</span>
+                                </span>
+                            </button>
+                            <button mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
+                                            'heroicons_solid:minus-circle'
+                                        "></mat-icon>
+                                    <span>Hide all</span>
+                                </span>
+                            </button>
+                            <mat-divider class="my-2"></mat-divider>
+                            <button mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
+                                            'heroicons_solid:exclamation-triangle'
+                                        "></mat-icon>
+                                    <span>Report post</span>
+                                </span>
+                            </button>
+                            <button mat-menu-item>
+                                <span class="flex items-center">
+                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
+                                    <span>Turn on notifications for this
+                                        post</span>
+                                </span>
+                            </button>
+                        </mat-menu>
+                    </div>
+
+                    <div *ngFor="
+                            let token of parseContent.parseContent(post.content)
+                        " class="inline-block whitespace-pre-wrap break-words">
+                        <!-- YouTube Embeds -->
+                        <ng-container *ngIf="token.token === 'youtube'">
+                            <div class="relative mb-4 block">
+                                <iframe [src]="token.safeWord" width="560" height="315" frameborder="0"
+                                    allowfullscreen></iframe>
+                            </div>
+                        </ng-container>
+
+                        <!-- Images -->
+                        <ng-container *ngIf="token.token === 'image'">
+                            <div class="relative mb-4 block">
+                                <img [src]="token.safeWord" alt="Embedded Image" style="width: 100%"
+                                    class="max-h-140 object-cover" />
+                            </div>
+                        </ng-container>
+
+                        <!-- Videos -->
+                        <ng-container *ngIf="token.token === 'video'">
+                            <div class="relative mb-4 block">
+                                <video controls style="width: 100%">
+                                    <source [src]="token.safeWord" type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </ng-container>
+
+                        <!-- Audio -->
+                        <ng-container *ngIf="token.token === 'audio'">
+                            <div class="relative mb-4 block">
+                                <audio controls>
+                                    <source [src]="token.safeWord" type="audio/mpeg" />
+                                    Your browser does not support the audio
+                                    element.
+                                </audio>
+                            </div>
+                        </ng-container>
+
+                        <!-- Links -->
+                        <ng-container *ngIf="token.token === 'link'">
+                            <div class="mx-6 mb-6 mt-2 sm:mx-8">
+                                <a class="inline-block break-words break-all text-blue-500 underline"
+                                    [href]="token.word" target="_blank">
+                                    <span class="inline-block break-words break-all">{{ token.word }}</span>
+                                </a>
+                            </div>
+                        </ng-container>
+
+                        <!-- Plain Text -->
+                        <ng-container *ngIf="!token.token">
+                            <div class="mx-6 mb-6 mt-2 sm:mx-8">
+                                <span class="inline-block break-words break-all" [ngClass]="{
+                                        'large-font':
+                                            isSingleEmojiOrWord(token),
+                                    }">
+                                    {{ token.trim() }}
+                                </span>
+                            </div>
+                        </ng-container>
+                    </div>
+                </angor-card>
+
+
+
+                <angor-card class="mt-1 mb-8 pt-4 flex w-full flex-col" #expandableReplay="angorCard">
+                    <div class="mx-3 flex items-center sm:mx-5">
+                        <button class="mr-1 px-3" mat-button>
+                            <mat-icon class="text-red-500 icon-size-5" [svgIcon]="'heroicons_solid:heart'"></mat-icon>
+                            <span class="ml-2">Unlike</span>
+                        </button>
+                        <button class="mr-1 px-3" mat-button>
+                            <mat-icon class="icon-size-5" [svgIcon]="
+                                'heroicons_solid:chat-bubble-left-ellipsis'
+                            "></mat-icon>
+                            <span class="ml-2">Comment</span>
+                        </button>
+                        <button class="mr-1 px-3" mat-button>
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:share'"></mat-icon>
+                            <span class="ml-2">Share</span>
+                        </button>
+                    </div>
+                    <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
+                    <div class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center">
+
+                        <div *ngIf="likes.length > 0" class="flex items-center">
+                            <!-- Display the last 4 likes' avatars with shadow and in a stacked format -->
+                            <ng-container *ngFor="let like of likes | slice:-4">
+                                <img class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full ring-2 ring-white shadow-lg"
+                                     [src]="like.user.picture || '/images/avatars/avatar-placeholder.png'"
+                                     [alt]="like.user.name" />
+                            </ng-container>
+
+                            <!-- Display total likes count -->
+                            <div class="ml-3 text-md tracking-tight">
+                                {{ likes.length }} like<span *ngIf="likes.length > 1">s</span>
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="hidden flex-auto sm:flex"></div>
+                        <div class="mt-4 flex items-center sm:mt-0 justify-end">
+
+                            <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
+                                {{  reposts.length  }} Share<span *ngIf="zaps.length > 1">s</span>
+                             </button>
+                            <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
+                               {{  zaps.length  }} Zap<span *ngIf="zaps.length > 1">s</span>
+                            </button>
+                            <button class="px-3 sm:-mr-4" mat-button (click)="
+                                expandableReplay.expanded =
+                                    !expandableReplay.expanded
+                            ">
+                                <span class="mr-1">{{replies.length}} Comments</span>
+                                <mat-icon class="rotate-0 transition-transform duration-150 ease-in-out icon-size-5" [ngClass]="{
+                                    'rotate-180': expandableReplay.expanded,
+                                }" [svgIcon]="'heroicons_mini:chevron-down'"></mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <ng-container angorCardExpansion>
+                        <hr class="m-0 border-b" />
+                        <div class="mx-4 mb-3 mt-6 flex flex-col sm:mx-8">
+                            <div class="flex items-start">
+                                <img class="mr-5 h-12 w-12 rounded-full" src="/images/avatars/avatar-placeholder.png"
+                                    alt="Card cover image" />
+                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                    <textarea matInput [placeholder]="'Write a comment...'" [rows]="3"
+                                        cdkTextareaAutosize></textarea>
+                                </mat-form-field>
+                            </div>
+                            <div class="-mr-3 ml-auto mt-3 flex items-center">
+                                <button mat-icon-button>
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:sparkles'"></mat-icon>
+                                </button>
+                                <button mat-icon-button>
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:face-smile'"></mat-icon>
+                                </button>
+                                <button mat-icon-button>
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:photo'"></mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="replies.length > 0">
+                            <hr class="mx-4 my-0 border-b sm:mx-8" />
+
+                            <div class="max-h-120 overflow-y-auto">
+                                <div class="relative mx-4 my-6 flex flex-col sm:mx-8">
+
+                                    <div *ngFor="let reply of replies" class="flex items-start mb-6">
+                                        <img class="mr-4 h-8 w-8 rounded-full" [src]="reply.user.picture" alt="{{ reply.user.name }}" />
+                                        <div class="mt-0.5 flex flex-col">
+                                            {{ reply.user.name }}:
+                                            <span>
+
+                                                <div *ngFor="
+                                        let token of parseContent.parseContent(reply.content)"
+                                                    class="inline-block whitespace-pre-wrap break-words">
+
+                                                    <!-- YouTube Embeds -->
+                                                    <ng-container *ngIf="token.token === 'youtube'">
+                                                        <div class="relative mb-4 block">
+                                                            <iframe [src]="token.safeWord" width="560" height="315" frameborder="0"
+                                                                allowfullscreen></iframe>
+                                                        </div>
+                                                    </ng-container>
+
+                                                    <!-- Images -->
+                                                    <ng-container *ngIf="token.token === 'image'">
+                                                        <div class="relative mb-4 block">
+                                                            <img [src]="token.safeWord" alt="Embedded Image" style="width: 100%"
+                                                                class="max-h-140 object-cover" />
+                                                        </div>
+                                                    </ng-container>
+
+                                                    <!-- Videos -->
+                                                    <ng-container *ngIf="token.token === 'video'">
+                                                        <div class="relative mb-4 block">
+                                                            <video controls style="width: 100%">
+                                                                <source [src]="token.safeWord" type="video/mp4" />
+                                                                Your browser does not support the video tag.
+                                                            </video>
+                                                        </div>
+                                                    </ng-container>
+
+                                                    <!-- Audio -->
+                                                    <ng-container *ngIf="token.token === 'audio'">
+                                                        <div class="relative mb-4 block">
+                                                            <audio controls>
+                                                                <source [src]="token.safeWord" type="audio/mpeg" />
+                                                                Your browser does not support the audio
+                                                                element.
+                                                            </audio>
+                                                        </div>
+                                                    </ng-container>
+
+                                                    <!-- Links -->
+                                                    <ng-container *ngIf="token.token === 'link'">
+                                                        <div class="mx-6 mb-6 mt-2 sm:mx-1">
+                                                            <a class="inline-block break-words break-all text-blue-500 underline"
+                                                                [href]="token.word" target="_blank">
+                                                                <span class="inline-block break-words break-all">{{ token.word
+                                                                    }}</span>
+                                                            </a>
+                                                        </div>
+                                                    </ng-container>
+
+                                                    <!-- Plain Text -->
+                                                    <ng-container *ngIf="!token.token">
+                                                        <div class="mt-2 sm:mx-1">
+                                                            <span class="inline-block break-words break-all">
+                                                                {{ token.trim() }}
+                                                            </span>
+                                                        </div>
+                                                    </ng-container>
+                                                </div>
+
+                                            </span>
+                                            <div class="text-secondary mt-2 flex items-center text-sm">
+
+                                                <span>{{ reply.created_at | ago }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </ng-container>
+                </angor-card>
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+</div>

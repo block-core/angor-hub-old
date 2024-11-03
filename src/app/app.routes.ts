@@ -95,6 +95,16 @@ export const appRoutes: Route[] = [
                     import('app/components/profile/profile.routes'),
             },
             {
+                path: 'post',
+                loadChildren: () =>
+                    import('app/components/post-event/post-event.routes'),
+            },
+            {
+                path: 'post/:id',
+                loadChildren: () =>
+                    import('app/components/post-event/post-event.routes'),
+            },
+            {
                 path: 'settings',
                 loadChildren: () =>
                     import('app/components/settings/settings.routes'),

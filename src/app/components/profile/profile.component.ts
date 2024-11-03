@@ -26,7 +26,7 @@ import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { bech32 } from '@scure/base';
 import { QRCodeModule } from 'angularx-qrcode';
@@ -45,7 +45,7 @@ import { ReceiveDialogComponent } from './zap/receive-dialog/receive-dialog.comp
 import { SendDialogComponent } from './zap/send-dialog/send-dialog.component';
 import { SubscriptionService } from 'app/services/subscription.service';
 import { Clipboard } from '@angular/cdk/clipboard';
-import {MatExpansionModule} from '@angular/material/expansion';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { ParseContentService } from 'app/services/parse-content.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { ContactInfoComponent } from '../chat/contact-info/contact-info.component';
@@ -90,7 +90,7 @@ interface Chip {
         ContactInfoComponent,
         NgTemplateOutlet,
         DatePipe,
-        AgoPipe
+        AgoPipe,
 
     ],
 })
@@ -127,6 +127,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     posts: any[] = [];
     likes: any[] = [];
 
+    currentPage = 1;
+    loading = false;
     myLikes: NostrEvent[] = [];
     myLikedNoteIds: string[] = [];
 
@@ -150,6 +152,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _storageService: StorageService,
         private _sanitizer: DomSanitizer,
         private _route: ActivatedRoute,
+        private _router: Router,
         private _socialService: SocialService,
         private _snackBar: MatSnackBar,
         private _lightning: LightningService,
@@ -187,16 +190,45 @@ export class ProfileComponent implements OnInit, OnDestroy {
             this.stats$ = this._storageService.getContactStats$(this.routePubKey);
 
         });
+        this.loadInitialPosts();
+        this.subscribeToNewPosts();
 
-        this._storageService.posts$.subscribe((data) => {
-            this.posts = data;
-            this._changeDetectorRef.detectChanges();
+    }
+
+    private async loadInitialPosts(): Promise<void> {
+        this.loading = true;
+        try {
+            await this._storageService.loadPosts(this.currentPage);
+        } catch (error) {
+            console.error('Error loading posts:', error);
+        } finally {
+            this.loading = false;
+        }
+        this._changeDetectorRef.detectChanges();
+    }
+
+
+    private subscribeToNewPosts(): void {
+        this._storageService.posts$.subscribe((newPost) => {
+            if (newPost && !this.posts.some((p) => p.id === newPost.id)) {
+                this.posts.push(newPost);
+                this.posts.sort((a, b) => b.created_at - a.created_at);
+                this._changeDetectorRef.detectChanges();
+            }
         });
     }
+
+    loadNextPage(): void {
+        if (this.loading) return;
+        this.currentPage++;
+        this.loadInitialPosts();
+    }
+
 
     toggleAbout(): void {
         this.aboutExpanded = !this.aboutExpanded;
     }
+
     ngOnDestroy(): void {
         if (this.subscriptionId) {
             this._subscriptionService.removeSubscriptionById(this.subscriptionId);
@@ -204,25 +236,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }
-
-    private async loadCurrentUser(): Promise<void> {
-        this.currentUser = null;
-
-        this._storageService.profile$.subscribe((data) => {
-            if (data && data.pubKey && data.metadata) {
-                if (data.pubKey === this.routePubKey) {
-                    this.currentUser = data.metadata;
-                    this._changeDetectorRef.detectChanges();
-                }
-            }
-        });
-
-        this._storageService.getProfile(this.routePubKey).then((metadata) => {
-            this._changeDetectorRef.detectChanges();
-            this.currentUser = metadata;
-        });
-    }
-
 
     async loadProfileUser(publicKey: string): Promise<void> {
         this.isLoading = true;
@@ -444,7 +457,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     copyNpub() {
-        var npub= this._signerService.getNpubFromPubkey(this.routePubKey)
+        var npub = this._signerService.getNpubFromPubkey(this.routePubKey)
         this._clipboard.copy(npub);
         this.openSnackBar('npub public key copied', 'dismiss');
     }
@@ -458,5 +471,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         return isSingleWord || isSingleEmoji;
     }
 
-
+    openPost(postId: string): void {
+        this._router.navigate(['/post', postId]);
+    }
 }

@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import localForage from 'localforage';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Project, ProjectStats } from './projects.service';
+import { Filter, NostrEvent } from 'nostr-tools';
+import { SubscriptionService } from './subscription.service';
 
 export interface ChatEvent {
     id: string;
@@ -64,7 +66,6 @@ export class StorageService {
         this.loadAllProjectStatsFromDB();
         this.loadAllContactsFromDB();
         this.loadAllChatEventsFromDB();
-        this.loadAllPostsFromDB();
         this.loadAllMyLikesFromDB();
         this.loadAllNotificationsFromDB();
         this.loadContactStatsFromDB();
@@ -452,18 +453,13 @@ export class StorageService {
 
     // ------------------- Posts Methods -------------------
 
-    async savePostForPubKey(event: any): Promise<void> {
+    async savePost(event: any): Promise<void> {
         try {
             await this.postsStore.setItem(event.id, event);
             await this.setUpdateHistory('posts');
 
-             const currentPosts = this.postsSubject.getValue();
+            this.postsSubject.next(event);
 
-             const updatedPosts = [event, ...currentPosts];
-
-             this.postsSubject.next(updatedPosts);
-
- 
         } catch (error) {
             console.error('Error saving event type 1 and sending it to clients:', error);
         }
@@ -486,22 +482,44 @@ export class StorageService {
         }
     }
 
+    async getPostById(id: string): Promise<any | null> {
+        try {
+            let post = null;
+
+            // Use early return to avoid unnecessary iterations
+            await this.postsStore.iterate<any, void>((event) => {
+                if (event.id === id && event.kind === 1) {
+                    post = event;
+                    return post; // Exit early once the post is found
+                }
+            });
+
+            return post;
+        } catch (error) {
+            console.error('Error retrieving post by ID:', error);
+            return null;
+        }
+    }
 
 
-    async getAllPostsForAllPubKeys(): Promise<any[]> {
+
+    async getAllPosts(limit = 10): Promise<any[]> {
         try {
             const events: any[] = [];
             await this.postsStore.iterate<any, void>((event) => {
                 events.push(event);
             });
 
-            // Sort events by createdAt in descending order to ensure the newest posts are first
-            return events.sort((a, b) => b.created_at - a.created_at);
+            // Sort events by createdAt in descending order and take the top `limit` items
+            return events
+                .sort((a, b) => b.created_at - a.created_at)
+                .slice(0, limit);
         } catch (error) {
             console.error('Error retrieving all events:', error);
             return [];
         }
     }
+
 
     // ------------------- MyLikes Methods -------------------
     async saveLike(like: any): Promise<void> {
@@ -713,14 +731,31 @@ export class StorageService {
         }
     }
 
-    private async loadAllPostsFromDB(): Promise<void> {
+    async loadPostsFromDB(limit = 10, offset = 0): Promise<any[]> {
         try {
-            const posts = await this.getAllPostsForAllPubKeys();
+            const events: any[] = [];
+            await this.postsStore.iterate<any, void>((event) => {
+                events.push(event);
+            });
 
-            // Update postsSubject with sorted posts
-            this.postsSubject.next(posts);
+            return events
+                .sort((a, b) => b.created_at - a.created_at)
+                .slice(offset, offset + limit);
         } catch (error) {
-            console.error('Error loading posts from DB:', error);
+            console.error('Error retrieving events from DB:', error);
+            return [];
+        }
+    }
+
+     async loadPosts(page: number): Promise<void> {
+        const limit = 10;
+        const offset = (page - 1) * limit;
+        const postsFromDB = await this.loadPostsFromDB(limit, offset);
+
+        if (postsFromDB.length > 0) {
+            postsFromDB.forEach((post) => {
+                this.postsSubject.next(post);
+            });
         }
     }
 
