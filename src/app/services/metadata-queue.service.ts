@@ -219,7 +219,6 @@ export class MetadataQueueService implements OnDestroy {
       });
     }
   }
-
   private parseMetadataEvent(event: NostrEvent): ProfileMetadata | null {
     try {
       const metadata: ProfileMetadata = JSON.parse(event.content);
@@ -245,7 +244,6 @@ export class MetadataQueueService implements OnDestroy {
     }
   }
 
- 
   public clearQueue(): void {
     this.publicKeyQueue.clear();
   }

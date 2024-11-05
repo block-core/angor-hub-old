@@ -1,31 +1,35 @@
-import { Injectable } from '@angular/core';
-import { NostrEvent, SimplePool } from 'nostr-tools';
-import { BehaviorSubject, Observable } from 'rxjs';
-
+import { Injectable, OnDestroy } from '@angular/core';
+import { NostrEvent, SimplePool, Filter } from 'nostr-tools';
+import { BehaviorSubject, Observable, Subject, timer } from 'rxjs';
 interface Relay {
     url: string;
     connected: boolean;
     retries: number;
     retryTimeout: any;
-    accessType: string;
+    accessType: 'read' | 'write' | 'read-write';
     ws?: WebSocket;
 }
 
 @Injectable({
     providedIn: 'root',
 })
-export class RelayService {
+export class RelayService implements OnDestroy {
     private pool: SimplePool = new SimplePool();
     private relays: Relay[] = [];
-    private maxRetries = 10;
-    private retryDelay = 15000;
-    private eventSubject = new BehaviorSubject<NostrEvent | null>(null);
-    private relaysSubject = new BehaviorSubject<Relay[]>([]);
+    private readonly maxRetries = 10;
+    private readonly retryDelay = 15000;
+    private readonly eventSubject = new BehaviorSubject<NostrEvent | null>(null);
+    private readonly relaysSubject = new BehaviorSubject<Relay[]>([]);
+    private readonly destroy$ = new Subject<void>();
 
     constructor() {
+        this.initializeRelays();
+        this.setupVisibilityHandling();
+    }
+
+    private initializeRelays(): void {
         this.relays = this.loadRelaysFromLocalStorage();
         this.connectToRelays();
-        this.setupVisibilityHandling();
         this.relaysSubject.next(this.relays);
     }
 
@@ -75,14 +79,14 @@ export class RelayService {
                 const parsedData = JSON.parse(typeof data === 'string' ? data : data.toString('utf-8'));
                 this.eventSubject.next(parsedData);
             } catch (error) {
-                console.error('Error parsing WebSocket message:', error);
+                console.warn('Error parsing WebSocket message:', error);
             }
         };
     }
 
     private handleRelayError(relay: Relay): void {
         if (relay.retries >= this.maxRetries) {
-            console.error(`Max retries reached for relay: ${relay.url}. No further attempts will be made.`);
+            console.warn(`Max retries reached for relay: ${relay.url}. No further attempts will be made.`);
             return;
         }
 
@@ -109,15 +113,19 @@ export class RelayService {
     }
 
     private setupVisibilityHandling(): void {
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                this.connectToRelays();
-            }
-        });
+        if (typeof document !== 'undefined') {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    this.connectToRelays();
+                }
+            });
+        }
 
-        window.addEventListener('beforeunload', () => {
-            this.relays.forEach(relay => relay.ws?.close());
-        });
+        if (typeof window !== 'undefined') {
+            window.addEventListener('beforeunload', () => {
+                this.relays.forEach(relay => relay.ws?.close());
+            });
+        }
     }
 
     public getConnectedRelays(): string[] {
@@ -142,7 +150,7 @@ export class RelayService {
         }
     }
 
-    public addRelay(url: string, accessType: string = 'read-write'): void {
+    public addRelay(url: string, accessType: 'read' | 'write' | 'read-write' = 'read-write'): void {
         if (!this.relays.some(relay => relay.url === url)) {
             const newRelay: Relay = { url, connected: false, retries: 0, retryTimeout: null, accessType };
             this.relays.push(newRelay);
@@ -152,17 +160,28 @@ export class RelayService {
     }
 
     public removeRelay(url: string): void {
+        const relay = this.relays.find(r => r.url === url);
+        if (relay) {
+            relay.ws?.close();
+            clearTimeout(relay.retryTimeout);
+        }
         this.relays = this.relays.filter(relay => relay.url !== url);
         this.saveRelaysToLocalStorage();
     }
 
     public removeAllCustomRelays(): void {
         const defaultRelays = ['wss://relay.angor.io', 'wss://relay2.angor.io'];
+        this.relays.forEach(relay => {
+            if (!defaultRelays.includes(relay.url)) {
+                relay.ws?.close();
+                clearTimeout(relay.retryTimeout);
+            }
+        });
         this.relays = this.relays.filter(relay => defaultRelays.includes(relay.url));
         this.saveRelaysToLocalStorage();
     }
 
-    public updateRelayAccessType(url: string, accessType: string): void {
+    public updateRelayAccessType(url: string, accessType: 'read' | 'write' | 'read-write'): void {
         const relay = this.relays.find(relay => relay.url === url);
         if (relay) {
             relay.accessType = accessType;
@@ -176,5 +195,10 @@ export class RelayService {
 
     public getEventStream(): Observable<NostrEvent | null> {
         return this.eventSubject.asObservable();
+    }
+
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 }
