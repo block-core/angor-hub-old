@@ -34,7 +34,7 @@ export class SubscriptionService {
     }
 
 
-    public addSubscriptions(filters: Filter[], callback: (event: NostrEvent) => void): string {
+    public addSubscriptions(filters: Filter[], callback: (event: NostrEvent) => void, p0?: () => void): string {
         const existingSubscription = this.findExistingSubscription(filters);
 
         if (existingSubscription) {

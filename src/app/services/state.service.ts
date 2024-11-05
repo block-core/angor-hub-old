@@ -117,7 +117,7 @@ export class StateService {
 
     // Subscription for posts (Event Type 1)
     private async subscribeToUserPosts(pubkey: string): Promise<void> {
- 
+
         const postsLastUpdate = await this.storageService.getLastUpdateDate('posts');
         const postFilter: Filter = {
             kinds: [1],
@@ -130,7 +130,6 @@ export class StateService {
 
         this.subscriptionService.addSubscriptions([postFilter], (event: NostrEvent) => {
             if (!this.isReply(event)) {
-                console.log("sALAM : "+event);
 
                 this.storageService.savePost(event);
             }

@@ -32,8 +32,14 @@ export class ChatService implements OnDestroy {
     private _storageService: StorageService,
     private _relayService: RelayService,
     private _metadataQueueService: MetadataQueueService
-  ) {}
-  
+  ) {
+
+    this._metadataQueueService.processingStatus$.subscribe((status) => {
+        console.log('Processing status:', status);
+      });
+
+  }
+
     get profile$(): Observable<Profile | null> {
         return this._profile.asObservable();
     }
@@ -310,6 +316,7 @@ export class ChatService implements OnDestroy {
             }
         } else {
              this._metadataQueueService.addPublicKey(pubKey);
+
 
              const contactInfo = this._contacts.value?.find((contact) => contact.pubKey === pubKey) || { pubKey };
 
