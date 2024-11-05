@@ -120,7 +120,14 @@ export class PostEventComponent implements OnInit, OnDestroy {
     }
 
     private subscribeToReactions(postId: string): void {
-        this.loadingReactions = true; // Start loading reactions
+        this.loadingReactions = true;
+
+        let loadingTimeout: any;
+
+
+        loadingTimeout = setTimeout(() => {
+            this.loadingReactions = false;
+        }, 3000);
 
         const filter: Filter[] = [
             { '#e': [postId], kinds: [1] },
@@ -131,7 +138,8 @@ export class PostEventComponent implements OnInit, OnDestroy {
 
         this.subscriptionId = this.subscriptionService.addSubscriptions(filter, async (event: NostrEvent) => {
             if (this.loadingReactions) {
-                this.loadingReactions = false; // Stop loading once the first reaction is received
+                this.loadingReactions = false;
+                clearTimeout(loadingTimeout);
             }
 
             const userProfile = await this.getUserProfile(event.pubkey);
@@ -145,6 +153,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
             this.metadataQueueService.addPublicKey(event.pubkey);
         });
     }
+
 
     private async getUserProfile(pubkey: string): Promise<UserProfile> {
         const profile = await this._storageService.getProfile(pubkey);

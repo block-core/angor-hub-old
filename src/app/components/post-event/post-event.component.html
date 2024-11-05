@@ -136,43 +136,48 @@
                             <mat-icon class="text-red-500 icon-size-5" [svgIcon]="'heroicons_solid:heart'"></mat-icon>
                             <span class="ml-2">Unlike</span>
                         </button>
-                        <button class="mr-1 px-3" mat-button>
-                            <mat-icon class="icon-size-5" [svgIcon]="
+                        <button class="mr-1 px-3" mat-button (click)="
+                        expandableReplay.expanded =
+                            !expandableReplay.expanded
+                    ">
+                            <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="
                                     'heroicons_solid:chat-bubble-left-ellipsis'
                                 "></mat-icon>
                             <span class="ml-2">Comment</span>
                         </button>
                         <button class="mr-1 px-3" mat-button>
-                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:share'"></mat-icon>
+                            <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:share'"></mat-icon>
                             <span class="ml-2">Share</span>
+                        </button>
+                        <button class="mr-1 px-3" mat-button>
+                            <mat-icon class="text-orange-500 icon-size-5" [svgIcon]="'heroicons_solid:bolt'"></mat-icon>
+                            <span class="ml-2">Zap</span>
                         </button>
                     </div>
                     <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
                     <div *ngIf="!loadingReactions"
                         class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center">
-                        <div *ngIf="likes.length > 0" class="flex items-center">
-                            <!-- Display the last 4 likes' avatars with shadow and in a stacked format -->
-                            <ng-container *ngFor="let like of likes | slice: -4">
+                        <div class="flex items-center">
+                            <ng-container *ngFor="let zap of zaps | slice: -4">
                                 <img class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full shadow-lg ring-2 ring-white"
                                     [src]="
-                                        like.user.picture ||
+                                    zap.user.picture ||
                                         '/images/avatars/avatar-placeholder.png'
-                                    " [alt]="like.user.name" />
+                                    " [alt]="zap.user.name" />
                             </ng-container>
 
-                            <!-- Display total likes count -->
                             <div class="ml-3 text-md tracking-tight">
-                                {{ likes.length }} like<span *ngIf="likes.length > 1">s</span>
+                                {{ zaps.length }} Zap<span *ngIf="zaps.length > 1">s</span>
                             </div>
                         </div>
 
                         <div class="hidden flex-auto sm:flex"></div>
                         <div class="mt-4 flex items-center justify-end sm:mt-0">
                             <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
-                                {{ reposts.length }} Share<span *ngIf="zaps.length > 1">s</span>
+                                {{ likes.length }} Like<span *ngIf="likes.length > 1">s</span>
                             </button>
                             <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
-                                {{ zaps.length }} Zap<span *ngIf="zaps.length > 1">s</span>
+                                {{ reposts.length }} Share<span *ngIf="reposts.length > 1">s</span>
                             </button>
                             <button class="px-3 sm:-mr-4" mat-button (click)="
                                     expandableReplay.expanded =
