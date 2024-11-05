@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, from } from 'rxjs';
-import { catchError, map, mergeMap, switchMap, tap, toArray, filter } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, from, throwError } from 'rxjs';
+import { catchError, map, mergeMap, switchMap, tap, toArray, filter, retry, shareReplay } from 'rxjs/operators';
 import { StorageService } from './storage.service';
 import { IndexerService } from './indexer.service';
 import { SubscriptionService } from './subscription.service';
@@ -13,7 +13,7 @@ export interface Project {
     createdOnBlock: number;
     trxId: string;
     totalInvestmentsCount: number;
-    isBookmarked: boolean
+    isBookmarked: boolean;
 }
 
 export interface ProjectStats {
@@ -28,139 +28,140 @@ export interface ProjectStats {
     providedIn: 'root',
 })
 export class ProjectsService {
-    private offset = 0;
-    private limit = 50;
+    private readonly INITIAL_OFFSET = 0;
+    private readonly LIMIT = 50;
+    private offset = this.INITIAL_OFFSET;
     private totalProjects = 0;
-    private loading = false;
-    private noMoreProjects = false;
     private totalProjectsFetched = false;
-    private selectedNetwork: 'mainnet' | 'testnet' = 'testnet';
 
-    // BehaviorSubjects to manage state and updates
     private projectsSubject = new BehaviorSubject<Project[]>([]);
-    public projects$: Observable<Project[]> = this.projectsSubject.asObservable();
+    public projects$ = this.projectsSubject.asObservable().pipe(shareReplay(1));
 
     private loadingSubject = new BehaviorSubject<boolean>(false);
-    public loading$: Observable<boolean> = this.loadingSubject.asObservable();
+    public loading$ = this.loadingSubject.asObservable();
 
     private noMoreProjectsSubject = new BehaviorSubject<boolean>(false);
-    public noMoreProjects$: Observable<boolean> = this.noMoreProjectsSubject.asObservable();
+    public noMoreProjects$ = this.noMoreProjectsSubject.asObservable();
 
-    private projectStatsSubject = new BehaviorSubject<{ [key: string]: ProjectStats }>({});
-    public projectStats$: Observable<{ [key: string]: ProjectStats }> = this.projectStatsSubject.asObservable();
+    private projectStatsSubject = new BehaviorSubject<Record<string, ProjectStats>>({});
+    public projectStats$ = this.projectStatsSubject.asObservable().pipe(shareReplay(1));
+
+    private selectedNetwork: 'mainnet' | 'testnet';
 
     constructor(
         private http: HttpClient,
         private indexerService: IndexerService,
         private storageService: StorageService,
-        private subscriptionService: SubscriptionService // Adding subscription service
+        private subscriptionService: SubscriptionService
     ) {
-        this.loadNetwork();
-    }
-
-    // Load network type from indexerService (mainnet/testnet)
-    loadNetwork() {
         this.selectedNetwork = this.indexerService.getNetwork();
         console.log('Selected network:', this.selectedNetwork);
     }
 
-    // Fetch projects from the API and update the BehaviorSubject
     fetchProjects(): Observable<Project[]> {
-        if (this.loading || this.noMoreProjects) {
+        if (this.loadingSubject.value || this.noMoreProjectsSubject.value) {
             console.log('Skipping fetch: Already loading or no more projects.');
             return of([]);
         }
 
         this.loadingSubject.next(true);
         const indexerUrl = this.indexerService.getPrimaryIndexer(this.selectedNetwork);
-        const url = this.totalProjectsFetched
-            ? `${indexerUrl}api/query/Angor/projects?offset=${this.offset}&limit=${this.limit}`
-            : `${indexerUrl}api/query/Angor/projects?limit=${this.limit}`;
+        const url = `${indexerUrl}api/query/Angor/projects?${this.totalProjectsFetched ? `offset=${this.offset}&` : ''}limit=${this.LIMIT}`;
 
         return this.http.get<Project[]>(url, { observe: 'response' }).pipe(
-            tap((response) => {
-                if (!this.totalProjectsFetched && response && response.headers) {
-                    const paginationTotal = response.headers.get('pagination-total');
-                    this.totalProjects = paginationTotal ? +paginationTotal : 0;
-                    this.totalProjectsFetched = true;
-                    this.offset = Math.max(this.totalProjects - this.limit, 0);
-                }
-            }),
-            map((response) => response.body || []),
-            mergeMap((newProjects) => from(newProjects).pipe(
-                filter(newProject =>
-                    !this.projectsSubject.value.some(
-                        (existingProject) =>
-                            existingProject.projectIdentifier === newProject.projectIdentifier
-                    )
-                ),
-                toArray()
-            )),
-            switchMap((uniqueNewProjects) => {
-                if (!uniqueNewProjects.length) {
-                    this.noMoreProjectsSubject.next(true);
-                    return of([]);
-                }
-
-                const saveProjects$ = from(uniqueNewProjects).pipe(
-                    mergeMap(project => from(this.storageService.saveProject(project))),
-                    toArray()
-                );
-
-                const projectDetails$ = from(uniqueNewProjects).pipe(
-                    mergeMap(project =>
-                        from(this.storageService.getProjectStats(project.projectIdentifier)).pipe(
-                            map((projectStats: ProjectStats) => {
-                                project.totalInvestmentsCount = projectStats?.investorCount ?? 0;
-
-                                const currentStats = this.projectStatsSubject.value;
-                                this.projectStatsSubject.next({
-                                    ...currentStats,
-                                    [project.projectIdentifier]: projectStats
-                                });
-
-                                return project;
-                            }),
-                            catchError(error => {
-                                console.error(`Error fetching details for project ${project.projectIdentifier}:`, error);
-                                return of(project);
-                            })
-                        )
-                    ),
-                    toArray()
-                );
-
-                return saveProjects$.pipe(
-                    switchMap(() => projectDetails$),
-                    map((updatedProjects) => {
-                        const updatedProjectList = [...this.projectsSubject.value, ...uniqueNewProjects];
-                        this.projectsSubject.next(updatedProjectList);
-
-                        this.subscribeToProjectsMetadata(uniqueNewProjects.map(proj => proj.nostrPubKey));
-
-                        this.offset = Math.max(this.offset - this.limit, 0);
-                        return updatedProjects;
-                    })
-                );
-            }),
-            catchError((error) => {
-                console.error('Error fetching projects:', error);
-                return of([]);
-            }),
+            retry(3),
+            tap(response => this.handlePaginationResponse(response)),
+            map(response => response.body || []),
+            mergeMap(this.filterUniqueProjects.bind(this)),
+            switchMap(this.processNewProjects.bind(this)),
+            catchError(this.handleError.bind(this)),
             tap(() => this.loadingSubject.next(false))
         );
     }
 
-    // Subscribe to metadata for all nostrPubKeys
+    private handlePaginationResponse(response: any): void {
+        if (!this.totalProjectsFetched && response?.headers) {
+            const paginationTotal = response.headers.get('pagination-total');
+            this.totalProjects = paginationTotal ? +paginationTotal : 0;
+            this.totalProjectsFetched = true;
+            this.offset = Math.max(this.totalProjects - this.LIMIT, 0);
+        }
+    }
+
+    private filterUniqueProjects(newProjects: Project[]): Observable<Project[]> {
+        return from(newProjects).pipe(
+            filter(newProject => !this.projectsSubject.value.some(
+                existingProject => existingProject.projectIdentifier === newProject.projectIdentifier
+            )),
+            toArray()
+        );
+    }
+
+    private processNewProjects(uniqueNewProjects: Project[]): Observable<Project[]> {
+        if (!uniqueNewProjects.length) {
+            this.noMoreProjectsSubject.next(true);
+            return of([]);
+        }
+
+        const saveProjects$ = from(uniqueNewProjects).pipe(
+            mergeMap(project => from(this.storageService.saveProject(project))),
+            toArray()
+        );
+
+        const projectDetails$ = from(uniqueNewProjects).pipe(
+            mergeMap(this.fetchProjectDetails.bind(this)),
+            toArray()
+        );
+
+        return saveProjects$.pipe(
+            switchMap(() => projectDetails$),
+            tap(this.updateProjectsList.bind(this))
+        );
+    }
+
+    private fetchProjectDetails(project: Project): Observable<Project> {
+        return from(this.storageService.getProjectStats(project.projectIdentifier)).pipe(
+            map((projectStats: ProjectStats) => {
+                project.totalInvestmentsCount = projectStats?.investorCount ?? 0;
+                this.updateProjectStats(project.projectIdentifier, projectStats);
+                return project;
+            }),
+            catchError(error => {
+                console.error(`Error fetching details for project ${project.projectIdentifier}:`, error);
+                return of(project);
+            })
+        );
+    }
+
+    private updateProjectsList(updatedProjects: Project[]): void {
+        const updatedProjectList = [...this.projectsSubject.value, ...updatedProjects];
+        this.projectsSubject.next(updatedProjectList);
+        this.subscribeToProjectsMetadata(updatedProjects.map(proj => proj.nostrPubKey));
+        this.offset = Math.max(this.offset - this.LIMIT, 0);
+    }
+
+    private updateProjectStats(projectIdentifier: string, projectStats: ProjectStats): void {
+        const currentStats = this.projectStatsSubject.value;
+        this.projectStatsSubject.next({
+            ...currentStats,
+            [projectIdentifier]: projectStats
+        });
+    }
+
+    private handleError(error: HttpErrorResponse): Observable<never> {
+        console.error('Error fetching projects:', error);
+        this.loadingSubject.next(false);
+        return throwError(() => new Error('Failed to fetch projects. Please try again later.'));
+    }
+
     private subscribeToProjectsMetadata(pubKeys: string[]): void {
         const metadataFilter = { kinds: [0], authors: pubKeys };
         this.subscriptionService.addSubscriptions([metadataFilter], (event) => {
             const metadata = this.parseMetadataEvent(event);
-            this.storageService.saveProfile(event.pubkey, metadata); // Save each metadata in database
+            this.storageService.saveProfile(event.pubkey, metadata);
         });
     }
 
-    // Example: Parsing metadata event from Nostr
     private parseMetadataEvent(event: any): any {
         try {
             return JSON.parse(event.content);
@@ -170,44 +171,26 @@ export class ProjectsService {
         }
     }
 
-    // Fetch project stats and save them to storage
     fetchProjectStats(projectIdentifier: string): Observable<ProjectStats> {
         const indexerUrl = this.indexerService.getPrimaryIndexer(this.selectedNetwork);
         const url = `${indexerUrl}api/query/Angor/projects/${projectIdentifier}/stats`;
         return this.http.get<ProjectStats>(url).pipe(
-            tap((stats) => {
-                const currentStats = this.projectStatsSubject.value;
-                this.projectStatsSubject.next({
-                    ...currentStats,
-                    [projectIdentifier]: stats
-                });
-            }),
-            catchError((error) => {
+            tap(stats => this.updateProjectStats(projectIdentifier, stats)),
+            catchError(error => {
                 console.error(`Error fetching stats for project ${projectIdentifier}:`, error);
                 return of({} as ProjectStats);
             })
         );
     }
 
-    // Fetch project details by projectIdentifier
-    fetchProjectDetails(projectIdentifier: string): Observable<Project> {
-        const indexerUrl = this.indexerService.getPrimaryIndexer(this.selectedNetwork);
-        const url = `${indexerUrl}api/query/Angor/projects/${projectIdentifier}`;
-        return this.http.get<Project>(url).pipe(
-            catchError((error) => {
-                console.error(`Error fetching details for project ${projectIdentifier}:`, error);
-                return of({} as Project);
-            })
-        );
-    }
+    
 
-    // Reset all project data
     resetProjects(): void {
         this.projectsSubject.next([]);
         this.noMoreProjectsSubject.next(false);
         this.loadingSubject.next(false);
         this.projectStatsSubject.next({});
-        this.offset = 0;
+        this.offset = this.INITIAL_OFFSET;
         this.totalProjectsFetched = false;
     }
 }
