@@ -25,7 +25,7 @@ interface ProcessingStatus {
 @Injectable({
   providedIn: 'root',
 })
-export class MetadataQueueService implements OnDestroy {
+export class MetadataService implements OnDestroy {
   private readonly BATCH_SIZE = 50;
   private readonly PROCESS_INTERVAL = 2000; // 2 seconds
   private readonly MAX_RETRY_ATTEMPTS = 3;

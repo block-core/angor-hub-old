@@ -5,7 +5,7 @@ import { Chat, Contact, Profile } from 'app/components/chat/chat.types';
 import { StorageService } from 'app/services/storage.service';
 import { RelayService } from 'app/services/relay.service';
 import { SignerService } from 'app/services/signer.service';
-import { MetadataQueueService } from 'app/services/metadata-queue.service';
+import { MetadataService } from 'app/services/metadata.service';
 import { Filter, getEventHash, NostrEvent } from 'nostr-tools';
 import { EncryptedDirectMessage } from 'nostr-tools/kinds';
 
@@ -29,7 +29,7 @@ export class ChatService implements OnDestroy {
     private _signerService: SignerService,
     private _storageService: StorageService,
     private _relayService: RelayService,
-    private _metadataQueueService: MetadataQueueService
+    private _metadataQueueService: MetadataService
   ) {
 
     this._metadataQueueService.processingStatus$.subscribe((status) => {

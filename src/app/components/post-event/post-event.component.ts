@@ -5,7 +5,7 @@ import { Subscription, BehaviorSubject, Subject, from } from 'rxjs';
 import { concatMap, delay, takeUntil } from 'rxjs/operators';
 import { StorageService } from 'app/services/storage.service';
 import { SubscriptionService } from 'app/services/subscription.service';
-import { MetadataQueueService } from 'app/services/metadata-queue.service';
+import { MetadataService } from 'app/services/metadata.service';
 import { AngorCardComponent } from '@angor/components/card';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatButtonModule } from '@angular/material/button';
@@ -93,7 +93,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
         private _router: Router,
         private _storageService: StorageService,
         private subscriptionService: SubscriptionService,
-        private metadataQueueService: MetadataQueueService,
+        private metadataQueueService: MetadataService,
         private _changeDetectorRef: ChangeDetectorRef,
         public parseContent: ParseContentService
     ) {}
