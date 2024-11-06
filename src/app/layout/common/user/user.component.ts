@@ -21,13 +21,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
-import { MetadataService } from 'app/services/metadata.service';
 import { SignerService } from 'app/services/signer.service';
-import { SubscriptionService } from 'app/services/subscription.service';
-import { Filter, NostrEvent } from 'nostr-tools';
 import { Subject, takeUntil } from 'rxjs';
-import { StateService } from 'app/services/state.service';
-import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@blockcore/nostr-login';
 import { NostrLoginService } from 'app/services/nostr-login.service';
 
 @Component({

@@ -4,7 +4,6 @@ import { NewEvent } from 'app/types/NewEvent';
 import { Filter, finalizeEvent, NostrEvent } from 'nostr-tools';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
-import { MetadataService } from './metadata.service';
 import { RelayService } from './relay.service';
 import { SignerService } from './signer.service';
 import { QueueService } from './queue-service.service';
@@ -39,7 +38,6 @@ export class PaginatedEventService {
     constructor(
         private relayService: RelayService,
         private signerService: SignerService,
-        private metadataService: MetadataService,
         private queueService: QueueService
     ) {
     }
@@ -309,11 +307,7 @@ export class PaginatedEventService {
 
         newEvent.likedByMe = this.myLikedNoteIds.includes(event.id);
 
-        const metadata = await this.metadataService.fetchMetadataWithCache(event.pubkey);
-        if (metadata) {
-            newEvent.username = metadata.name || newEvent.npub;
-            newEvent.picture = metadata.picture || '/images/avatars/avatar-placeholder.png';
-        }
+
 
         return newEvent;
     }

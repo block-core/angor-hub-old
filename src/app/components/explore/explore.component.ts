@@ -23,15 +23,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { Project } from 'app/interface/project.interface';
 import { StorageService } from 'app/services/storage.service';
-import { MetadataService } from 'app/services/metadata.service';
 import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
 import { ProjectsService, ProjectStats } from '../../services/projects.service';
-import { ChatService } from '../chat/chat.service';
-import { Contact } from '../chat/chat.types';
 import { BookmarkService } from 'app/services/bookmark.service';
 
 @Component({

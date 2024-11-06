@@ -3,7 +3,6 @@ import { BehaviorSubject, from, Observable, of, Subject, throwError } from 'rxjs
 import { filter, map, switchMap, take, catchError } from 'rxjs/operators';
 import { Chat, Contact, Profile } from 'app/components/chat/chat.types';
 import { StorageService } from 'app/services/storage.service';
-import { MetadataService } from 'app/services/metadata.service';
 import { RelayService } from 'app/services/relay.service';
 import { SignerService } from 'app/services/signer.service';
 import { MetadataQueueService } from 'app/services/metadata-queue.service';
@@ -27,7 +26,6 @@ export class ChatService implements OnDestroy {
   private _unsubscribeAll: Subject<void> = new Subject<void>();
 
   constructor(
-    private _metadataService: MetadataService,
     private _signerService: SignerService,
     private _storageService: StorageService,
     private _relayService: RelayService,
@@ -78,19 +76,24 @@ export class ChatService implements OnDestroy {
                 return;
             }
 
-            const metadata =
-                await this._metadataService.fetchMetadataWithCache(pubkey);
-            if (metadata) {
-                const contact: Contact = {
-                    pubKey: pubkey,
-                    displayName: metadata.name ? metadata.name : 'Unknown',
-                    picture: metadata.picture,
-                    about: metadata.about,
-                };
-                this._contact.next(contact);
+
+            this._storageService.profile$.subscribe((data) => {
+                if (data && data.pubKey && data.metadata) {
+                    if (data.pubKey === pubkey) {
+
+                            const contact: Contact = {
+                                pubKey: pubkey,
+                                displayName: data.metadata.name ? data.metadata.name : 'Unknown',
+                                picture: data.metadata.picture,
+                                about: data.metadata.about,
+                            };
+                            this._contact.next(contact);
+
+                    }
+                }
+            });
 
 
-            }
         } catch (error) {
             console.error('Error fetching contact metadata:', error);
         }

@@ -2,6 +2,7 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     OnInit,
     ViewEncapsulation,
@@ -22,9 +23,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
 import { hexToBytes } from '@noble/hashes/utils';
-import { MetadataService } from 'app/services/metadata.service';
 import { RelayService } from 'app/services/relay.service';
 import { SignerService } from 'app/services/signer.service';
+import { StorageService } from 'app/services/storage.service';
 import { PasswordDialogComponent } from 'app/shared/password-dialog/password-dialog.component';
 import { NostrEvent, UnsignedEvent, finalizeEvent } from 'nostr-tools';
 
@@ -50,14 +51,18 @@ import { NostrEvent, UnsignedEvent, finalizeEvent } from 'nostr-tools';
 export class SettingsProfileComponent implements OnInit {
     profileForm: FormGroup;
     content: string;
+    user: any;
 
     constructor(
         private _fb: FormBuilder,
         private _signerService: SignerService,
-        private _metadataService: MetadataService,
         private _relayService: RelayService,
         private _router: Router,
-        private _dialog: MatDialog
+        private _dialog: MatDialog,
+        private _storageService: StorageService,
+        private _changeDetectorRef: ChangeDetectorRef,
+
+
     ) {}
 
     ngOnInit(): void {
@@ -83,23 +88,29 @@ export class SettingsProfileComponent implements OnInit {
         this.setValues();
     }
 
-    async setValues() {
-        let kind0 = await this._metadataService.getProfile(
-            this._signerService.getPublicKey()
-        );
-        if (kind0) {
+    async setValues(): Promise<void> {
+        try {
+            const publicKey = await this._signerService.getPublicKey();
+            const metadata = await this._storageService.getProfile(publicKey);
+
+            this.user = metadata;
+
             this.profileForm.setValue({
-                name: kind0.name || '',
-                username: kind0.username || '',
-                displayName: kind0.displayName || '',
-                website: kind0.website || '',
-                about: kind0.about || '',
-                picture: kind0.picture || '',
-                banner: kind0.banner || '',
-                lud06: kind0.lud06 || '',
-                lud16: kind0.lud16 || '',
-                nip05: kind0.nip05 || '',
+                name: this.user?.name || '',
+                username: this.user?.username || '',
+                displayName: this.user?.displayName || '',
+                website: this.user?.website || '',
+                about: this.user?.about || '',
+                picture: this.user?.picture || '',
+                banner: this.user?.banner || '',
+                lud06: this.user?.lud06 || '',
+                lud16: this.user?.lud16 || '',
+                nip05: this.user?.nip05 || '',
             });
+
+            this._changeDetectorRef.detectChanges();
+        } catch (error) {
+            console.error('Error fetching profile:', error);
         }
     }
 

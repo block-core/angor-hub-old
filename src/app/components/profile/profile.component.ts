@@ -36,7 +36,7 @@ import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
 import { StorageService } from 'app/services/storage.service';
 import { SafeUrlPipe } from 'app/shared/pipes/safe-url.pipe';
-import { LightningInvoice, LightningResponse, Post } from 'app/types/post';
+import { LightningInvoice, LightningResponse } from 'app/types/post';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { Filter, NostrEvent } from 'nostr-tools';
 import { Observable, Subject, takeUntil } from 'rxjs';
@@ -83,7 +83,6 @@ interface Chip {
         SafeUrlPipe,
         MatProgressSpinnerModule,
         InfiniteScrollModule,
-        EventListComponent,
         MatIconModule,
         MatExpansionModule,
         MatSidenavModule,
