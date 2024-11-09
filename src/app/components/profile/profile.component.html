@@ -94,63 +94,52 @@
                             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
                         </button>
                         <mat-menu #profileMenu="matMenu">
-                            <button *ngIf="!isCurrentUserProfile" mat-menu-item (click)="zap()">
+                            <!-- Send/Receive Zap -->
+                            <button mat-menu-item (click)="openZapDialog()" *ngIf="!isCurrentUserProfile || isCurrentUserProfile">
                                 <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="'feather:zap'"></mat-icon>
-                                    <span>Send Zap</span>
-                                </span>
-                            </button>
-                            <button mat-menu-item (click)="copyHex()">
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
-                                            'heroicons_outline:clipboard-document'
-                                        "></mat-icon>
-                                    <span>Copy Public key (hex)</span>
+                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="isCurrentUserProfile ? 'heroicons_outline:qr-code' : 'feather:zap'"></mat-icon>
+                                    <span>{{ isCurrentUserProfile ? 'Receive Zap' : 'Send Zap' }}</span>
                                 </span>
                             </button>
 
-                            <button mat-menu-item (click)="copyNpub()">
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
-                                            'heroicons_outline:clipboard-document'
-                                        "></mat-icon>
-                                    <span>Copy Public key (npub)</span>
-                                </span>
-                            </button>
+                            <!-- Copy Keys -->
+                            <ng-container *ngFor="let key of ['hex', 'npub']">
+                                <button mat-menu-item (click)="copyKey(key)">
+                                    <span class="flex items-center">
+                                        <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_outline:clipboard-document'"></mat-icon>
+                                        <span>Copy Public key ({{ key }})</span>
+                                    </span>
+                                </button>
+                            </ng-container>
 
-                            <button *ngIf="isCurrentUserProfile" mat-menu-item (click)="openReceiveZapDialog()">
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5"
-                                        [svgIcon]="'heroicons_outline:qr-code'"></mat-icon>
-                                    <span>Receive Zap</span>
-                                </span>
-                            </button>
-
+                            <!-- Divider -->
                             <mat-divider class="my-2"></mat-divider>
+
+                            <!-- Edit Profile for Current User -->
                             <button *ngIf="isCurrentUserProfile" mat-menu-item [routerLink]="'/settings/profile'">
                                 <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
-                                            'heroicons_outline:pencil-square'
-                                        "></mat-icon>
+                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
                                     <span>Edit your profile</span>
                                 </span>
                             </button>
 
-                            <button *ngIf="!isCurrentUserProfile" mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
-                                            'heroicons_solid:exclamation-triangle'
-                                        "></mat-icon>
-                                    <span>Report</span>
-                                </span>
-                            </button>
-                            <button *ngIf="!isCurrentUserProfile" mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
-                                    <span>Turn on notifications</span>
-                                </span>
-                            </button>
+                            <!-- Report and Notifications for Other Users -->
+                            <ng-container *ngIf="!isCurrentUserProfile">
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_solid:exclamation-triangle'"></mat-icon>
+                                        <span>Report</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
+                                        <span>Turn on notifications</span>
+                                    </span>
+                                </button>
+                            </ng-container>
                         </mat-menu>
+
                     </div>
                 </div>
             </div>
@@ -574,7 +563,7 @@
                         <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:share'"></mat-icon>
                         <span class="ml-2">Share</span>
                     </button>
-                    <button class="mr-1 px-3" mat-button>
+                    <button class="mr-1 px-3" mat-button (click)="openZapDialog(item.id)">
                         <mat-icon class="text-orange-500 icon-size-5" [svgIcon]="'heroicons_solid:bolt'"></mat-icon>
                         <span class="ml-2">Zap</span>
                     </button>

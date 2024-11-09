@@ -40,17 +40,16 @@ import { LightningInvoice, LightningResponse } from 'app/types/post';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { Filter, NostrEvent } from 'nostr-tools';
 import { Observable, Subject, takeUntil } from 'rxjs';
-import { EventListComponent } from '../event-list/event-list.component';
-import { ReceiveDialogComponent } from './zap/receive-dialog/receive-dialog.component';
-import { SendDialogComponent } from './zap/send-dialog/send-dialog.component';
-import { SubscriptionService } from 'app/services/subscription.service';
+ import { SubscriptionService } from 'app/services/subscription.service';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ParseContentService } from 'app/services/parse-content.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { ContactInfoComponent } from '../chat/contact-info/contact-info.component';
 import { AgoPipe } from 'app/shared/pipes/ago.pipe';
-interface Chip {
+import { ZapDialogComponent } from 'app/shared/zap-dialog/zap-dialog.component';
+import { ZapDialogData } from 'app/services/interfaces';
+ interface Chip {
     color?: string;
     selected?: string;
     name: string;
@@ -326,75 +325,40 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
     }
 
-    openSnackBar(message: string, action: string) {
+    openSnackBar(message: string, action: string = 'dismiss'): void {
         this._snackBar.open(message, action, { duration: 1300 });
     }
 
-    getLightningInfo() {
-        let lightningAddress = '';
-        if (this.profileUser?.lud06) {
-            const { words } = bech32.decode(this.profileUser.lud06, 5000);
-            const data = new Uint8Array(bech32.fromWords(words));
-            lightningAddress = new TextDecoder().decode(Uint8Array.from(data));
-        } else if (this.profileUser?.lud16?.toLowerCase().startsWith('lnurl')) {
-            const { words } = bech32.decode(this.profileUser.lud16, 5000);
-            const data = new Uint8Array(bech32.fromWords(words));
-            lightningAddress = new TextDecoder().decode(Uint8Array.from(data));
-        } else if (this.profileUser?.lud16) {
-            lightningAddress = this._lightning.getLightningAddress(
-                this.profileUser.lud16
-            );
-        }
-        if (lightningAddress !== '') {
-            this._lightning
-                .getLightning(lightningAddress)
-                .subscribe((response) => {
-                    this.lightningResponse = response;
-                    if (this.lightningResponse.status === 'Failed') {
-                        this.openSnackBar(
-                            'Failed to lookup lightning address',
-                            'dismiss'
-                        );
-                    } else if (this.lightningResponse.callback) {
-                        this.openZapDialog();
-                    } else {
-                        this.openSnackBar(
-                            "couldn't find user's lightning address",
-                            'dismiss'
-                        );
-                    }
-                });
+    async canUseZap(): Promise<boolean> {
+        const canReceiveZap = this.profileUser && (this.profileUser.lud06 || this.profileUser.lud16);
+        if (canReceiveZap) {
+            return true;
         } else {
-            this.openSnackBar('No lightning address found', 'dismiss');
+            this.openSnackBar("User can't receive zaps");
+            return false;
         }
     }
 
-    async zap() {
-        if (
-            this.profileUser &&
-            (this.profileUser.lud06 || this.profileUser.lud16)
-        ) {
-            this.getLightningInfo();
-        } else {
-            this.openSnackBar("user can't receive zaps", 'dismiss');
+
+    openZapDialog(eventId:string =""): void {
+        if (this.canUseZap()) {
+            const zapData: ZapDialogData = {
+                lud16: this.profileUser.lud16,
+                lud06: this.profileUser.lud06,
+                pubkey: this.profileUser.pubkey,
+                eventId: eventId
+            };
+
+            // Open dialog with mapped data
+            this._dialog.open(ZapDialogComponent, {
+                width: '405px',
+                maxHeight: '90vh',
+                data: zapData,
+            });
         }
     }
 
-    openZapDialog(): void {
-        this._dialog.open(SendDialogComponent, {
-            width: '405px',
-            maxHeight: '90vh',
-            data: this.profileUser,
-        });
-    }
 
-    openReceiveZapDialog(): void {
-        this._dialog.open(ReceiveDialogComponent, {
-            width: '405px',
-            maxHeight: '90vh',
-            data: this.profileUser,
-        });
-    }
 
     toggleLike() {
         this.isLiked = !this.isLiked;

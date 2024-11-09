@@ -1,0 +1,88 @@
+<div class="absolute right-0 top-0 pr-4 pt-4">
+    <button mat-icon-button [matDialogClose]="undefined" aria-label="Close">
+        <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+    </button>
+</div>
+
+<h1>⚡Zap</h1>
+
+<mat-dialog-content *ngIf="!showInvoiceSection || !lightningInvoice" class="p-0 mt-4">
+    <div class="preset-buttons">
+        <button
+            mat-mini-fab
+            color="primary"
+            *ngFor="let button of zapButtons"
+            (click)="sendZapForm.get('amount')?.setValue(button.value)"
+            aria-label="Set zap amount to {{button.label}}"
+        >
+            <mat-icon>{{ button.icon }}</mat-icon>
+            <span>{{ button.label }}</span>
+        </button>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div [formGroup]="sendZapForm" class="zap-form">
+        <mat-form-field appearance="outline" class="sats-input">
+            <mat-label>Zap Amount</mat-label>
+            <input
+                matInput
+                formControlName="amount"
+                placeholder="Enter amount in sats, e.g., 100"
+                type="number"
+                aria-label="Zap Amount"
+            />
+            <mat-hint align="end">Amount in sats</mat-hint>
+            <mat-error *ngIf="sendZapForm.get('amount')?.hasError('required')">
+                Zap amount is required
+            </mat-error>
+            <mat-error *ngIf="sendZapForm.get('amount')?.hasError('min')">
+                Minimum amount is 1 sat
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="sats-input">
+            <mat-label>Comment</mat-label>
+            <input
+                matInput
+                formControlName="comment"
+                placeholder="Optional comment, e.g., as a gift..."
+                aria-label="Comment"
+                maxlength="100"
+            />
+            <mat-hint align="end">
+                {{ sendZapForm.get('comment')?.value?.length || 0 }}/100
+            </mat-hint>
+        </mat-form-field>
+    </div>
+
+    <mat-dialog-actions align="end">
+        <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="sendZapForm.invalid">
+            Create Invoice
+        </button>
+    </mat-dialog-actions>
+</mat-dialog-content>
+
+<mat-dialog-content *ngIf="showInvoiceSection && lightningInvoice" class="flex flex-col items-center justify-center text-center h-full space-y-4">
+    <div *ngIf="displayQRCode" class="w-full flex flex-col items-center">
+        <span class="mb-2">Scan with phone to pay ({{ invoiceAmount }} sats)</span>
+        <mat-divider class="w-full mb-4"></mat-divider>
+        <qrcode
+            [qrdata]="lightningInvoice"
+            [matTooltip]="'Lightning Invoice'"
+            [errorCorrectionLevel]="'M'"
+            class="qrcode-image m-auto"
+        ></qrcode>
+    </div>
+
+    <div *ngIf="showInvoiceSection && lightningInvoice" class="w-full max-w-md">
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Invoice Address</mat-label>
+            <input matInput [value]="lightningInvoice" readonly aria-label="Invoice Address" />
+            <button mat-icon-button matSuffix (click)="copyInvoice()" [matTooltip]="'Copy Invoice'" aria-label="Copy Invoice">
+                <mat-icon [svgIcon]="'heroicons_outline:clipboard-document'"></mat-icon>
+            </button>
+        </mat-form-field>
+    </div>
+</mat-dialog-content>
+

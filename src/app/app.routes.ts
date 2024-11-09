@@ -80,6 +80,11 @@ export const appRoutes: Route[] = [
                     import('app/components/explore/explore.routes'),
             },
             {
+                path: 'zap',
+                loadChildren: () =>
+                    import('app/components/zap/zap.routes'),
+            },
+            {
                 path: 'bookmark',
                 loadChildren: () =>
                     import('app/components/bookmark/bookmark.routes'),

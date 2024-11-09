@@ -9,7 +9,7 @@
 .preset-buttons button {
     font-size: 14px;
     font-weight: bold;
-    width: 70px;
+    width: 100px;
     height: 60px;
     display: flex;
     flex-direction: column;
@@ -29,10 +29,4 @@
     margin: 10px 0;
 }
 
-.qrcode {
-    text-align: center;
-}
 
-.qrcode-image {
-    width: 100% !important;
-}

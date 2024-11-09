@@ -22,3 +22,10 @@ button {
 .large-font {
     font-size: 3rem;
 }
+.qrcode {
+    display: flex;
+    justify-content: center;
+}
+.qrcode-image {
+    width: 100% !important;
+}

@@ -1,0 +1,87 @@
+<div class="mx-auto w-full max-w-5xl p-6 sm:p-8">
+    <div class="flex w-full max-w-140 m-auto flex-col items-start">
+        <angor-card class="mb-8 flex flex-col items-start p-6 sm:p-8 transition-all duration-300 w-full pb-6">
+            <!-- Header Section -->
+            <div class="flex items-center justify-center mb-6 w-full">
+                <h2 class="text-2xl font-semibold text-center">Send a Zap</h2>
+            </div>
+
+            <!-- Form Section -->
+            <form [formGroup]="sendZapForm" (ngSubmit)="onSubmit()" class="w-full space-y-4">
+
+                <!-- Lightning Address Field -->
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Lightning Address</label>
+                    <div class="flex items-center">
+                        <input
+                            type="text"
+                            formControlName="lightningAddress"
+                            placeholder="username@domain.com"
+                            class="flex-grow p-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        />
+                        <button
+                            type="button"
+                            (click)="fetchPayRequest()"
+                            class="ml-2 px-4 py-2 text-sm bg-gray-800 text-white rounded hover:bg-gray-700"
+                        >
+                            Fetch
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Event ID Field (Optional) -->
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Event ID (Optional)</label>
+                    <input
+                        type="text"
+                        formControlName="eventId"
+                        placeholder="Event ID for specific zap"
+                        class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    />
+                </div>
+
+                <!-- Amount Field -->
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Amount (in Satoshis)</label>
+                    <input
+                        type="number"
+                        formControlName="amount"
+                        placeholder="Amount"
+                        class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    />
+                </div>
+
+                <!-- Comment Field (Optional) -->
+                <div class="form-group" *ngIf="payRequest?.commentAllowed">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Comment (Optional)</label>
+                    <textarea
+                        formControlName="comment"
+                        placeholder="Add a comment..."
+                        rows="3"
+                        class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    ></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button
+                    type="submit"
+                    [disabled]="sendZapForm.invalid || loading"
+                    class="w-full py-2 text-sm font-semibold bg-gray-800 text-white rounded hover:bg-gray-700 disabled:bg-gray-400"
+                >
+                    {{ loading ? 'Sending...' : 'Send Zap' }}
+                </button>
+            </form>
+
+            <!-- Invoice Result -->
+            <div *ngIf="invoice.pr" class="invoice mt-6 p-4 border rounded-lg bg-gray-50 shadow w-full">
+                <h3 class="text-lg font-semibold text-gray-800">Invoice Created:</h3>
+                <p class="text-gray-700 break-words">{{ invoice.pr }}</p>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="error" class="error mt-6 p-4 border rounded-lg bg-red-50 shadow w-full">
+                <p class="text-red-600 font-medium">{{ error }}</p>
+            </div>
+        </angor-card>
+    </div>
+</div>

@@ -4,7 +4,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 import * as secp from '@noble/secp256k1';
 import { bech32 } from '@scure/base';
 import { Subscription } from 'rxjs';
- import { hexToBytes ,bytesToHex } from '@noble/hashes/utils';
+ import { NostrProfileDocument, NostrProfile, NostrEvent, NostrEventDocument, NostrBadgeDefinition } from './interfaces';
+import { DataValidation } from './data-validation';
 
 export function sleep(durationInMillisecond: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, durationInMillisecond));
@@ -18,7 +19,7 @@ export function now() {
   providedIn: 'root',
 })
 export class Utilities {
-  constructor(private snackBar: MatSnackBar, private sanitizer: DomSanitizer) {}
+  constructor(private snackBar: MatSnackBar, private validator: DataValidation, private sanitizer: DomSanitizer) {}
 
   unsubscribe(subscriptions: Subscription[]) {
     if (!subscriptions) {
@@ -34,7 +35,20 @@ export class Utilities {
     return Math.floor(Date.now() / 1000);
   }
 
-
+  reduceProfile(profile: NostrProfileDocument): NostrProfile {
+    return {
+      name: profile.name,
+      about: profile.about,
+      picture: profile.picture,
+      banner: profile.banner,
+      nip05: profile.nip05,
+      lud06: profile.lud06,
+      lud16: profile.lud16,
+      display_name: profile.display_name,
+      website: profile.website,
+      // TODO: Consider adding support for these in the future depending on how the community of Nostr grows and adopts these fields.
+    } as NostrProfile;
+  }
 
   defaultBackground = 'url(/assets/gradient.jpg)';
 
@@ -56,13 +70,46 @@ export class Utilities {
     }
   }
 
+  getProfileDisplayName(profile: NostrProfileDocument) {
+    if (profile.display_name) {
+      return profile.display_name;
+    } else if (profile.name) {
+      return profile.name;
+    } else {
+      return profile.npub;
+    }
+  }
 
-
+  getProfileTitle(profile: NostrProfileDocument) {
+    if (profile.name) {
+      return `@${profile.name}`;
+    } else {
+      return `@${profile.npub}`;
+    }
+  }
 
   millisatoshisToSatoshis(millisatoshis: number) {
     return Math.floor(millisatoshis / 1000);
   }
 
+  mapProfileEvent(event: NostrEventDocument): NostrProfileDocument | undefined {
+    // If a timeout is received, the event content will be: "The query timed out before it could complete: [{"kinds":[0],"authors":["edcd205..."]}]."
+    if (typeof event === 'string') {
+      return undefined;
+    }
+
+    try {
+      const jsonParsed = JSON.parse(event.content) as NostrProfileDocument;
+      const profile = this.validator.sanitizeProfile(jsonParsed) as NostrProfileDocument;
+      profile.pubkey = event.pubkey;
+      profile.created_at = event.created_at;
+      return profile;
+    } catch (err) {
+      console.warn(err);
+    }
+
+    return undefined;
+  }
 
   getRelayUrls(relays: any) {
     let preparedRelays = relays;
@@ -89,53 +136,16 @@ export class Utilities {
     }
   }
 
-  copy(text: string) {
-    this.copyToClipboard(text);
-
-    this.snackBar.open('Copied to clipboard', 'Hide', {
-      duration: 2500,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
-  }
-  copyToClipboard(content: string) {
-    var textArea = document.createElement('textarea') as any;
-
-    // Place in the top-left corner of screen regardless of scroll position.
-    textArea.style.position = 'fixed';
-    textArea.style.top = 0;
-    textArea.style.left = 0;
-
-    // Ensure it has a small width and height. Setting to 1px / 1em
-    // doesn't work as this gives a negative w/h on some browsers.
-    textArea.style.width = '2em';
-    textArea.style.height = '2em';
-
-    // We don't need padding, reducing the size if it does flash render.
-    textArea.style.padding = 0;
-
-    // Clean up any borders.
-    textArea.style.border = 'none';
-    textArea.style.outline = 'none';
-    textArea.style.boxShadow = 'none';
-
-    // Avoid flash of the white box if rendered for any reason.
-    textArea.style.background = 'transparent';
-    textArea.value = content;
-
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
-    try {
-      var successful = document.execCommand('copy');
-      var msg = successful ? 'successful' : 'unsuccessful';
-    } catch (err) {
-      console.error('Oops, unable to copy');
+  ensureHexIdentifier(pubkey: string) {
+    if (pubkey.startsWith('npub')) {
+      pubkey = this.arrayToHex(this.convertFromBech32(pubkey));
     }
 
-    document.body.removeChild(textArea);
+    return pubkey;
   }
+
+
+
   getHexIdentifier(pubkey: string) {
     const key = this.hexToArray(pubkey);
     const converted = this.convertToBech32(key, 'npub');
@@ -155,15 +165,34 @@ export class Utilities {
   }
 
   private hexToArray(value: string) {
-    return  hexToBytes(value);
+    return secp.utils.hexToBytes(value);
   }
 
   arrayToHex(value: Uint8Array) {
-    return bytesToHex(value);
+    return secp.utils.bytesToHex(value);
+  }
+
+  convertFromBech32(address: any) {
+    const decoded = bech32.decode(address);
+    const key = bech32.fromWords(decoded.words);
+
+    return key;
+  }
+
+  convertFromBech32ToHex(address: any) {
+    const decoded = bech32.decode(address);
+    const key = bech32.fromWords(decoded.words);
+    return this.arrayToHex(key);
+  }
+
+  convertBech32ToText(str: any) {
+    const decoded = bech32.decode(str, 1000);
+    const buf = bech32.fromWords(decoded.words);
+    return new TextDecoder().decode(Uint8Array.from(buf));
   }
 
   keyToHex(publicKey: Uint8Array) {
-    return bytesToHex(publicKey);
+    return secp.utils.bytesToHex(publicKey);
   }
 
   sanitizeLUD06(url?: string) {
