@@ -1,7 +1,7 @@
 .preset-buttons {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    gap: 10px;
     justify-items: center;
     margin-bottom: 20px;
 }
@@ -9,10 +9,7 @@
 .preset-buttons button {
     font-size: 14px;
     font-weight: bold;
-    width: 100px;
-    height: 60px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     max-height: 60px !important;
@@ -24,9 +21,5 @@
 }
 
 .lightning-buttons {
-    display: flex;
-    justify-content: space-evenly;
-    margin: 10px 0;
+    margin: 5px 0;
 }
-
-

@@ -8,15 +8,9 @@
 
 <mat-dialog-content *ngIf="!showInvoiceSection || !lightningInvoice" class="p-0 mt-4">
     <div class="preset-buttons">
-        <button
-            mat-mini-fab
-            color="primary"
-            *ngFor="let button of zapButtons"
-            (click)="sendZapForm.get('amount')?.setValue(button.value)"
-            aria-label="Set zap amount to {{button.label}}"
-        >
-            <mat-icon>{{ button.icon }}</mat-icon>
-            <span>{{ button.label }}</span>
+        <button class="mr-1 px-3" mat-button *ngFor="let button of zapButtons" (click)="sendZapForm.get('amount')?.setValue(button.value)">
+            <mat-icon class="text-orange-500 icon-size-5">{{ button.icon }}</mat-icon>
+            <span class="ml-2">{{ button.label }}</span>
         </button>
     </div>
 
@@ -63,7 +57,7 @@
     </mat-dialog-actions>
 </mat-dialog-content>
 
-<mat-dialog-content *ngIf="showInvoiceSection && lightningInvoice" class="flex flex-col items-center justify-center text-center h-full space-y-4">
+<mat-dialog-content *ngIf="showInvoiceSection && lightningInvoice" class="flex flex-col items-center justify-center text-center p-1 mt-4">
     <div *ngIf="displayQRCode" class="w-full flex flex-col items-center">
         <span class="mb-2">Scan with phone to pay ({{ invoiceAmount }} sats)</span>
         <mat-divider class="w-full mb-4"></mat-divider>
