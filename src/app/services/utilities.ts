@@ -164,12 +164,14 @@ export class Utilities {
     return value;
   }
 
-  private hexToArray(value: string) {
-    return secp.utils.hexToBytes(value);
+  private hexToArray(value: string): Uint8Array {
+    return new Uint8Array(value.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || []);
   }
 
-  arrayToHex(value: Uint8Array) {
-    return secp.utils.bytesToHex(value);
+  arrayToHex(value: Uint8Array): string {
+    return Array.from(value)
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
   }
 
   convertFromBech32(address: any) {
@@ -191,9 +193,12 @@ export class Utilities {
     return new TextDecoder().decode(Uint8Array.from(buf));
   }
 
-  keyToHex(publicKey: Uint8Array) {
-    return secp.utils.bytesToHex(publicKey);
+  keyToHex(publicKey: Uint8Array): string {
+    return Array.from(publicKey)
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
   }
+
 
   sanitizeLUD06(url?: string) {
     // Do not allow http prefix.
