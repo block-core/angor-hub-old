@@ -32,7 +32,7 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { PaginatedEventService } from 'app/services/event.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
-import { StorageService } from 'app/services/storage.service';
+import { ContactEvent, StorageService } from 'app/services/storage.service';
 import { LightningInvoice, LightningResponse } from 'app/types/post';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { Filter, NostrEvent } from 'nostr-tools';
@@ -45,6 +45,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { AgoPipe } from 'app/shared/pipes/ago.pipe';
 import { ZapDialogComponent } from 'app/shared/zap-dialog/zap-dialog.component';
 import { ZapDialogData } from 'app/services/interfaces';
+import { Contacts } from 'nostr-tools/kinds';
 interface Chip {
     color?: string;
     selected?: string;
@@ -127,13 +128,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     subscriptionId: string;
 
-    totalContacts: number = 0;
-    followersCount: number = 0;
-    followingCount: number = 0;
+
+    followersList: ContactEvent[] = [];
+    followingList: ContactEvent[] = [];
     aboutExpanded: boolean = true;
 
     stats$!: Observable<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }>;
-
+    totalContacts: number = 0;
+    followersCount: number = 0;
+    followingCount: number = 0;
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _signerService: SignerService,
@@ -150,7 +153,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _subscriptionService: SubscriptionService,
         private _clipboard: Clipboard,
         private parseContent: ParseContentService
-    ) { }
+    ) {
+  }
 
     async ngOnInit(): Promise<void> {
         this.initializeTheme();
@@ -195,7 +199,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     private loadUserProfileData(pubKey: string): void {
-        this.loadProfileUser(pubKey);
+        this.loadUserProfile(pubKey);
         this.stats$ = this._storageService.getContactStats$(pubKey);
     }
 
@@ -218,6 +222,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
 
     private subscribeToNewPosts(): void {
+       if (this.isCurrentUserProfile) {
         this._storageService.posts$.subscribe((newPost) => {
             if (newPost && !this.posts.some((p) => p.id === newPost.id)) {
                 this.posts.push(newPost);
@@ -225,6 +230,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.detectChanges();
             }
         });
+       }
+       else
+       {
+        
+       }
+
     }
 
     loadNextPage(): void {
@@ -246,7 +257,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
-    async loadProfileUser(publicKey: string): Promise<void> {
+    async loadUserProfile(publicKey: string): Promise<void> {
         this.isLoading = true;
         this.errorMessage = null;
         this.profileUser = null;
@@ -259,8 +270,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
             this._changeDetectorRef.detectChanges();
             return;
         }
-
-
         try {
 
             const cachedMetadata = await this._storageService.getProfile(publicKey);
@@ -269,8 +278,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.detectChanges();
             }
 
-
-            this.subscribeToUserProfile(publicKey);
+            this.subscribeToUserProfileAndContacts(publicKey);
         } catch (error) {
             console.error('Error loading user profile:', error);
         }
@@ -278,29 +286,74 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
 
-    private subscribeToUserProfile(pubKey: string): void {
-        const filters: Filter[] = [
-            { authors: [pubKey], kinds: [0], limit: 1 }
+
+    private async subscribeToUserProfileAndContacts(pubKey: string): Promise<void> {
+        const combinedFilters: Filter[] = [
+            // Profile filter (kind 0)
+            { authors: [pubKey], kinds: [0], limit: 1 },
+
+            // Contacts filters
+            { kinds: [Contacts], authors: [pubKey] },
+            { kinds: [Contacts], '#p': [pubKey] },
         ];
 
-        this.subscriptionId = this._subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
-            try {
-                const newMetadata = JSON.parse(event.content);
-                this.profileUser = newMetadata;
-
-                // Set followers and following counts, ensure they're integers and not null or undefined
-                this.followersCount = newMetadata.followersCount ?? 0;
-                this.followingCount = newMetadata.followingCount ?? 0;
-
-                // Save profile data
-                await this._storageService.saveProfile(pubKey, newMetadata);
-
-                // Mark for check to force UI update
-                this._changeDetectorRef.markForCheck();
-            } catch (error) {
-                console.error('Error processing metadata event:', error);
+        this.subscriptionId = this._subscriptionService.addSubscriptions(combinedFilters, async (event: NostrEvent) => {
+            switch (event.kind) {
+                case 0:
+                    // Handle profile metadata
+                    await this.processProfileMetadata(event, pubKey);
+                    break;
+                case Contacts:
+                    // Handle contact data
+                    this.processContactData(event, pubKey);
+                    break;
             }
         });
+    }
+
+    private async processProfileMetadata(event: NostrEvent, pubKey: string): Promise<void> {
+        try {
+            const newMetadata = JSON.parse(event.content);
+            this.profileUser = newMetadata;
+            // Save profile data
+            await this._storageService.saveProfile(pubKey, newMetadata);
+
+            // Trigger UI update
+            this._changeDetectorRef.markForCheck();
+        } catch (error) {
+            console.error('Error processing metadata event:', error);
+        }
+    }
+
+    private processContactData(event: NostrEvent, pubKey: string): void {
+        const isFollower = event.pubkey === pubKey;
+        const contactEvent: ContactEvent = {
+            id: event.id,
+            pubkey: event.pubkey,
+            created_at: event.created_at,
+            tags: event.tags,
+            isFollower,
+        };
+
+        if (isFollower) {
+            // Add to followers list
+            this.followersList.push(contactEvent);
+            this.followersCount++;
+            this.totalContacts++;
+            console.log(this.followersCount);
+
+            this._changeDetectorRef.detectChanges();
+
+        } else {
+            // Add to following list
+            this.followingList.push(contactEvent);
+            this.followingCount++;
+            this.totalContacts++;
+            console.log(this.followingCount);
+            this._changeDetectorRef.detectChanges();
+
+
+        }
     }
 
 
