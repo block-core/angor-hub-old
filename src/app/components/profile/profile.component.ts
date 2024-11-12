@@ -28,28 +28,24 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
-import { bech32 } from '@scure/base';
 import { QRCodeModule } from 'angularx-qrcode';
 import { PaginatedEventService } from 'app/services/event.service';
-import { LightningService } from 'app/services/lightning.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
 import { StorageService } from 'app/services/storage.service';
-import { SafeUrlPipe } from 'app/shared/pipes/safe-url.pipe';
 import { LightningInvoice, LightningResponse } from 'app/types/post';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { Filter, NostrEvent } from 'nostr-tools';
 import { Observable, Subject, takeUntil } from 'rxjs';
- import { SubscriptionService } from 'app/services/subscription.service';
+import { SubscriptionService } from 'app/services/subscription.service';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ParseContentService } from 'app/services/parse-content.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { ContactInfoComponent } from '../chat/contact-info/contact-info.component';
 import { AgoPipe } from 'app/shared/pipes/ago.pipe';
 import { ZapDialogComponent } from 'app/shared/zap-dialog/zap-dialog.component';
 import { ZapDialogData } from 'app/services/interfaces';
- interface Chip {
+interface Chip {
     color?: string;
     selected?: string;
     name: string;
@@ -79,17 +75,12 @@ import { ZapDialogData } from 'app/services/interfaces';
         QRCodeModule,
         PickerComponent,
         MatSlideToggle,
-        SafeUrlPipe,
         MatProgressSpinnerModule,
         InfiniteScrollModule,
         MatIconModule,
         MatExpansionModule,
         MatSidenavModule,
-        ContactInfoComponent,
-        NgTemplateOutlet,
-        DatePipe,
         AgoPipe,
-
     ],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
@@ -141,7 +132,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     followingCount: number = 0;
     aboutExpanded: boolean = true;
 
-
     stats$!: Observable<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }>;
 
     constructor(
@@ -153,7 +143,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _router: Router,
         private _socialService: SocialService,
         private _snackBar: MatSnackBar,
-        private _lightning: LightningService,
         private _dialog: MatDialog,
         private _angorConfigService: AngorConfigService,
         private _angorConfirmationService: AngorConfirmationService,
@@ -164,7 +153,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
     ) { }
 
     async ngOnInit(): Promise<void> {
+        this.initializeTheme();
+        this.processRouteParams();
+        this.loadInitialPosts();
+        this.subscribeToNewPosts();
+    }
 
+    private initializeTheme(): void {
         this._angorConfigService.config$.subscribe((config) => {
             if (config.scheme === 'auto') {
                 this.detectSystemTheme();
@@ -172,25 +167,41 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 this.darkMode = config.scheme === 'dark';
             }
         });
+    }
+
+    private processRouteParams(): void {
         this._route.paramMap.subscribe((params) => {
-            const routePubKey = params.get('pubkey');
-            if (!routePubKey) {
-                this.isCurrentUserProfile = true;
-                const currentUserPubKey = this._signerService.getPublicKey();
+            const routePubKey = params.get('pubkey') || '';
 
-                this.routePubKey = currentUserPubKey;
+            if (routePubKey) {
+                if (this.isValidHexPubkey(routePubKey)) {
+                    this.routePubKey = routePubKey;
+                    this.isCurrentUserProfile = false;
+                } else {
+                    this.errorMessage = 'Public key is invalid. Please check your input.';
+                    this.setCurrentUserProfile();
+                }
+            } else {
+                this.setCurrentUserProfile();
             }
-            else {
-                this.routePubKey = routePubKey;
-            }
-            this.loadProfileUser(this.routePubKey);
 
-            this.stats$ = this._storageService.getContactStats$(this.routePubKey);
-
+            this.loadUserProfileData(this.routePubKey);
         });
-        this.loadInitialPosts();
-        this.subscribeToNewPosts();
+    }
 
+    private setCurrentUserProfile(): void {
+        this.isCurrentUserProfile = true;
+        this.routePubKey = this._signerService.getPublicKey();
+    }
+
+    private loadUserProfileData(pubKey: string): void {
+        this.loadProfileUser(pubKey);
+        this.stats$ = this._storageService.getContactStats$(pubKey);
+    }
+
+    private isValidHexPubkey(pubkey: string): boolean {
+        const hexPattern = /^[a-fA-F0-9]{64}$/;
+        return hexPattern.test(pubkey);
     }
 
     private async loadInitialPosts(): Promise<void> {
@@ -340,7 +351,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
 
-    openZapDialog(eventId:string =""): void {
+    openZapDialog(eventId: string = ""): void {
         if (this.canUseZap()) {
             const zapData: ZapDialogData = {
                 lud16: this.profileUser.lud16,
