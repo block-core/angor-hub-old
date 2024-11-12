@@ -33,7 +33,7 @@ export class ChatService implements OnDestroy {
   ) {
 
     this._metadataQueueService.processingStatus$.subscribe((status) => {
-        console.log('Processing status:', status);
+        
       });
 
   }

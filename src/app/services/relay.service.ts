@@ -37,7 +37,7 @@ export class RelayService implements OnDestroy {
         const storedRelays = JSON.parse(localStorage.getItem('nostrRelays') || '[]');
         const defaultRelays: Relay[] = [
             { url: 'wss://relay.primal.net', connected: false, retries: 0, retryTimeout: null, accessType: 'read-write' },
-            { url: 'wss://relay.damus.io', connected: false, retries: 0, retryTimeout: null, accessType: 'read-write' },
+            { url: 'wss://nos.lol', connected: false, retries: 0, retryTimeout: null, accessType: 'read-write' },
             { url: 'wss://relay.angor.io', connected: false, retries: 0, retryTimeout: null, accessType: 'read-write' },
             { url: 'wss://relay2.angor.io', connected: false, retries: 0, retryTimeout: null, accessType: 'read-write' }
         ];

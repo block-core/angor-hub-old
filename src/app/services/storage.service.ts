@@ -501,8 +501,6 @@ export class StorageService {
         }
     }
 
-
-
     async getAllPosts(limit = 10): Promise<any[]> {
         try {
             const events: any[] = [];
@@ -520,6 +518,26 @@ export class StorageService {
         }
     }
 
+    async getPostsByPubKeysWithPagination(pubKeys: string[], page: number, limit: number = 10): Promise<any[]> {
+        try {
+            const events: any[] = [];
+
+             const offset = (page - 1) * limit;
+
+             await this.postsStore.iterate<any, void>((event) => {
+                if (pubKeys.includes(event.pubkey) && event.kind === 1) {
+                    events.push(event);
+                }
+            });
+
+             return events
+                .sort((a, b) => b.created_at - a.created_at)
+                .slice(offset, offset + limit);
+        } catch (error) {
+            console.error('Error retrieving events for pubKeys with pagination:', error);
+            return [];
+        }
+    }
 
     // ------------------- MyLikes Methods -------------------
     async saveLike(like: any): Promise<void> {
@@ -731,11 +749,13 @@ export class StorageService {
         }
     }
 
-    async loadPostsFromDB(limit = 10, offset = 0): Promise<any[]> {
+    async loadPostsFromDB(pubKeys: string[], limit = 10, offset = 0): Promise<any[]> {
         try {
             const events: any[] = [];
             await this.postsStore.iterate<any, void>((event) => {
-                events.push(event);
+                if (pubKeys.includes(event.pubkey)) {
+                    events.push(event);
+                }
             });
 
             return events
@@ -747,10 +767,10 @@ export class StorageService {
         }
     }
 
-     async loadPosts(page: number): Promise<void> {
+    async loadPosts(pubKeys: string[], page: number): Promise<any> {
         const limit = 10;
         const offset = (page - 1) * limit;
-        const postsFromDB = await this.loadPostsFromDB(limit, offset);
+        const postsFromDB = await this.loadPostsFromDB(pubKeys, limit, offset);
 
         if (postsFromDB.length > 0) {
             postsFromDB.forEach((post) => {
@@ -758,6 +778,7 @@ export class StorageService {
             });
         }
     }
+
 
     private async loadAllMyLikesFromDB(): Promise<void> {
         try {

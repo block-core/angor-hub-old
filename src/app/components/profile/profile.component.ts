@@ -128,6 +128,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     subscriptionId: string;
 
+    public hasMorePosts: boolean = true;
 
     followersList: ContactEvent[] = [];
     followingList: ContactEvent[] = [];
@@ -154,7 +155,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _clipboard: Clipboard,
         private parseContent: ParseContentService
     ) {
-  }
+    }
 
     async ngOnInit(): Promise<void> {
         this.initializeTheme();
@@ -208,36 +209,78 @@ export class ProfileComponent implements OnInit, OnDestroy {
         return hexPattern.test(pubkey);
     }
 
+
+
+ 
     private async loadInitialPosts(): Promise<void> {
         this.loading = true;
+        let attemptCount = 0;
+        const maxAttempts = 5;
+        const delay = 3000; // 3 seconds
+
         try {
-            await this._storageService.loadPosts(this.currentPage);
+            while (attemptCount < maxAttempts) {
+                const additionalPosts = await this._storageService.getPostsByPubKeysWithPagination(
+                    [this.routePubKey],
+                    this.currentPage,
+                    10
+                );
+
+                if (additionalPosts.length > 0) {
+                    this.posts = [...this.posts, ...additionalPosts];
+                    this.posts.sort((a, b) => b.created_at - a.created_at);
+                    break; // Stop retrying if posts are loaded
+                } else {
+                    attemptCount++;
+                    if (attemptCount < maxAttempts) {
+                        await this.delay(delay);
+                    }
+                }
+            }
+
+            // If no posts loaded after retries, assume there are no more posts to load
+            this.hasMorePosts = this.posts.length > 0;
+            if (!this.hasMorePosts) {
+                console.log('This user has no posts.');
+            }
         } catch (error) {
             console.error('Error loading posts:', error);
         } finally {
             this.loading = false;
         }
+
         this._changeDetectorRef.detectChanges();
     }
 
 
-    private subscribeToNewPosts(): void {
-       if (this.isCurrentUserProfile) {
-        this._storageService.posts$.subscribe((newPost) => {
-            if (newPost && !this.posts.some((p) => p.id === newPost.id)) {
-                this.posts.push(newPost);
-                this.posts.sort((a, b) => b.created_at - a.created_at);
-                this._changeDetectorRef.detectChanges();
-            }
-        });
-       }
-       else
-       {
-        
-       }
 
+    private delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+
+
+
+
+    private subscribeToNewPosts(): void {
+        if (!this.isCurrentUserProfile) {
+            const filters: Filter[] = [
+                { authors: [this.routePubKey], kinds: [1] },
+            ];
+            this.subscriptionId = this._subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
+                if (!this.isReply(event)) {
+                    this._storageService.savePost(event);
+                }
+            });
+        }
+    }
+
+    private isReply(event: NostrEvent): boolean {
+        const replyTags = event.tags.filter(
+            (tag) => tag[0] === 'e' || tag[0] === 'p'
+        );
+        return replyTags.length > 0;
+    }
     loadNextPage(): void {
         if (this.loading) return;
         this.currentPage++;
@@ -340,8 +383,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
             this.followersList.push(contactEvent);
             this.followersCount++;
             this.totalContacts++;
-            console.log(this.followersCount);
-
             this._changeDetectorRef.detectChanges();
 
         } else {
@@ -349,7 +390,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
             this.followingList.push(contactEvent);
             this.followingCount++;
             this.totalContacts++;
-            console.log(this.followingCount);
             this._changeDetectorRef.detectChanges();
 
 
@@ -374,11 +414,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
             if (this.isFollowing) {
                 await this._socialService.unfollow(routePubKey);
-                console.log(`Unfollowed ${routePubKey}`);
 
             } else {
                 await this._socialService.follow(routePubKey);
-                console.log(`Followed ${routePubKey}`);
             }
 
             this.isFollowing = !this.isFollowing;

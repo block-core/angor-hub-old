@@ -599,16 +599,12 @@
                     >
                         <span class="mr-1">Read More ...</span>
                     </button>
-
                     </div>
-
-
                 </div>
-
             </angor-card>
             }
 
-            <div  class="mt-10 m-auto flex justify-center">
+            <div *ngIf="hasMorePosts" class="mt-4 m-auto flex justify-center">
                 <button mat-raised-button color="primary" (click)="loadNextPage()" [disabled]="loading">
                     {{ loading ? 'Loading...' : 'Load More Posts' }}
                 </button>
