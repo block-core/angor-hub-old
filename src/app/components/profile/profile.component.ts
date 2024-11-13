@@ -115,7 +115,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     isLiked = false;
     isPreview = false;
     posts: any[] = [];
-    likes: any[] = [];
 
     currentPage = 1;
     loading = false;
@@ -255,9 +254,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
 
-
-
-
     private subscribeToNewPosts(): void {
         if (!this.isCurrentUserProfile) {
             const filters: Filter[] = [
@@ -269,6 +265,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 }
             });
         }
+        else {
+            this._storageService.posts$.subscribe((newPost) => {
+                if (newPost) {
+                    if (newPost.pubkey === this.routePubKey) {
+                        this.posts.unshift(newPost);
+                        this.posts.sort((a, b) => b.created_at - a.created_at);
+                        this._changeDetectorRef.detectChanges();
+                    }
+                }
+            });
+
+        }
     }
 
     private isReply(event: NostrEvent): boolean {
@@ -277,6 +285,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
         );
         return replyTags.length > 0;
     }
+
+
     loadNextPage(): void {
         if (this.loading) return;
         this.currentPage++;

@@ -30,6 +30,7 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ContactInfoComponent } from '../chat/contact-info/contact-info.component';
 import { Filter, NostrEvent } from 'nostr-tools';
 import { ReplayProfileComponent } from './replay-profile/replay-profile.component';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 
 
@@ -61,7 +62,8 @@ export interface PostReaction {
         MatSidenavModule,
         AgoPipe,
         MatProgressSpinnerModule,
-        ReplayProfileComponent
+        ReplayProfileComponent,
+
     ],
     templateUrl: './post-event.component.html',
     styleUrls: ['./post-event.component.scss']
@@ -69,6 +71,7 @@ export interface PostReaction {
 export class PostEventComponent implements OnInit, OnDestroy {
     postId: string | null = null;
     post: any = null;
+    user:any = null;
     loading = true;
     loadingReactions = true;
     private _unsubscribeAll: Subject<void> = new Subject<void>();
@@ -86,7 +89,9 @@ export class PostEventComponent implements OnInit, OnDestroy {
         private subscriptionService: SubscriptionService,
         private metadataQueueService: MetadataService,
         private _changeDetectorRef: ChangeDetectorRef,
-        public parseContent: ParseContentService
+        public parseContent: ParseContentService,
+        private _sanitizer: DomSanitizer,
+
     ) { }
 
     ngOnInit(): void {
@@ -97,17 +102,44 @@ export class PostEventComponent implements OnInit, OnDestroy {
                 this.subscribeToReactions(this.postId);
             }
         });
+
+    }
+
+
+    private async loadUserProfile(): Promise<void> {
+
+        this._storageService.getProfile(this.post.pubkey).then((metadata) => {
+            this.user = metadata;
+            console.log(this.user);
+
+            this._changeDetectorRef.detectChanges();
+        });
+
     }
 
     async loadPost(postId: string): Promise<void> {
         try {
             this.loading = true;
             this.post = await this._storageService.getPostById(postId);
+
+            this.loadUserProfile();
+
+            this._storageService.profile$.subscribe((data) => {
+                if (data && data.pubKey === this.post.pubkey) {
+                    this.user = data.metadata;
+                    this._changeDetectorRef.detectChanges();
+                }
+            });
+
             this.loading = false;
         } catch (error) {
             console.error('Error loading post:', error);
             this._router.navigate(['/404']);
         }
+    }
+
+    getSafeUrl(url: string): SafeUrl {
+        return this._sanitizer.bypassSecurityTrustUrl(url);
     }
 
     private subscribeToReactions(postId: string): void {

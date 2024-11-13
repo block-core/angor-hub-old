@@ -10,7 +10,7 @@ class=""
 <angor-card class="mb-8 flex w-full flex-col" #expandableComments="angorCard"
 *ngFor="let event of events$ | async let i = index trackBy: trackById">
 <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-    <img class="mr-4 h-10 w-10 rounded-full"
+    <img class="mr-4 h-10 w-10 rounded-full object-cover"
         [src]="event.picture || 'images/avatars/avatar-placeholder.png'"
         onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
         alt="{{ event.username }}" />

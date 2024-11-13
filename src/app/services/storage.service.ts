@@ -37,9 +37,6 @@ export class StorageService {
     private contactStatsSubject = new BehaviorSubject<{ totalContacts: number, followersCount: number, followingCount: number }>({ totalContacts: 0, followersCount: 0, followingCount: 0 });
 
 
-
-
-
     private profileStore: LocalForage;
     private projectsStore: LocalForage;
     private projectStatsStore: LocalForage;
@@ -201,14 +198,13 @@ export class StorageService {
 
 
 
-    // Paginated retrieval of contacts for a specific pubKey
     async getAllContactsPaginated(pubKey: string, page: number, pageSize: number): Promise<{ contacts: ContactEvent[], totalCount: number }> {
         try {
             const allContacts: ContactEvent[] = [];
             await this.contactsStore.iterate<ContactEvent, void>((contact, key) => {
                 const [storedPubKey] = key.split(':');
                 if (storedPubKey === pubKey) {
-                    allContacts.push(contact);  // Collect only contacts for the given pubKey
+                    allContacts.push(contact);
                 }
             });
 
@@ -226,7 +222,6 @@ export class StorageService {
         }
     }
 
-    // Retrieve all contacts for a specific pubKey
     async getAllContacts(pubKey: string = ""): Promise<{ pubKey: string, contact: ContactEvent }[]> {
         try {
             const allContacts: { pubKey: string, contact: ContactEvent }[] = [];
@@ -277,20 +272,17 @@ export class StorageService {
     }
 
 
-    // Remove all contacts for a specific pubKey
     async removeAllContacts(pubKey: string): Promise<void> {
         try {
             const keysToRemove: string[] = [];
 
-            // Collect all keys related to the given pubKey
             await this.contactsStore.iterate<ContactEvent, void>((contact, key) => {
                 const [storedPubKey] = key.split(':');
                 if (storedPubKey === pubKey) {
-                    keysToRemove.push(key);  // Add keys related to this pubKey to the list
+                    keysToRemove.push(key);
                 }
             });
 
-            // Remove all collected keys
             for (const key of keysToRemove) {
                 await this.contactsStore.removeItem(key);
             }
@@ -298,7 +290,7 @@ export class StorageService {
             await this.contactsStore.clear();
             this.contactStatsSubject.next({ totalContacts: 0, followersCount: 0, followingCount: 0 });
 
-            this.contactsSubject.next({ pubKey, contacts: [] });  // Emit an empty contact list for this pubKey
+            this.contactsSubject.next({ pubKey, contacts: [] });
             await this.setUpdateHistory('contacts');
         } catch (error) {
             console.error('Error removing all contacts for pubKey:', error);
@@ -465,7 +457,6 @@ export class StorageService {
         }
     }
 
-
     async getPostsByPubKey(pubKey: string): Promise<any[]> {
         try {
             const events: any[] = [];
@@ -501,22 +492,26 @@ export class StorageService {
         }
     }
 
-    async getAllPosts(limit = 10): Promise<any[]> {
+    async getAllPostsWithPagination(page: number, limit: number = 10): Promise<any[]> {
         try {
             const events: any[] = [];
+            const offset = (page - 1) * limit;
+
             await this.postsStore.iterate<any, void>((event) => {
-                events.push(event);
+                if (event.kind === 1) {
+                    events.push(event);
+                }
             });
 
-            // Sort events by createdAt in descending order and take the top `limit` items
             return events
                 .sort((a, b) => b.created_at - a.created_at)
-                .slice(0, limit);
+                .slice(offset, offset + limit);
         } catch (error) {
-            console.error('Error retrieving all events:', error);
+            console.error('Error retrieving all posts with pagination:', error);
             return [];
         }
     }
+
 
     async getPostsByPubKeysWithPagination(pubKeys: string[], page: number, limit: number = 10): Promise<any[]> {
         try {
@@ -540,6 +535,7 @@ export class StorageService {
     }
 
     // ------------------- MyLikes Methods -------------------
+
     async saveLike(like: any): Promise<void> {
         try {
             await this.myLikesStore.setItem(like.id, like);

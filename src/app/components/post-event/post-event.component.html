@@ -8,10 +8,12 @@
             <div class="m-auto flex w-full max-w-140 flex-col items-start">
                 <angor-card class="mt-8 flex w-full flex-col">
                     <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-                        <img class="mr-4 h-10 w-10 rounded-full" src="/images/avatars/avatar-placeholder.png"
-                            alt="Card cover image" />
+                        <img class="mr-4 h-10 w-10 rounded-full object-cover" [src]="user?.picture"
+                        onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';" alt="{{
+                            user?.display_name || user?.name || ''
+                        }}" />
                         <div class="flex flex-col">
-                            <span class="font-semibold leading-none">Milad</span>
+                            <span class="font-semibold leading-none">{{user?.display_name || user?.name || ''}}</span>
                             <span class="text-secondary mt-1 text-sm leading-none">{{ post.created_at | ago }}</span>
                         </div>
                         <button class="-mr-4 ml-auto" mat-icon-button [matMenuTriggerFor]="postCardMenu02">

@@ -2,22 +2,23 @@ import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular
 import { Subscription } from 'rxjs';
 import { StorageService } from 'app/services/storage.service';
 import { CommonModule } from '@angular/common';
+import { AgoPipe } from "../../../shared/pipes/ago.pipe";
 
 @Component({
-  selector: 'app-replay-profile',
+  selector: 'app-post-profile',
   standalone: true,
-  templateUrl: './replay-profile.component.html',
-  styleUrls: ['./replay-profile.component.scss'],
-  imports: [CommonModule]
+  templateUrl: './post-profile.component.html',
+  styleUrls: ['./post-profile.component.scss'],
+  imports: [CommonModule, AgoPipe]
 })
-export class ReplayProfileComponent implements OnInit, OnDestroy {
+export class PostProfileComponent implements OnInit, OnDestroy {
   @Input() pubkey!: string;
   @Input() avatarUrl?: string;
+  @Input() created_at?: string;
 
   user: any;
   private subscription!: Subscription;
-
-  constructor(
+   constructor(
     private _changeDetectorRef: ChangeDetectorRef,
     private _storageService: StorageService
   ) {}

@@ -1,0 +1,12 @@
+<div class="flex items-center">
+    <a [href]="'/profile/' + pubkey" class="flex items-center group">
+        <img class="mr-4 h-10 w-10 rounded-full object-cover"  [src]="displayAvatar"
+              [alt]="displayName"
+        onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"   />
+        <div class="flex flex-col">
+            <span class="font-semibold leading-none">{{ displayName }}</span>
+            <span class="text-secondary mt-1 text-sm leading-none">{{ created_at | ago}}</span>
+        </div>
+      </a>
+  </div>
+

@@ -223,7 +223,7 @@
                 </div>
                 <div class="mt-8 flex flex-col items-start sm:flex-row">
                     <div class="mb-6 flex items-center sm:mb-0">
-                        <img class="mr-4 h-12 w-12 min-w-12 rounded-full object-cover"  [src]="getSafeUrl(profileUser?.picture)"
+                        <img class="mr-4 h-12 w-12 min-w-12 rounded-full object-cover"  [src]="profileUser?.picture"
                         onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';" alt="{{
                             profileUser?.display_name || profileUser?.name || ''
                         }}"/>
@@ -310,7 +310,7 @@
             <angor-card *ngIf="isPreview" class="mb-8 flex w-full flex-col bg-primary-50 dark:bg-primary-800"
                 #expandableComments="angorCard">
                 <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-                    <img class="mr-4 h-10 w-10 rounded-full"  [src]="getSafeUrl(profileUser?.picture)"
+                    <img class="mr-4 h-10 w-10 rounded-full object-cover"  [src]="getSafeUrl(profileUser?.picture)"
                     onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';" alt="{{
                         profileUser?.display_name || profileUser?.name || ''
                     }}" />
@@ -440,7 +440,7 @@
             <!-- Post -->
             <angor-card class="mb-8 flex w-full flex-col" #expandableCard02="angorCard">
                 <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-                    <img class="mr-4 h-10 w-10 rounded-full"  [src]="getSafeUrl(profileUser?.picture)"
+                    <img class="mr-4 h-10 w-10 rounded-full object-cover"  [src]="getSafeUrl(profileUser?.picture)"
                     onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';" alt="{{
                         profileUser?.display_name || profileUser?.name || ''
                     }}" />
