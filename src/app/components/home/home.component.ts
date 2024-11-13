@@ -35,6 +35,7 @@ import { StorageService } from 'app/services/storage.service';
 import { SubscriptionService } from 'app/services/subscription.service';
 import { AgoPipe } from 'app/shared/pipes/ago.pipe';
 import { PostProfileComponent } from '../post-event/post-profile/post-profile.component';
+import { PostComponent } from 'app/layout/common/post/post.component';
 
 @Component({
     selector: 'help-center',
@@ -58,7 +59,8 @@ import { PostProfileComponent } from '../post-event/post-profile/post-profile.co
         NgClass,
         AngorCardComponent,
         AgoPipe,
-        PostProfileComponent
+        PostProfileComponent,
+        PostComponent
     ],
 })
 export class LandingHomeComponent implements OnInit, OnDestroy {
