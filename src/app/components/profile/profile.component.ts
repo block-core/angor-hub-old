@@ -536,6 +536,17 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.openSnackBar('npub public key copied', 'dismiss');
     }
 
+    copyKey(keyType: string) {
+        if (keyType === 'hex') {
+            this._clipboard.copy(this.routePubKey);
+            this.openSnackBar('hex public key copied', 'dismiss');
+        } else if (keyType === 'npub') {
+            const npub = this._signerService.getNpubFromPubkey(this.routePubKey);
+            this._clipboard.copy(npub);
+            this.openSnackBar('npub public key copied', 'dismiss');
+        }
+    }
+
     isSingleEmojiOrWord(token: string): boolean {
         const trimmedToken = token.trim();
         const isSingleWord = /^\w+$/.test(trimmedToken);
@@ -548,4 +559,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     openPost(postId: string): void {
         this._router.navigate(['/post', postId]);
     }
+
+
 }
