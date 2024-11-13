@@ -438,7 +438,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     openSnackBar(message: string, action: string = 'dismiss'): void {
-        this._snackBar.open(message, action, { duration: 1300 });
+        this._snackBar.open(message, action, { duration: 3000 });
     }
 
     async canUseZap(): Promise<boolean> {
@@ -446,14 +446,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (canReceiveZap) {
             return true;
         } else {
-            this.openSnackBar("User can't receive zaps");
+            this.openSnackBar("Using Zap is not possible. Please complete your profile to include lud06 or lud16.");
             return false;
         }
     }
 
-
-    openZapDialog(eventId: string = ""): void {
-        if (this.canUseZap()) {
+    async openZapDialog(eventId: string = ""): Promise<void> {
+        const canZap = await this.canUseZap();
+        if (canZap) {
             const zapData: ZapDialogData = {
                 lud16: this.profileUser.lud16,
                 lud06: this.profileUser.lud06,
@@ -469,8 +469,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
             });
         }
     }
-
-
 
     toggleLike() {
         this.isLiked = !this.isLiked;
@@ -518,6 +516,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             this._eventService
                 .sendTextEvent(this.eventInput.nativeElement.value)
                 .then(() => {
+                    this.eventInput.nativeElement.value = "";
                     this._changeDetectorRef.markForCheck();
                 })
                 .catch((error) => {
