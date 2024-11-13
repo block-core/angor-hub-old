@@ -105,8 +105,8 @@ export class LandingHomeComponent implements OnInit, OnDestroy {
                 );
 
                 if (additionalPosts.length > 0) {
-                    this.posts = [...this.posts, ...additionalPosts];
-                    this.posts.sort((a, b) => b.created_at - a.created_at);
+                    const posts = [...this.posts, ...additionalPosts].sort((a, b) => b.created_at - a.created_at);
+                    this.posts = posts;
                     break;
                 } else {
                     if (attemptCount < maxAttempts - 1) {

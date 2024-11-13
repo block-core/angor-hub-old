@@ -120,6 +120,8 @@
 
             @for (item of posts; track $index) {
                 <!-- Post -->
+                <app-post [item]="item"></app-post>
+
                 <angor-card class="mb-8 flex w-full flex-col" #expandableCard02="angorCard">
                     <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
                         <app-post-profile
@@ -187,12 +189,12 @@
                         " class="inline-block break-words whitespace-pre-wrap">
 
                         <!-- YouTube Embeds -->
-                        <ng-container *ngIf="token.token === 'youtube'">
+                        <!-- <ng-container *ngIf="token.token === 'youtube'">
                             <div class="relative mb-4 block">
                                 <iframe [src]="token.safeWord" width="560" height="315" frameborder="0"
                                     allowfullscreen></iframe>
                             </div>
-                        </ng-container>
+                        </ng-container> -->
 
                         <!-- Images -->
                         <ng-container *ngIf="token.token === 'image'">

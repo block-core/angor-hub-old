@@ -46,6 +46,7 @@ import { AgoPipe } from 'app/shared/pipes/ago.pipe';
 import { ZapDialogComponent } from 'app/shared/zap-dialog/zap-dialog.component';
 import { ZapDialogData } from 'app/services/interfaces';
 import { Contacts } from 'nostr-tools/kinds';
+import { PostComponent } from 'app/layout/common/post/post.component';
 interface Chip {
     color?: string;
     selected?: string;
@@ -82,6 +83,7 @@ interface Chip {
         MatExpansionModule,
         MatSidenavModule,
         AgoPipe,
+        PostComponent
     ],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
