@@ -35,7 +35,6 @@ import { NostrLoginService } from 'app/services/nostr-login.service';
         MatButtonModule,
         MatMenuModule,
         MatIconModule,
-        NgClass,
         MatDividerModule,
         CommonModule,
     ],
@@ -61,7 +60,6 @@ export class UserComponent implements OnInit, OnDestroy {
         private _signerService: SignerService,
         private _storageService: StorageService,
         private sanitizer: DomSanitizer,
-        private _changeDetectorRefef: ChangeDetectorRef,
         private _nostrLoginService: NostrLoginService
     ) { }
 
@@ -76,17 +74,14 @@ export class UserComponent implements OnInit, OnDestroy {
                 this.config = config;
                 this._changeDetectorRef.detectChanges();
             });
+        this.loadUserProfile();
 
         this._storageService.profile$.subscribe((data) => {
             if (data && data.pubKey === this.userPubKey) {
                 this.user = data.metadata;
-                this._changeDetectorRefef.detectChanges();
+                this._changeDetectorRef.detectChanges();
             }
         });
-
-
-
-        this.loadUserProfile();
     }
 
     ngOnDestroy(): void {
@@ -98,7 +93,7 @@ export class UserComponent implements OnInit, OnDestroy {
 
         this._storageService.getProfile(this.userPubKey).then((metadata) => {
             this.user = metadata;
-            this._changeDetectorRefef.detectChanges();
+            this._changeDetectorRef.detectChanges();
         });
 
     }

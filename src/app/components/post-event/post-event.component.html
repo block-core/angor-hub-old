@@ -158,14 +158,6 @@
                     <div *ngIf="!loadingReactions"
                         class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center">
                         <div class="flex items-center">
-                            <ng-container *ngFor="let zap of zaps | slice: -4">
-                                <img class="text-card m-0.5 -ml-3 h-6 w-6 rounded-full shadow-lg ring-2 ring-white"
-                                    [src]="
-                                    zap.user.picture ||
-                                        '/images/avatars/avatar-placeholder.png'
-                                    " [alt]="zap.user.name" />
-                            </ng-container>
-
                             <div class="ml-3 text-md tracking-tight">
                                 {{ zaps.length }} Zap<span *ngIf="zaps.length > 1">s</span>
                             </div>
@@ -224,117 +216,94 @@
 
                             <div class="max-h-120 overflow-y-auto">
                                 <div class="relative mx-4 my-6 flex flex-col sm:mx-8">
-                                    <div *ngFor="let reply of replies" class="mb-6 flex items-start">
-                                        <img class="mr-4 h-8 w-8 rounded-full" [src]="reply.user.picture"
-                                            alt="{{ reply.user.name }}" />
+                                    <div *ngFor="let reply of replies" class="mb-6 flex flex-col items-start">
+                                        <app-replay-profile
+                                          [pubkey]="reply?.pubkey"
+                                          [avatarUrl]="'/images/avatars/avatar-placeholder.png'"
+                                        ></app-replay-profile>
+
                                         <div class="mt-0.5 flex flex-col">
-                                            {{ reply.user.name }}:
-                                            <span>
-                                                <div *ngFor="
-                                                        let token of parseContent.parseContent(
-                                                            reply.content
-                                                        )
-                                                    " class="inline-block whitespace-pre-wrap break-words">
-                                                    <!-- YouTube Embeds -->
-                                                    <ng-container *ngIf="
-                                                            token.token ===
-                                                            'youtube'
-                                                        ">
-                                                        <div class="relative mb-4 block">
-                                                            <iframe [src]="
-                                                                    token.safeWord
-                                                                " width="560" height="315" frameborder="0"
-                                                                allowfullscreen></iframe>
-                                                        </div>
-                                                    </ng-container>
-
-                                                    <!-- Images -->
-                                                    <ng-container *ngIf="
-                                                            token.token ===
-                                                            'image'
-                                                        ">
-                                                        <div class="relative mb-4 block">
-                                                            <img [src]="
-                                                                    token.safeWord
-                                                                " alt="Embedded Image" style="
-                                                                    width: 100%;
-                                                                " class="max-h-140 object-cover" />
-                                                        </div>
-                                                    </ng-container>
-
-                                                    <!-- Videos -->
-                                                    <ng-container *ngIf="
-                                                            token.token ===
-                                                            'video'
-                                                        ">
-                                                        <div class="relative mb-4 block">
-                                                            <video controls style="
-                                                                    width: 100%;
-                                                                ">
-                                                                <source [src]="
-                                                                        token.safeWord
-                                                                    " type="video/mp4" />
-                                                                Your browser
-                                                                does not support
-                                                                the video tag.
-                                                            </video>
-                                                        </div>
-                                                    </ng-container>
-
-                                                    <!-- Audio -->
-                                                    <ng-container *ngIf="
-                                                            token.token ===
-                                                            'audio'
-                                                        ">
-                                                        <div class="relative mb-4 block">
-                                                            <audio controls>
-                                                                <source [src]="
-                                                                        token.safeWord
-                                                                    " type="audio/mpeg" />
-                                                                Your browser
-                                                                does not support
-                                                                the audio
-                                                                element.
-                                                            </audio>
-                                                        </div>
-                                                    </ng-container>
-
-                                                    <!-- Links -->
-                                                    <ng-container *ngIf="
-                                                            token.token ===
-                                                            'link'
-                                                        ">
-                                                        <div class="mx-6 mb-6 mt-2 sm:mx-1">
-                                                            <a class="inline-block break-words break-all text-blue-500 underline"
-                                                                [href]="
-                                                                    token.word
-                                                                " target="_blank">
-                                                                <span class="inline-block break-words break-all">{{
-                                                                    token.word
-                                                                    }}</span>
-                                                            </a>
-                                                        </div>
-                                                    </ng-container>
-
-                                                    <!-- Plain Text -->
-                                                    <ng-container *ngIf="!token.token">
-                                                        <div class="mt-2 sm:mx-1">
-                                                            <span class="inline-block break-words break-all">
-                                                                {{
-                                                                token.trim()
-                                                                }}
-                                                            </span>
-                                                        </div>
-                                                    </ng-container>
+                                          <span>
+                                            <div
+                                              *ngFor="let token of (parseContent.parseContent(reply?.content) || [])"
+                                              class="inline-block whitespace-pre-wrap break-words"
+                                            >
+                                              <!-- YouTube Embeds -->
+                                              <ng-container *ngIf="token?.token === 'youtube'">
+                                                <div class="relative mb-4 block">
+                                                  <iframe
+                                                    [src]="token?.safeWord"
+                                                    width="560"
+                                                    height="315"
+                                                    frameborder="0"
+                                                    allowfullscreen
+                                                  ></iframe>
                                                 </div>
-                                            </span>
-                                            <div class="text-secondary mt-2 flex items-center text-sm">
-                                                <span>{{
-                                                    reply.created_at | ago
-                                                    }}</span>
+                                              </ng-container>
+
+                                              <!-- Images -->
+                                              <ng-container *ngIf="token?.token === 'image'">
+                                                <div class="relative mb-4 block">
+                                                  <img
+                                                    [src]="token?.safeWord"
+                                                    alt="Embedded Image"
+                                                    style="width: 100%;"
+                                                    class="max-h-140 object-cover"
+                                                  />
+                                                </div>
+                                              </ng-container>
+
+                                              <!-- Videos -->
+                                              <ng-container *ngIf="token?.token === 'video'">
+                                                <div class="relative mb-4 block">
+                                                  <video controls style="width: 100%;">
+                                                    <source [src]="token?.safeWord" type="video/mp4" />
+                                                    Your browser does not support the video tag.
+                                                  </video>
+                                                </div>
+                                              </ng-container>
+
+                                              <!-- Audio -->
+                                              <ng-container *ngIf="token?.token === 'audio'">
+                                                <div class="relative mb-4 block">
+                                                  <audio controls>
+                                                    <source [src]="token?.safeWord" type="audio/mpeg" />
+                                                    Your browser does not support the audio element.
+                                                  </audio>
+                                                </div>
+                                              </ng-container>
+
+                                              <!-- Links -->
+                                              <ng-container *ngIf="token?.token === 'link'">
+                                                <div class="mx-6 mb-6 mt-2 sm:mx-1">
+                                                  <a
+                                                    class="inline-block break-words break-all text-blue-500 underline"
+                                                    [href]="token?.word"
+                                                    target="_blank"
+                                                  >
+                                                    <span class="inline-block break-words break-all">
+                                                      {{ token?.word }}
+                                                    </span>
+                                                  </a>
+                                                </div>
+                                              </ng-container>
+
+                                              <!-- Plain Text -->
+                                              <ng-container *ngIf="!token?.token">
+                                                <div class="mt-2 sm:mx-1">
+                                                  <span class="inline-block break-words break-all">
+                                                    {{ token?.trim() }}
+                                                  </span>
+                                                </div>
+                                              </ng-container>
                                             </div>
+                                          </span>
+                                          <div class="text-secondary mt-2 flex items-center text-sm">
+                                            <span>{{ reply?.created_at | ago }}</span>
+                                          </div>
                                         </div>
-                                    </div>
+                                      </div>
+
                                 </div>
                             </div>
                         </div>

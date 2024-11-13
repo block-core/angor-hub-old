@@ -27,7 +27,7 @@ interface ProcessingStatus {
 })
 export class MetadataService implements OnDestroy {
   private readonly BATCH_SIZE = 50;
-  private readonly PROCESS_INTERVAL = 2000; // 2 seconds
+  private readonly PROCESS_INTERVAL = 3000;  
   private readonly MAX_RETRY_ATTEMPTS = 3;
 
   private publicKeyQueue = new Set<string>();

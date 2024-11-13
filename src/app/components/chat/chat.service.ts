@@ -32,10 +32,6 @@ export class ChatService implements OnDestroy {
     private _metadataQueueService: MetadataService
   ) {
 
-    this._metadataQueueService.processingStatus$.subscribe((status) => {
-        
-      });
-
   }
 
     get profile$(): Observable<Profile | null> {

@@ -29,15 +29,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ContactInfoComponent } from '../chat/contact-info/contact-info.component';
 import { Filter, NostrEvent } from 'nostr-tools';
+import { ReplayProfileComponent } from './replay-profile/replay-profile.component';
 
-export interface UserProfile {
-    name?: string;
-    picture?: string;
-    pubkey: string;
-}
+
 
 export interface PostReaction {
-    user: UserProfile;
+    pubkey: string;
     created_at: number;
     content?: string;
 }
@@ -46,7 +43,6 @@ export interface PostReaction {
     selector: 'app-post-event',
     standalone: true,
     imports: [
-        RouterLink,
         AngorCardComponent,
         MatIconModule,
         MatButtonModule,
@@ -59,18 +55,13 @@ export interface PostReaction {
         CommonModule,
         FormsModule,
         QRCodeModule,
-        PickerComponent,
-        MatSlideToggle,
-        SafeUrlPipe,
         MatProgressSpinnerModule,
         InfiniteScrollModule,
-        EventListComponent,
         MatExpansionModule,
         MatSidenavModule,
-        ContactInfoComponent,
-        DatePipe,
         AgoPipe,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        ReplayProfileComponent
     ],
     templateUrl: './post-event.component.html',
     styleUrls: ['./post-event.component.scss']
@@ -96,7 +87,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
         private metadataQueueService: MetadataService,
         private _changeDetectorRef: ChangeDetectorRef,
         public parseContent: ParseContentService
-    ) {}
+    ) { }
 
     ngOnInit(): void {
         this._route.paramMap.pipe(takeUntil(this._unsubscribeAll)).subscribe((params) => {
@@ -130,10 +121,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
         }, 3000);
 
         const filter: Filter[] = [
-            { '#e': [postId], kinds: [1] },
-            { '#e': [postId], kinds: [7] },
-            { '#e': [postId], kinds: [9735] },
-            { '#e': [postId], kinds: [6] }
+            { '#e': [postId], kinds: [1,7,9735,6] }
         ];
 
         this.subscriptionId = this.subscriptionService.addSubscriptions(filter, async (event: NostrEvent) => {
@@ -142,29 +130,23 @@ export class PostEventComponent implements OnInit, OnDestroy {
                 clearTimeout(loadingTimeout);
             }
 
-            const userProfile = await this.getUserProfile(event.pubkey);
-            const reaction: PostReaction = {
-                user: userProfile,
-                created_at: event.created_at,
+             const reaction: PostReaction = {
+                pubkey: event.pubkey,
+                 created_at: event.created_at,
                 content: event.kind === 1 ? event.content : undefined
             };
 
             this.addReaction(postId, event.kind, reaction);
-            this.metadataQueueService.addPublicKey(event.pubkey);
         });
     }
 
 
-    private async getUserProfile(pubkey: string): Promise<UserProfile> {
-        const profile = await this._storageService.getProfile(pubkey);
-        return profile || { pubkey, name: 'Loading...', picture: '/images/avatars/avatar-placeholder.png' };
-    }
 
     private addReaction(postId: string, kind: number, reaction: PostReaction): void {
         switch (kind) {
             case 1:
                 this.replies.push(reaction);
-                this.replies.sort((a, b) => b.created_at - a.created_at);
+                 this.replies.sort((a, b) => b.created_at - a.created_at);
                 break;
             case 7:
                 this.likes.push(reaction);
@@ -187,10 +169,11 @@ export class PostEventComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        this._unsubscribeAll.next();
-        this._unsubscribeAll.complete();
+
         if (this.subscriptionId) {
             this.subscriptionService.removeSubscriptionById(this.subscriptionId);
         }
+        this._unsubscribeAll.next();
+        this._unsubscribeAll.complete();
     }
 }

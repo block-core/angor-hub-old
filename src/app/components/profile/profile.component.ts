@@ -127,6 +127,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     loadingTimeout: any;
 
     subscriptionId: string;
+    postsSubscriptionId: string;
 
     public hasMorePosts: boolean = true;
 
@@ -209,14 +210,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
         return hexPattern.test(pubkey);
     }
 
-
-
- 
     private async loadInitialPosts(): Promise<void> {
         this.loading = true;
         let attemptCount = 0;
         const maxAttempts = 5;
-        const delay = 3000; // 3 seconds
+        const delay = 3000;
 
         try {
             while (attemptCount < maxAttempts) {
@@ -229,7 +227,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 if (additionalPosts.length > 0) {
                     this.posts = [...this.posts, ...additionalPosts];
                     this.posts.sort((a, b) => b.created_at - a.created_at);
-                    break; // Stop retrying if posts are loaded
+                    break;
                 } else {
                     attemptCount++;
                     if (attemptCount < maxAttempts) {
@@ -238,7 +236,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 }
             }
 
-            // If no posts loaded after retries, assume there are no more posts to load
             this.hasMorePosts = this.posts.length > 0;
             if (!this.hasMorePosts) {
                 console.log('This user has no posts.');
@@ -251,7 +248,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
         this._changeDetectorRef.detectChanges();
     }
-
 
 
     private delay(ms: number): Promise<void> {
@@ -267,7 +263,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             const filters: Filter[] = [
                 { authors: [this.routePubKey], kinds: [1] },
             ];
-            this.subscriptionId = this._subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
+            this.postsSubscriptionId = this._subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
                 if (!this.isReply(event)) {
                     this._storageService.savePost(event);
                 }
@@ -296,6 +292,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (this.subscriptionId) {
             this._subscriptionService.removeSubscriptionById(this.subscriptionId);
         }
+        if (this.postsSubscriptionId) {
+            this._subscriptionService.removeSubscriptionById(this.postsSubscriptionId);
+        }
+
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }

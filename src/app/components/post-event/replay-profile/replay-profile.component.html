@@ -1,0 +1,12 @@
+<div class="flex items-center">
+    <a [href]="'/profile/' + pubkey" class="flex items-center group">
+      <img
+        class="mr-4 h-10 w-10 rounded-full border border-gray-300 group-hover:shadow-md"
+        [src]="displayAvatar"
+        [alt]="displayName"
+      />
+      <span class="font-bold text-gray-800 group-hover:text-blue-500">
+        {{ displayName }}
+      </span>
+    </a>
+  </div>
