@@ -138,12 +138,12 @@
                     @if (token.token === 'link') {
                         <div class="mx-6 mb-6 mt-2 sm:mx-8">
                             <a
-                                class="inline-block break-words break-all text-blue-500 underline"
+                                class="inline-block break-words text-blue-500 underline"
                                 [href]="token.word"
                                 target="_blank"
                             >
                                 <span
-                                    class="inline-block break-words break-all"
+                                    class="inline-block break-words"
                                     >{{ token.word }}</span
                                 >
                             </a>
@@ -154,7 +154,7 @@
                     @if (!token.token) {
                         <div class="mx-6 mb-6 mt-2 sm:mx-8">
                             <span
-                                class="inline-block break-words break-all"
+                                class="inline-block break-words"
                                 [ngClass]="{
                                     'large-font': isSingleEmojiOrWord(token),
                                 }"

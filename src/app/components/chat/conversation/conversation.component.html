@@ -138,7 +138,7 @@
                                 </div>
                                 }
                                 <!-- Message -->
-                                <div *ngFor="let token of parseContent.parseContent(message.value); trackBy: trackByFn" style="display: inline-block; word-break: break-all; overflow-wrap: break-word; white-space: pre-wrap;">
+                                <div *ngFor="let token of parseContent.parseContent(message.value); trackBy: trackByFn" style="display: inline-block; overflow-wrap: break-word; white-space: pre-wrap;">
                                     <!-- YouTube Embeds -->
                                     <div *ngIf="token.token === 'youtube'" style="display: block;">
                                       <iframe
@@ -175,12 +175,12 @@
                                     </div>
 
                                     <!-- Links -->
-                                    <div *ngIf="token.token === 'link'" style="display: inline-block; word-break: break-all; overflow-wrap: break-word;">
+                                    <div *ngIf="token.token === 'link'" style="display: inline-block; overflow-wrap: break-word;">
                                       <a [href]="token.word" target="_blank">{{ token.word }}</a>
                                     </div>
 
                                     <!-- Plain Text -->
-                                    <span *ngIf="!token.token" style="display: inline-block; word-break: break-all; overflow-wrap: break-word;">{{ token }}</span>
+                                    <span *ngIf="!token.token" style="display: inline-block; overflow-wrap: break-word;">{{ token }}</span>
                                   </div>
 
 
