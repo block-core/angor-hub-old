@@ -118,11 +118,7 @@
 
         <div class="mt-10 flex w-full max-w-140 m-auto flex-col items-start">
 
-            @for (item of posts; track $index) {
-                <app-post class="mb-8 flex w-full flex-col" [item]="item"></app-post>
-            }
-
-            @for (item of posts; track $index) {
+             @for (item of posts; track $index) {
                 <app-post class="mb-8 flex w-full flex-col" [item]="item"></app-post>
                 }
 
