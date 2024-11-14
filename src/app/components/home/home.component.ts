@@ -27,7 +27,6 @@ import { AngorConfirmationService } from '@angor/services/confirmation';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { PaginatedEventService } from 'app/services/event.service';
 import { ParseContentService } from 'app/services/parse-content.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
@@ -70,18 +69,9 @@ export class LandingHomeComponent implements OnInit, OnDestroy {
 
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
-        private _signerService: SignerService,
         private _storageService: StorageService,
         private _sanitizer: DomSanitizer,
-        private _route: ActivatedRoute,
-        private _router: Router,
-        private _socialService: SocialService,
-        private _snackBar: MatSnackBar,
-        private _dialog: MatDialog,
-        private _angorConfigService: AngorConfigService,
-        private _angorConfirmationService: AngorConfirmationService,
-        private _eventService: PaginatedEventService,
-        private _subscriptionService: SubscriptionService,
+
         private parseContent: ParseContentService
     ) {}
 
