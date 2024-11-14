@@ -29,7 +29,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { QRCodeModule } from 'angularx-qrcode';
-import { PaginatedEventService } from 'app/services/event.service';
+import { EventService } from 'app/services/event.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
 import { ContactEvent, StorageService } from 'app/services/storage.service';
@@ -152,7 +152,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _dialog: MatDialog,
         private _angorConfigService: AngorConfigService,
         private _angorConfirmationService: AngorConfirmationService,
-        private _eventService: PaginatedEventService,
+        private _eventService: EventService,
         private _subscriptionService: SubscriptionService,
         private _clipboard: Clipboard,
         private parseContent: ParseContentService
