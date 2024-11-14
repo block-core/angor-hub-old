@@ -19,7 +19,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
 import { SignerService } from 'app/services/signer.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -37,6 +37,7 @@ import { NostrLoginService } from 'app/services/nostr-login.service';
         MatIconModule,
         MatDividerModule,
         CommonModule,
+        RouterModule
     ],
 })
 export class UserComponent implements OnInit, OnDestroy {
