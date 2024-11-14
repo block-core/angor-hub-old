@@ -27,7 +27,6 @@ import { AngorConfirmationService } from '@angor/services/confirmation';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { PaginatedEventService } from 'app/services/event.service';
 import { ParseContentService } from 'app/services/parse-content.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
@@ -35,6 +34,7 @@ import { StorageService } from 'app/services/storage.service';
 import { SubscriptionService } from 'app/services/subscription.service';
 import { AgoPipe } from 'app/shared/pipes/ago.pipe';
 import { PostProfileComponent } from '../post-event/post-profile/post-profile.component';
+import { PostComponent } from 'app/layout/common/post/post.component';
 
 @Component({
     selector: 'help-center',
@@ -55,10 +55,7 @@ import { PostProfileComponent } from '../post-event/post-profile/post-profile.co
         MatTooltipModule,
         QRCodeModule,
         InfiniteScrollModule,
-        NgClass,
-        AngorCardComponent,
-        AgoPipe,
-        PostProfileComponent
+        PostComponent
     ],
 })
 export class LandingHomeComponent implements OnInit, OnDestroy {
@@ -72,18 +69,9 @@ export class LandingHomeComponent implements OnInit, OnDestroy {
 
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
-        private _signerService: SignerService,
         private _storageService: StorageService,
         private _sanitizer: DomSanitizer,
-        private _route: ActivatedRoute,
-        private _router: Router,
-        private _socialService: SocialService,
-        private _snackBar: MatSnackBar,
-        private _dialog: MatDialog,
-        private _angorConfigService: AngorConfigService,
-        private _angorConfirmationService: AngorConfirmationService,
-        private _eventService: PaginatedEventService,
-        private _subscriptionService: SubscriptionService,
+
         private parseContent: ParseContentService
     ) {}
 
@@ -105,8 +93,8 @@ export class LandingHomeComponent implements OnInit, OnDestroy {
                 );
 
                 if (additionalPosts.length > 0) {
-                    this.posts = [...this.posts, ...additionalPosts];
-                    this.posts.sort((a, b) => b.created_at - a.created_at);
+                    const posts = [...this.posts, ...additionalPosts].sort((a, b) => b.created_at - a.created_at);
+                    this.posts = posts;
                     break;
                 } else {
                     if (attemptCount < maxAttempts - 1) {

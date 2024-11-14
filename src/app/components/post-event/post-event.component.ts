@@ -19,7 +19,6 @@ import { FormsModule } from '@angular/forms';
 import { QRCodeModule } from 'angularx-qrcode';
 import { SafeUrlPipe } from 'app/shared/pipes/safe-url.pipe';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
-import { EventListComponent } from '../event-list/event-list.component';
 import { AgoPipe } from "../../shared/pipes/ago.pipe";
 import { ParseContentService } from 'app/services/parse-content.service';
 import { MatInputModule } from '@angular/material/input';

@@ -5,9 +5,20 @@
     >
         <!-- Background -->
         <!-- Rings -->
-        <svg class="absolute inset-0 pointer-events-none"
-             viewBox="0 0 960 540" width="100%" height="100%" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
-            <g class="text-gray-700 opacity-25" fill="none" stroke="currentColor" stroke-width="100">
+        <svg
+            class="pointer-events-none absolute inset-0"
+            viewBox="0 0 960 540"
+            width="100%"
+            height="100%"
+            preserveAspectRatio="xMidYMax slice"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <g
+                class="text-gray-700 opacity-25"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="100"
+            >
                 <circle r="234" cx="196" cy="23"></circle>
                 <circle r="234" cx="790" cy="491"></circle>
             </g>
@@ -22,7 +33,8 @@
             <div
                 class="text-secondary mt-3 text-center tracking-tight sm:text-2xl"
             >
-                Browse through real-time events, insights, and updates from projects you follow or bookmark.
+                Browse through real-time events, insights, and updates from
+                projects you follow or bookmark.
             </div>
             <mat-form-field
                 class="angor-mat-rounded angor-mat-bold mt-10 w-full max-w-80 sm:mt-20 sm:max-w-120"
@@ -41,259 +53,97 @@
     </div>
 
     <div class="flex flex-col items-center px-6 pb-6 sm:px-10 sm:pb-10">
-<!-- Cards -->
-<div
-    class="-mt-16 grid w-full max-w-sm grid-cols-1 gap-y-8 sm:-mt-24 md:max-w-4xl md:grid-cols-3 md:gap-x-6 md:gap-y-0"
->
-
-
-    <!-- All Events card -->
-    <div
-        class="bg-card relative flex flex-col overflow-hidden rounded-2xl shadow transition-shadow duration-150 ease-in-out hover:shadow-lg"
-    >
+        <!-- Cards -->
         <div
-            class="flex flex-auto flex-col items-center p-8 text-center"
+            class="-mt-16 grid w-full max-w-sm grid-cols-1 gap-y-8 sm:-mt-24 md:max-w-4xl md:grid-cols-3 md:gap-x-6 md:gap-y-0"
         >
-            <div class="text-2xl font-semibold">Latest Posts</div>
-
+            <!-- All Events card -->
+            <div
+                class="bg-card relative flex flex-col overflow-hidden rounded-2xl shadow transition-shadow duration-150 ease-in-out hover:shadow-lg"
+            >
+                <div
+                    class="flex flex-auto flex-col items-center p-8 text-center"
+                >
+                    <div class="text-2xl font-semibold">Latest Posts</div>
+                </div>
+                <div
+                    class="flex items-center justify-center bg-gray-50 px-8 py-4 text-primary-500 dark:border-t dark:bg-transparent dark:text-primary-400"
+                >
+                    <span role="button" class="flex items-center">
+                        <span class="absolute inset-0"></span>
+                        <span class="font-medium">View Latest Posts</span>
+                    </span>
+                </div>
+            </div>
+            <!-- Followed Projects Events card -->
+            <div
+                class="bg-card relative flex flex-col overflow-hidden rounded-2xl shadow transition-shadow duration-150 ease-in-out hover:shadow-lg"
+            >
+                <div
+                    class="flex flex-auto flex-col items-center p-8 text-center"
+                >
+                    <div class="text-2xl font-semibold">Followed Projects</div>
+                </div>
+                <div
+                    class="flex items-center justify-center bg-gray-50 px-8 py-4 text-primary-500 dark:border-t dark:bg-transparent dark:text-primary-400"
+                >
+                    <span role="button" class="flex items-center">
+                        <span class="absolute inset-0"></span>
+                        <span class="font-medium">View Followed Projects</span>
+                    </span>
+                </div>
+            </div>
+            <!-- Bookmarked Projects Events card -->
+            <div
+                class="bg-card relative flex flex-col overflow-hidden rounded-2xl shadow transition-shadow duration-150 ease-in-out hover:shadow-lg"
+            >
+                <div
+                    class="flex flex-auto flex-col items-center p-8 text-center"
+                >
+                    <div class="text-2xl font-semibold">
+                        Bookmarked Projects
+                    </div>
+                </div>
+                <div
+                    class="flex items-center justify-center bg-gray-50 px-8 py-4 text-primary-500 dark:border-t dark:bg-transparent dark:text-primary-400"
+                >
+                    <span role="button" class="flex items-center">
+                        <span class="absolute inset-0"></span>
+                        <span class="font-medium"
+                            >View Bookmarked Projects</span
+                        >
+                    </span>
+                </div>
+            </div>
         </div>
-        <div
-            class="flex items-center justify-center bg-gray-50 px-8 py-4 text-primary-500 dark:border-t dark:bg-transparent dark:text-primary-400"
-        >
-            <span role="button" class="flex items-center">
-                <span class="absolute inset-0"></span>
-                <span class="font-medium">View Latest Posts</span>
 
-            </span>
-        </div>
-    </div>
-    <!-- Followed Projects Events card -->
-    <div
-        class="bg-card relative flex flex-col overflow-hidden rounded-2xl shadow transition-shadow duration-150 ease-in-out hover:shadow-lg"
-    >
-        <div
-            class="flex flex-auto flex-col items-center p-8 text-center"
-        >
-            <div class="text-2xl font-semibold">Followed Projects</div>
-
-        </div>
-        <div
-            class="flex items-center justify-center bg-gray-50 px-8 py-4 text-primary-500 dark:border-t dark:bg-transparent dark:text-primary-400"
-        >
-            <span role="button" class="flex items-center">
-                <span class="absolute inset-0"></span>
-                <span class="font-medium">View Followed Projects</span>
-
-            </span>
-        </div>
-    </div>
-    <!-- Bookmarked Projects Events card -->
-    <div
-        class="bg-card relative flex flex-col overflow-hidden rounded-2xl shadow transition-shadow duration-150 ease-in-out hover:shadow-lg"
-    >
-        <div
-            class="flex flex-auto flex-col items-center p-8 text-center"
-        >
-            <div class="text-2xl font-semibold">Bookmarked Projects</div>
-
-        </div>
-        <div
-            class="flex items-center justify-center bg-gray-50 px-8 py-4 text-primary-500 dark:border-t dark:bg-transparent dark:text-primary-400"
-        >
-            <span role="button" class="flex items-center">
-                <span class="absolute inset-0"></span>
-                <span class="font-medium">View Bookmarked Projects</span>
-            </span>
-        </div>
-    </div>
-</div>
-
-
-         <!-- <div class="mt-12 text-center text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+        <!-- <div class="mt-12 text-center text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
             Latest Posts
         </div>
         <div class="text-secondary mt-2 text-center text-lg">
             Explore updates, milestones, and activities from projects you follow and bookmark
         </div> -->
 
-        <div class="mt-10 flex w-full max-w-140 m-auto flex-col items-start">
-
+        <div class="m-auto mt-10 flex w-full max-w-140 flex-col items-start">
             @for (item of posts; track $index) {
-                <!-- Post -->
-                <angor-card class="mb-8 flex w-full flex-col" #expandableCard02="angorCard">
-                    <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-                        <app-post-profile
-                        [pubkey]="item?.pubkey"
-                        [avatarUrl]="'/images/avatars/avatar-placeholder.png'"
-                        [created_at]="item.created_at"
+                <app-post
+                    class="mb-8 flex w-full flex-col"
+                    [item]="item"
+                ></app-post>
+            }
 
-                      ></app-post-profile>
-
-
-                        <button class="-mr-4 ml-auto" mat-icon-button [matMenuTriggerFor]="postCardMenu02">
-                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
-                        </button>
-                        <mat-menu #postCardMenu02="matMenu">
-                            <button mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
-                                                'heroicons_solid:arrow-up-tray'
-                                            "></mat-icon>
-                                    <span>Save post</span>
-                                </span>
-                            </button>
-                            <button mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_solid:eye-slash'"></mat-icon>
-                                    <span>Hide post</span>
-                                </span>
-                            </button>
-                            <button mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_solid:clock'"></mat-icon>
-                                    <span>Snooze for 30 days</span>
-                                </span>
-                            </button>
-                            <button mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
-                                                'heroicons_solid:minus-circle'
-                                            "></mat-icon>
-                                    <span>Hide all</span>
-                                </span>
-                            </button>
-                            <mat-divider class="my-2"></mat-divider>
-                            <button mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
-                                                'heroicons_solid:exclamation-triangle'
-                                            "></mat-icon>
-                                    <span>Report post</span>
-                                </span>
-                            </button>
-                            <button mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
-                                    <span>Turn on notifications for this
-                                        post</span>
-                                </span>
-                            </button>
-                        </mat-menu>
-                    </div>
-
-                    <div *ngFor="
-                            let token of parseContent.parseContent(item.content);
-                            trackBy: trackByFn
-                        " class="inline-block break-words whitespace-pre-wrap">
-
-                        <!-- YouTube Embeds -->
-                        <ng-container *ngIf="token.token === 'youtube'">
-                            <div class="relative mb-4 block">
-                                <iframe [src]="token.safeWord" width="560" height="315" frameborder="0"
-                                    allowfullscreen></iframe>
-                            </div>
-                        </ng-container>
-
-                        <!-- Images -->
-                        <ng-container *ngIf="token.token === 'image'">
-                            <div class="relative mb-4 block">
-                                <img [src]="token.safeWord" alt="Embedded Image" style="width: 100%"
-                                    class="max-h-140 object-cover" />
-                            </div>
-                        </ng-container>
-
-                        <!-- Videos -->
-                        <ng-container *ngIf="token.token === 'video'">
-                            <div class="relative mb-4 block">
-                                <video controls style="width: 100%">
-                                    <source [src]="token.safeWord" type="video/mp4" />
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                        </ng-container>
-
-                        <!-- Audio -->
-                        <ng-container *ngIf="token.token === 'audio'">
-                            <div class="relative mb-4 block">
-                                <audio controls>
-                                    <source [src]="token.safeWord" type="audio/mpeg" />
-                                    Your browser does not support the audio
-                                    element.
-                                </audio>
-                            </div>
-                        </ng-container>
-
-                        <!-- Links -->
-                        <ng-container *ngIf="token.token === 'link'">
-                            <div class="mx-6 mb-6 mt-2 sm:mx-8">
-                                <a class="inline-block break-words break-all text-blue-500 underline" [href]="token.word"
-                                    target="_blank">
-                                    <span class="inline-block break-words break-all">{{
-                                        token.word
-                                        }}</span>
-                                </a>
-                            </div>
-                        </ng-container>
-
-
-                        <!-- Plain Text -->
-                        <ng-container *ngIf="!token.token">
-                            <div class="mx-6 mb-6 mt-2 sm:mx-8">
-                                <span class="inline-block break-words break-all"
-                                    [ngClass]="{'large-font': isSingleEmojiOrWord(token)}">
-                                    {{ token.trim() }}
-                                </span>
-                            </div>
-                        </ng-container>
-                    </div>
-
-
-                    <div class="mx-3 flex items-center sm:mx-5">
-                        <button class="mr-1 px-3" mat-button>
-                            <mat-icon class="text-red-500 icon-size-5" [svgIcon]="'heroicons_solid:heart'"></mat-icon>
-                            <span class="ml-2">Unlike</span>
-                        </button>
-                        <button class="mr-1 px-3" mat-button>
-                            <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="
-                                    'heroicons_solid:chat-bubble-left-ellipsis'
-                                "></mat-icon>
-                            <span class="ml-2">Comment</span>
-                        </button>
-                        <button class="mr-1 px-3" mat-button>
-                            <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:share'"></mat-icon>
-                            <span class="ml-2">Share</span>
-                        </button>
-                        <button class="mr-1 px-3" mat-button (click)="openZapDialog(item.id)">
-                            <mat-icon class="text-orange-500 icon-size-5" [svgIcon]="'heroicons_solid:bolt'"></mat-icon>
-                            <span class="ml-2">Zap</span>
-                        </button>
-                    </div>
-                    <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
-                    <div class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center">
-
-                        <div class="hidden flex-auto sm:flex"></div>
-                        <div class="mt-4 flex items-center sm:mt-0">
-
-                            <button
-                            class="px-3 sm:-mr-4"
-                            mat-button
-                            (click)="openPost(item.id)"
-                        >
-                            <span class="mr-1">Read More ...</span>
-                        </button>
-                        </div>
-                    </div>
-                </angor-card>
-                }
-
-                <div *ngIf="hasMorePosts" class="mt-4 m-auto flex justify-center">
-                    <button mat-raised-button color="primary" (click)="loadNextPage()" [disabled]="loading">
+            @if (hasMorePosts) {
+                <div class="m-auto mt-4 flex justify-center">
+                    <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="loadNextPage()"
+                        [disabled]="loading"
+                    >
                         {{ loading ? 'Loading...' : 'Load More Posts' }}
                     </button>
                 </div>
-
-
+            }
         </div>
-
     </div>
 </div>

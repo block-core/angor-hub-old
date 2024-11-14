@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { StorageService } from 'app/services/storage.service';
 import { CommonModule } from '@angular/common';
@@ -15,6 +15,7 @@ export class PostProfileComponent implements OnInit, OnDestroy {
   @Input() pubkey!: string;
   @Input() avatarUrl?: string;
   @Input() created_at?: string;
+  @Output() userChange = new EventEmitter<any>();
 
   user: any;
   private subscription!: Subscription;
@@ -29,6 +30,7 @@ export class PostProfileComponent implements OnInit, OnDestroy {
     this.subscription = this._storageService.profile$.subscribe((data) => {
       if (data && data.pubKey === this.pubkey) {
         this.user = data.metadata;
+        this.userChange.emit(this.user);
         this._changeDetectorRef.detectChanges();
       }
     });
@@ -37,6 +39,7 @@ export class PostProfileComponent implements OnInit, OnDestroy {
   private async loadUserProfile(): Promise<void> {
     const metadata = await this._storageService.getProfile(this.pubkey);
     this.user = metadata || {};
+    this.userChange.emit(this.user);
     this._changeDetectorRef.detectChanges();
   }
 

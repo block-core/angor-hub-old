@@ -29,7 +29,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { QRCodeModule } from 'angularx-qrcode';
-import { PaginatedEventService } from 'app/services/event.service';
+import { EventService } from 'app/services/event.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
 import { ContactEvent, StorageService } from 'app/services/storage.service';
@@ -46,6 +46,7 @@ import { AgoPipe } from 'app/shared/pipes/ago.pipe';
 import { ZapDialogComponent } from 'app/shared/zap-dialog/zap-dialog.component';
 import { ZapDialogData } from 'app/services/interfaces';
 import { Contacts } from 'nostr-tools/kinds';
+import { PostComponent } from 'app/layout/common/post/post.component';
 interface Chip {
     color?: string;
     selected?: string;
@@ -82,6 +83,7 @@ interface Chip {
         MatExpansionModule,
         MatSidenavModule,
         AgoPipe,
+        PostComponent
     ],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
@@ -150,7 +152,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _dialog: MatDialog,
         private _angorConfigService: AngorConfigService,
         private _angorConfirmationService: AngorConfirmationService,
-        private _eventService: PaginatedEventService,
+        private _eventService: EventService,
         private _subscriptionService: SubscriptionService,
         private _clipboard: Clipboard,
         private parseContent: ParseContentService
