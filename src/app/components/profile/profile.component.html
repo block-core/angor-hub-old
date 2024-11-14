@@ -664,19 +664,24 @@
             </angor-card>
 
             @for (item of posts; track $index) {
-                <app-post class="mb-8 flex w-full flex-col" [item]="item"></app-post>
+                <app-post
+                    class="mb-8 flex w-full flex-col"
+                    [item]="item"
+                ></app-post>
             }
 
-            <div *ngIf="hasMorePosts" class="m-auto mt-4 flex justify-center">
-                <button
-                    mat-raised-button
-                    color="primary"
-                    (click)="loadNextPage()"
-                    [disabled]="loading"
-                >
-                    {{ loading ? 'Loading...' : 'Load More Posts' }}
-                </button>
-            </div>
+            @if (hasMorePosts) {
+                <div class="m-auto mt-4 flex justify-center">
+                    <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="loadNextPage()"
+                        [disabled]="loading"
+                    >
+                        {{ loading ? 'Loading...' : 'Load More Posts' }}
+                    </button>
+                </div>
+            }
         </div>
     </div>
 </div>
