@@ -57,10 +57,6 @@ export class ModernLayoutComponent implements OnInit, OnDestroy {
         private _angorNavigationService: AngorNavigationService
     ) {}
 
-    get currentYear(): number {
-        return new Date().getFullYear();
-    }
-
     ngOnInit(): void {
         this._navigationService.navigation$
             .pipe(takeUntil(this._unsubscribeAll))
