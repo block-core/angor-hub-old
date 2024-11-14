@@ -30,6 +30,7 @@ import { ContactInfoComponent } from '../chat/contact-info/contact-info.componen
 import { Filter, NostrEvent } from 'nostr-tools';
 import { ReplayProfileComponent } from './replay-profile/replay-profile.component';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { PostComponent } from 'app/layout/common/post/post.component';
 
 
 
@@ -62,6 +63,7 @@ export interface PostReaction {
         AgoPipe,
         MatProgressSpinnerModule,
         ReplayProfileComponent,
+        PostComponent
 
     ],
     templateUrl: './post-event.component.html',
@@ -117,6 +119,9 @@ export class PostEventComponent implements OnInit, OnDestroy {
     }
 
     async loadPost(postId: string): Promise<void> {
+
+        console.log('LOAD POST', postId);
+
         try {
             this.loading = true;
             this.post = await this._storageService.getPostById(postId);

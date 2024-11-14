@@ -1,171 +1,160 @@
 <!-- @if (item) { -->
-    <angor-card class="flex w-full flex-col" #expandableCard02="angorCard">
-        <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-            <app-post-profile
-                [pubkey]="item?.pubkey"
-                [avatarUrl]="'/images/avatars/avatar-placeholder.png'"
-                [created_at]="item.created_at"
-                (userChange)="user = $event"
-            ></app-post-profile>
+<angor-card class="flex w-full flex-col" #expandableCard02="angorCard">
+    <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
+        <app-post-profile
+            [pubkey]="item?.pubkey"
+            [avatarUrl]="'/images/avatars/avatar-placeholder.png'"
+            [created_at]="item.created_at"
+            (userChange)="user = $event"
+        ></app-post-profile>
 
-            <button
-                class="-mr-4 ml-auto"
-                mat-icon-button
-                [matMenuTriggerFor]="postCardMenu02"
-            >
-                <mat-icon
-                    class="icon-size-5"
-                    [svgIcon]="'heroicons_solid:ellipsis-vertical'"
-                ></mat-icon>
+        <button
+            class="-mr-4 ml-auto"
+            mat-icon-button
+            [matMenuTriggerFor]="postCardMenu02"
+        >
+            <mat-icon
+                class="icon-size-5"
+                [svgIcon]="'heroicons_solid:ellipsis-vertical'"
+            ></mat-icon>
+        </button>
+        <mat-menu #postCardMenu02="matMenu">
+            <button mat-menu-item>
+                <span class="flex items-center">
+                    <mat-icon
+                        class="mr-3 icon-size-5"
+                        [svgIcon]="'heroicons_solid:arrow-up-tray'"
+                    ></mat-icon>
+                    <span>Save post</span>
+                </span>
             </button>
-            <mat-menu #postCardMenu02="matMenu">
-                <button mat-menu-item>
-                    <span class="flex items-center">
-                        <mat-icon
-                            class="mr-3 icon-size-5"
-                            [svgIcon]="'heroicons_solid:arrow-up-tray'"
-                        ></mat-icon>
-                        <span>Save post</span>
-                    </span>
-                </button>
-                <button mat-menu-item>
-                    <span class="flex items-center">
-                        <mat-icon
-                            class="mr-3 icon-size-5"
-                            [svgIcon]="'heroicons_solid:eye-slash'"
-                        ></mat-icon>
-                        <span>Hide post</span>
-                    </span>
-                </button>
-                <button mat-menu-item>
-                    <span class="flex items-center">
-                        <mat-icon
-                            class="mr-3 icon-size-5"
-                            [svgIcon]="'heroicons_solid:clock'"
-                        ></mat-icon>
-                        <span>Snooze for 30 days</span>
-                    </span>
-                </button>
-                <button mat-menu-item>
-                    <span class="flex items-center">
-                        <mat-icon
-                            class="mr-3 icon-size-5"
-                            [svgIcon]="'heroicons_solid:minus-circle'"
-                        ></mat-icon>
-                        <span>Hide all</span>
-                    </span>
-                </button>
-                <mat-divider class="my-2"></mat-divider>
-                <button mat-menu-item>
-                    <span class="flex items-center">
-                        <mat-icon
-                            class="mr-3 icon-size-5"
-                            [svgIcon]="'heroicons_solid:exclamation-triangle'"
-                        ></mat-icon>
-                        <span>Report post</span>
-                    </span>
-                </button>
-                <button mat-menu-item>
-                    <span class="flex items-center">
-                        <mat-icon
-                            class="mr-3 icon-size-5"
-                            [svgIcon]="'heroicons_solid:bell'"
-                        ></mat-icon>
-                        <span>Turn on notifications for this post</span>
-                    </span>
-                </button>
-            </mat-menu>
-        </div>
+            <button mat-menu-item>
+                <span class="flex items-center">
+                    <mat-icon
+                        class="mr-3 icon-size-5"
+                        [svgIcon]="'heroicons_solid:eye-slash'"
+                    ></mat-icon>
+                    <span>Hide post</span>
+                </span>
+            </button>
+            <button mat-menu-item>
+                <span class="flex items-center">
+                    <mat-icon
+                        class="mr-3 icon-size-5"
+                        [svgIcon]="'heroicons_solid:clock'"
+                    ></mat-icon>
+                    <span>Snooze for 30 days</span>
+                </span>
+            </button>
+            <button mat-menu-item>
+                <span class="flex items-center">
+                    <mat-icon
+                        class="mr-3 icon-size-5"
+                        [svgIcon]="'heroicons_solid:minus-circle'"
+                    ></mat-icon>
+                    <span>Hide all</span>
+                </span>
+            </button>
+            <mat-divider class="my-2"></mat-divider>
+            <button mat-menu-item>
+                <span class="flex items-center">
+                    <mat-icon
+                        class="mr-3 icon-size-5"
+                        [svgIcon]="'heroicons_solid:exclamation-triangle'"
+                    ></mat-icon>
+                    <span>Report post</span>
+                </span>
+            </button>
+            <button mat-menu-item>
+                <span class="flex items-center">
+                    <mat-icon
+                        class="mr-3 icon-size-5"
+                        [svgIcon]="'heroicons_solid:bell'"
+                    ></mat-icon>
+                    <span>Turn on notifications for this post</span>
+                </span>
+            </button>
+        </mat-menu>
+    </div>
 
-        @if (item.content) {
-            @for (
-                token of parseContent.parseContent(item.content);
-                track trackByFn
-            ) {
-                <div class="inline-block whitespace-pre-wrap break-words">
-                    <!-- YouTube Embeds -->
-                    @if (token.token === 'youtube') {
-                        <div class="relative mb-4 block">
-                            <iframe
-                                [src]="token.safeWord"
-                                width="560"
-                                height="315"
-                                frameborder="0"
-                                allowfullscreen
-                            ></iframe>
-                        </div>
-                    }
-
-                    <!-- Images -->
-                    @if (token.token === 'image') {
-                        <div class="relative mb-4 block">
-                            <img
-                                [src]="token.safeWord"
-                                alt="Embedded Image"
-                                style="width: 100%"
-                                class="max-h-140 object-cover"
-                            />
-                        </div>
-                    }
-
-                    <!-- Videos -->
-                    @if (token.token === 'video') {
-                        <div class="relative mb-4 block">
-                            <video controls style="width: 100%">
-                                <source
-                                    [src]="token.safeWord"
-                                    type="video/mp4"
-                                />
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
-                    }
-
-                    <!-- Audio -->
-                    @if (token.token === 'audio') {
-                        <div class="relative mb-4 block">
-                            <audio controls>
-                                <source
-                                    [src]="token.safeWord"
-                                    type="audio/mpeg"
-                                />
-                                Your browser does not support the audio element.
-                            </audio>
-                        </div>
-                    }
-
-                    <!-- Links -->
-                    @if (token.token === 'link') {
-                        <div class="mx-6 mb-6 mt-2 sm:mx-8">
-                            <a
-                                class="inline-block break-words text-blue-500 underline"
-                                [href]="token.word"
-                                target="_blank"
-                            >
-                                <span
-                                    class="inline-block break-words"
-                                    >{{ token.word }}</span
-                                >
-                            </a>
-                        </div>
-                    }
-
-                    <!-- Plain Text -->
-                    @if (!token.token) {
-                        <div class="mx-6 mb-6 mt-2 sm:mx-8">
-                            <span
-                                class="inline-block break-words"
-                                [ngClass]="{
-                                    'large-font': isSingleEmojiOrWord(token),
-                                }"
-                            >{{ token.trim() }}
-                            </span>
-                        </div>
-                    }
+    @for (token of tokens(); track token) {
+        <div class="inline-block whitespace-pre-wrap break-words">
+            <!-- YouTube Embeds -->
+            @if (token.token === 'youtube') {
+                <div class="relative mb-4 block">
+                    <iframe
+                        [src]="token.safeWord"
+                        width="560"
+                        height="315"
+                        frameborder="0"
+                        allowfullscreen
+                    ></iframe>
                 </div>
             }
-        }
 
+            <!-- Images -->
+            @if (token.token === 'image') {
+                <div class="relative mb-4 block">
+                    <img
+                        [src]="token.safeWord"
+                        alt="Embedded Image"
+                        style="width: 100%"
+                        class="max-h-140 object-cover"
+                    />
+                </div>
+            }
+
+            <!-- Videos -->
+            @if (token.token === 'video') {
+                <div class="relative mb-4 block">
+                    <video controls style="width: 100%">
+                        <source [src]="token.safeWord" type="video/mp4" />
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            }
+
+            <!-- Audio -->
+            @if (token.token === 'audio') {
+                <div class="relative mb-4 block">
+                    <audio controls>
+                        <source [src]="token.safeWord" type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            }
+
+            <!-- Links -->
+            @if (token.token === 'link') {
+                <div class="mx-6 mb-6 mt-2 sm:mx-8">
+                    <a
+                        class="inline-block break-words text-blue-500 underline"
+                        [href]="token.word"
+                        target="_blank"
+                    >
+                        <span class="inline-block break-words">{{
+                            token.word
+                        }}</span>
+                    </a>
+                </div>
+            }
+
+            <!-- Plain Text -->
+            @if (!token.token) {
+                <div class="mx-6 mb-6 mt-2 sm:mx-8">
+                    <span
+                        class="inline-block break-words"
+                        [ngClass]="{
+                            'large-font': isSingleEmojiOrWord(token),
+                        }"
+                        >{{ token.trim() }}
+                    </span>
+                </div>
+            }
+        </div>
+    }
+
+    @if (actions) {
         <div class="mx-3 flex items-center sm:mx-5">
             <button class="mr-1 px-3" mat-button>
                 <mat-icon
@@ -200,6 +189,8 @@
                 <span class="ml-2">Zap</span>
             </button>
         </div>
+    }
+    @if (more) {
         <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
         <div
             class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center"
@@ -215,7 +206,8 @@
                 </button>
             </div>
         </div>
-    </angor-card>
+    }
+</angor-card>
 <!-- } @else {
     Loading....
 } -->

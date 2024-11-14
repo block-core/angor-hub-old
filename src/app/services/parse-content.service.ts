@@ -9,7 +9,7 @@ interface MediaExtensions {
     readonly audio: readonly string[];
 }
 
-interface ParsedToken {
+export interface ParsedToken {
     safeWord?: string | SafeResourceUrl;
     word: string;
     token: TokenType;
