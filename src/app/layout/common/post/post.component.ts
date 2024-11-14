@@ -1,6 +1,7 @@
 import { AngorCardComponent } from '@angor/components/card';
 import { CommonModule } from '@angular/common';
 import { Component, inject, Input, Output, EventEmitter } from '@angular/core';
+import { MatButton } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -20,7 +21,8 @@ import { ZapService } from 'app/services/zap.service';
         MatDividerModule,
         MatMenuModule,
         RouterModule,
-        CommonModule
+        CommonModule,
+        MatButton
     ],
     templateUrl: './post.component.html',
     styleUrl: './post.component.scss',

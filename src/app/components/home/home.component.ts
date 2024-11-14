@@ -56,10 +56,6 @@ import { PostComponent } from 'app/layout/common/post/post.component';
         MatTooltipModule,
         QRCodeModule,
         InfiniteScrollModule,
-        NgClass,
-        AngorCardComponent,
-        AgoPipe,
-        PostProfileComponent,
         PostComponent
     ],
 })
