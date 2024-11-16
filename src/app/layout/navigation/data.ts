@@ -30,7 +30,7 @@ export const defaultNavigation: AngorNavigationItem[] = [
         icon: 'heroicons_outline:chat-bubble-left-right',
         link: '/chat',
         badge: {
-            title: '27',
+            title: '0',
             classes: 'px-2 bg-[#086c81] text-white rounded-full',
         },
     },

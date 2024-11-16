@@ -120,9 +120,6 @@ export class PostComponent  implements OnInit, OnDestroy {
     }
 
     private onItemChange() {
-        // Function to call when item is set
-        console.log('Item has been changed:', this._item);
-
         if (this._item.content) {
             this.tokens.set(this.parseContent.parseContent(this._item.content));
         } else {
