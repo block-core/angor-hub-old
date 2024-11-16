@@ -18,13 +18,14 @@ export class StateService {
     public async loadUserProfile(pubkey: string): Promise<void> {
 
         if (this.isProfileLoaded) {
-             return;
+            return;
         }
 
         await this.subscribeToUserProfile(pubkey);
         await this.subscribeToUserContacts(pubkey);
         await this.subscribeToUserChats(pubkey);
         await this.subscribeToUserPosts(pubkey);
+        await this.subscribeToMyLikes(pubkey);
 
         this.isProfileLoaded = true;
     }
@@ -141,6 +142,27 @@ export class StateService {
             (tag) => tag[0] === 'e' || tag[0] === 'p'
         );
         return replyTags.length > 0;
+    }
+
+
+    // Subscription for Likes (Event Type 7)
+    private async subscribeToMyLikes(pubkey: string): Promise<void> {
+
+
+        const likesLastUpdate = await this.storageService.getLastUpdateDate('myLikes');
+        const likeFilter: Filter = {
+            kinds: [7],
+            authors: [pubkey],
+        };
+
+        if (likesLastUpdate) {
+            likeFilter.since = parseInt(likesLastUpdate, 10);
+        }
+
+        this.subscriptionService.addSubscriptions([likeFilter], (event: NostrEvent) => {
+            console.log(event);
+            this.storageService.saveLike(event);
+        });
     }
     // ------------------- Parsing Events -------------------
 
