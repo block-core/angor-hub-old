@@ -1,5 +1,5 @@
 <!-- @if (item) { -->
-<angor-card class="flex w-full flex-col" #expandableCard02="angorCard">
+<angor-card class="flex w-full flex-col">
     <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
         <app-post-profile
             [pubkey]="item?.pubkey"
@@ -11,14 +11,14 @@
         <button
             class="-mr-4 ml-auto"
             mat-icon-button
-            [matMenuTriggerFor]="postCardMenu02"
+            [matMenuTriggerFor]="postCardMenu"
         >
             <mat-icon
                 class="icon-size-5"
                 [svgIcon]="'heroicons_solid:ellipsis-vertical'"
             ></mat-icon>
         </button>
-        <mat-menu #postCardMenu02="matMenu">
+        <mat-menu #postCardMenu="matMenu">
             <button mat-menu-item>
                 <span class="flex items-center">
                     <mat-icon
@@ -156,13 +156,18 @@
 
     @if (actions) {
         <div class="mx-3 flex items-center sm:mx-5">
-            <button class="mr-1 px-3" mat-button>
-                <mat-icon
-                    class="text-red-500 icon-size-5"
-                    [svgIcon]="'heroicons_solid:heart'"
-                ></mat-icon>
-                <span class="ml-2">Unlike</span>
+
+            <button class="mr-1 px-3" mat-button (click)="toggleLike(item)">
+                <mat-icon class="text-red-500 icon-size-5" [ngClass]="{ 'heart-beat': isLiked }"
+                    [svgIcon]="
+                    isLiked
+                            ? 'heroicons_solid:heart'
+                            : 'heroicons_outline:heart'
+                    ">
+                </mat-icon>
+                <span class="ml-2">{{ isLiked ?'Liked':'Like' }} </span>
             </button>
+
             <button class="mr-1 px-3" mat-button>
                 <mat-icon
                     class="text-blue-500 icon-size-5"

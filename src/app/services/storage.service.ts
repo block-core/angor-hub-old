@@ -547,13 +547,20 @@ export class StorageService {
         }
     }
 
-    async getAllMyLikes(): Promise<any[]> {
+    async getAllMyLikes(): Promise<string[]> {
         try {
-            const likes: any[] = [];
+            const eventIds: string[] = [];
             await this.myLikesStore.iterate<any, void>((value) => {
-                likes.push(value);
+                try {
+                    const tag = value.tags.find((t: string[]) => t[0] === "e");
+                    if (tag) {
+                        eventIds.push(tag[1]);
+                    }
+                } catch (error) {
+                    console.warn('Error parsing like:', value, error);
+                }
             });
-            return likes;
+            return eventIds;
         } catch (error) {
             console.error('Error retrieving all likes:', error);
             return [];
