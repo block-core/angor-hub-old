@@ -1,11 +1,10 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule, DatePipe } from '@angular/common';
-import { Subscription, BehaviorSubject, Subject, from } from 'rxjs';
-import { concatMap, delay, takeUntil } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Subscription, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { StorageService } from 'app/services/storage.service';
 import { SubscriptionService } from 'app/services/subscription.service';
-import { MetadataService } from 'app/services/metadata.service';
 import { AngorCardComponent } from '@angor/components/card';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,21 +16,18 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
 import { QRCodeModule } from 'angularx-qrcode';
-import { SafeUrlPipe } from 'app/shared/pipes/safe-url.pipe';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { AgoPipe } from "../../shared/pipes/ago.pipe";
 import { ParseContentService } from 'app/services/parse-content.service';
 import { MatInputModule } from '@angular/material/input';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { PickerComponent } from '@ctrl/ngx-emoji-mart';
-import { ContactInfoComponent } from '../chat/contact-info/contact-info.component';
 import { Filter, NostrEvent } from 'nostr-tools';
 import { ReplayProfileComponent } from './replay-profile/replay-profile.component';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { PostComponent } from 'app/layout/common/post/post.component';
-
+import { NewEvent } from 'app/types/NewEvent';
+import { EventService } from 'app/services/event.service';
 
 
 export interface PostReaction {
@@ -72,27 +68,27 @@ export interface PostReaction {
 export class PostEventComponent implements OnInit, OnDestroy {
     postId: string | null = null;
     post: any = null;
-    user:any = null;
+    user: any = null;
     loading = true;
     loadingReactions = true;
     private _unsubscribeAll: Subject<void> = new Subject<void>();
+    private subscription: Subscription = new Subscription();
 
     likes: PostReaction[] = [];
     reposts: PostReaction[] = [];
     zaps: PostReaction[] = [];
     replies: PostReaction[] = [];
     subscriptionId: string;
-
+    isLiked = false;
     constructor(
         private _route: ActivatedRoute,
         private _router: Router,
         private _storageService: StorageService,
-        private subscriptionService: SubscriptionService,
-        private metadataQueueService: MetadataService,
+        private _subscriptionService: SubscriptionService,
         private _changeDetectorRef: ChangeDetectorRef,
         public parseContent: ParseContentService,
         private _sanitizer: DomSanitizer,
-
+        private _eventService: EventService
     ) { }
 
     ngOnInit(): void {
@@ -104,6 +100,14 @@ export class PostEventComponent implements OnInit, OnDestroy {
             }
         });
 
+        this.subscription = this._storageService.myLikes$.subscribe((likes: string[]) => {
+            if (likes && likes.includes(this.postId)) {
+                this.isLiked = true;
+                this._changeDetectorRef.detectChanges();
+            } else {
+                this.isLiked = false;
+            }
+        });
     }
 
 
@@ -157,18 +161,18 @@ export class PostEventComponent implements OnInit, OnDestroy {
         }, 3000);
 
         const filter: Filter[] = [
-            { '#e': [postId], kinds: [1,7,9735,6] }
+            { '#e': [postId], kinds: [1, 7, 9735, 6] }
         ];
 
-        this.subscriptionId = this.subscriptionService.addSubscriptions(filter, async (event: NostrEvent) => {
+        this.subscriptionId = this._subscriptionService.addSubscriptions(filter, async (event: NostrEvent) => {
             if (this.loadingReactions) {
                 this.loadingReactions = false;
                 clearTimeout(loadingTimeout);
             }
 
-             const reaction: PostReaction = {
+            const reaction: PostReaction = {
                 pubkey: event.pubkey,
-                 created_at: event.created_at,
+                created_at: event.created_at,
                 content: event.kind === 1 ? event.content : undefined
             };
 
@@ -182,7 +186,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
         switch (kind) {
             case 1:
                 this.replies.push(reaction);
-                 this.replies.sort((a, b) => b.created_at - a.created_at);
+                this.replies.sort((a, b) => b.created_at - a.created_at);
                 break;
             case 7:
                 this.likes.push(reaction);
@@ -204,10 +208,26 @@ export class PostEventComponent implements OnInit, OnDestroy {
         return isSingleWord || isSingleEmoji;
     }
 
+    sendLike(event: NewEvent): void {
+        if (!this.isLiked) {
+          this._eventService.sendLikeEvent(event).then(() => {
+             this.isLiked = true;
+             this._changeDetectorRef.detectChanges();
+          }).catch(error => console.error('Failed to send like:', error));
+        }
+      }
+
+      toggleLike(event: NewEvent): void {
+        this.sendLike(event);
+      }
+
     ngOnDestroy(): void {
 
         if (this.subscriptionId) {
-            this.subscriptionService.removeSubscriptionById(this.subscriptionId);
+            this._subscriptionService.removeSubscriptionById(this.subscriptionId);
+        }
+        if (this.subscription) {
+            this.subscription.unsubscribe();
         }
         this._unsubscribeAll.next();
         this._unsubscribeAll.complete();

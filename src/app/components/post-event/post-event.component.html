@@ -13,9 +13,15 @@
 
                 <angor-card class="mb-8 mt-1 flex w-full flex-col pt-4" #expandableReplay="angorCard">
                     <div class="mx-3 flex items-center sm:mx-5">
-                        <button class="mr-1 px-3" mat-button>
-                            <mat-icon class="text-red-500 icon-size-5" [svgIcon]="'heroicons_solid:heart'"></mat-icon>
-                            <span class="ml-2">Unlike</span>
+                        <button class="mr-1 px-3" mat-button (click)="toggleLike(post)">
+                            <mat-icon class="text-red-500 icon-size-5" [ngClass]="{ 'heart-beat': isLiked }"
+                                [svgIcon]="
+                                isLiked
+                                        ? 'heroicons_solid:heart'
+                                        : 'heroicons_outline:heart'
+                                ">
+                            </mat-icon>
+                            <span class="ml-2">{{ isLiked ?'Liked':'Like' }} </span>
                         </button>
                         <button class="mr-1 px-3" mat-button (click)="
                         expandableReplay.expanded =
