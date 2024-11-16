@@ -85,6 +85,7 @@ export class PostComponent  implements OnInit, OnDestroy {
         this.subscription = this.storageService.myLikes$.subscribe((likes: string[]) => {
             if (likes && likes.includes(this.item.id)) {
                 this.isLiked = true;
+                this.changeDetectorRef.detectChanges();
             } else {
                 this.isLiked = false;
             }
@@ -131,7 +132,7 @@ export class PostComponent  implements OnInit, OnDestroy {
         if (!this.isLiked) {
           this.eventService.sendLikeEvent(event).then(() => {
              this.isLiked = true;
-             this.changeDetectorRef.markForCheck();
+             this.changeDetectorRef.detectChanges();
           }).catch(error => console.error('Failed to send like:', error));
         }
       }
