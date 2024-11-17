@@ -79,18 +79,15 @@ export class PostComponent  implements OnInit, OnDestroy {
     profileUser: any;
     tokens = signal<(string | ParsedToken)[]>([]);
 
-    isLiked =false;
+    private isLiked = false;
 
     ngOnInit(): void {
         this.subscription = this.storageService.myLikes$.subscribe((likes: string[]) => {
-            if (likes && likes.includes(this.item.id)) {
-                this.isLiked = true;
-                this.changeDetectorRef.detectChanges();
-            } else {
-                this.isLiked = false;
-            }
-         });
+            this.isLiked = likes?.includes(this.item.id) || false;
+            this.changeDetectorRef.detectChanges();
+        });
     }
+
 
     ngOnDestroy(): void {
         if (this.subscription) {
