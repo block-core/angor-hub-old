@@ -27,7 +27,7 @@ import {
 import { StorageService } from 'app/services/storage.service';
 import { ZapService } from 'app/services/zap.service';
 import { NewEvent } from 'app/types/NewEvent';
-import { Subscription, takeUntil } from 'rxjs';
+import { Subscription, take, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'app-post',
@@ -45,7 +45,7 @@ import { Subscription, takeUntil } from 'rxjs';
     templateUrl: './post.component.html',
     styleUrls: ['./post.component.scss'],
 })
-export class PostComponent  implements OnInit, OnDestroy {
+export class PostComponent implements OnDestroy {
 
     private _item: any;
 
@@ -70,8 +70,8 @@ export class PostComponent  implements OnInit, OnDestroy {
     storageService = inject(StorageService);
     zapService = inject(ZapService);
     parseContent = inject(ParseContentService);
-    eventService= inject(EventService);
-    changeDetectorRef= inject(ChangeDetectorRef);
+    eventService = inject(EventService);
+    changeDetectorRef = inject(ChangeDetectorRef);
 
 
     private subscription: Subscription = new Subscription();
@@ -81,12 +81,7 @@ export class PostComponent  implements OnInit, OnDestroy {
 
     private isLiked = false;
 
-    ngOnInit(): void {
-        this.subscription = this.storageService.myLikes$.subscribe((likes: string[]) => {
-            this.isLiked = likes?.includes(this.item.id) || false;
-            this.changeDetectorRef.detectChanges();
-        });
-    }
+
 
 
     ngOnDestroy(): void {
@@ -118,23 +113,32 @@ export class PostComponent  implements OnInit, OnDestroy {
     }
 
     private onItemChange() {
-        if (this._item.content) {
-            this.tokens.set(this.parseContent.parseContent(this._item.content));
-        } else {
-            this.tokens.set([]);
+        if (this._item) {
+            this.subscription = this.storageService.myLikes$.pipe(take(1)).subscribe((likes: string[]) => {
+                this.isLiked = likes?.includes(this._item.id) || false;
+                this.changeDetectorRef.detectChanges();
+            });
+
+            if (this._item.content) {
+                this.tokens.set(this.parseContent.parseContent(this._item.content));
+            } else {
+                this.tokens.set([]);
+            }
         }
     }
 
+
+
     sendLike(event: NewEvent): void {
         if (!this.isLiked) {
-          this.eventService.sendLikeEvent(event).then(() => {
-             this.isLiked = true;
-             this.changeDetectorRef.detectChanges();
-          }).catch(error => console.error('Failed to send like:', error));
+            this.eventService.sendLikeEvent(event).then(() => {
+                this.isLiked = true;
+                this.changeDetectorRef.detectChanges();
+            }).catch(error => console.error('Failed to send like:', error));
         }
-      }
+    }
 
-      toggleLike(event: NewEvent): void {
+    toggleLike(event: NewEvent): void {
         this.sendLike(event);
-      }
+    }
 }
