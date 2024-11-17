@@ -1,5 +1,6 @@
 import { AngorCardComponent } from '@angor/components/card';
 import { AngorConfig } from '@angor/services/config';
+import { AngorConfirmationService } from '@angor/services/confirmation';
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectorRef,
@@ -71,6 +72,8 @@ export class PostComponent implements OnDestroy {
     zapService = inject(ZapService);
     parseContent = inject(ParseContentService);
     eventService = inject(EventService);
+    angorConfirmationService = inject(AngorConfirmationService);
+
     changeDetectorRef = inject(ChangeDetectorRef);
 
 
@@ -141,4 +144,35 @@ export class PostComponent implements OnDestroy {
     toggleLike(event: NewEvent): void {
         this.sendLike(event);
     }
+
+    onShare(event: NewEvent): void {
+        const dialogRef = this.angorConfirmationService.open({
+            title: 'Share',
+            message:
+                'Are you sure you want to share this post on your profile? <span class="font-medium">This action is permanent and cannot be undone.</span>',
+            icon: {
+                show: true,
+                name: 'heroicons_solid:share',
+                color: 'primary',
+            },
+            actions: {
+                confirm: {
+                    show: true,
+                    label: 'Yes, Share',
+                    color: 'primary',
+                },
+                cancel: {
+                    show: true,
+                    label: 'Cancel',
+                },
+            },
+            dismissible: true,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log(result);
+        });
+    }
+
+
 }

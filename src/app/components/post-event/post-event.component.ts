@@ -115,16 +115,12 @@ export class PostEventComponent implements OnInit, OnDestroy {
 
         this._storageService.getProfile(this.post.pubkey).then((metadata) => {
             this.user = metadata;
-            console.log(this.user);
-
             this._changeDetectorRef.detectChanges();
         });
 
     }
 
     async loadPost(postId: string): Promise<void> {
-
-        console.log('LOAD POST', postId);
 
         try {
             this.loading = true;

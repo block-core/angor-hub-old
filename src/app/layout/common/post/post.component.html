@@ -168,14 +168,14 @@
                 <span class="ml-2">{{ isLiked ?'Liked':'Like' }} </span>
             </button>
 
-            <button class="mr-1 px-3" mat-button>
+            <button class="mr-1 px-3" mat-button [routerLink]="['/post', item.id]">
                 <mat-icon
                     class="text-blue-500 icon-size-5"
                     [svgIcon]="'heroicons_solid:chat-bubble-left-ellipsis'"
                 ></mat-icon>
                 <span class="ml-2">Comment</span>
             </button>
-            <button class="mr-1 px-3" mat-button>
+            <button class="mr-1 px-3" mat-button (click)="onShare(item)">
                 <mat-icon
                     class="text-green-500 icon-size-5"
                     [svgIcon]="'heroicons_solid:share'"
