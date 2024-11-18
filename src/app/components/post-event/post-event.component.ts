@@ -261,6 +261,22 @@ export class PostEventComponent implements OnInit, OnDestroy {
         this._zapService.openZapDialog(this.postId, this.user);
     }
 
+
+    sendComment()
+    {
+
+    }
+
+    addEmoji()
+    {
+
+    }
+
+    toggleEmojiPicker()
+    {
+
+    }
+
     ngOnDestroy(): void {
 
         if (this.subscriptionId) {
