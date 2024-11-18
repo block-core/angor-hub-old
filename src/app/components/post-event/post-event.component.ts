@@ -30,6 +30,7 @@ import { NewEvent } from 'app/types/NewEvent';
 import { EventService } from 'app/services/event.service';
 import { AngorConfirmationService } from '@angor/services/confirmation';
 import { ZapService } from 'app/services/zap.service';
+import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 
 
 export interface PostReaction {
@@ -61,7 +62,8 @@ export interface PostReaction {
         AgoPipe,
         MatProgressSpinnerModule,
         ReplayProfileComponent,
-        PostComponent
+        PostComponent,
+        PickerComponent,
 
     ],
     templateUrl: './post-event.component.html',
@@ -82,6 +84,8 @@ export class PostEventComponent implements OnInit, OnDestroy {
     replies: PostReaction[] = [];
     subscriptionId: string;
     isLiked = false;
+    showEmojiPicker: boolean;
+    comment: string;
     constructor(
         private _route: ActivatedRoute,
         private _router: Router,
@@ -262,19 +266,24 @@ export class PostEventComponent implements OnInit, OnDestroy {
     }
 
 
-    sendComment()
-    {
+    sendComment(event: NewEvent): void {
+         if (this.comment.trim() !== '') {
+          this._eventService.sendReplyEvent(event, this.comment).then(() => {
+            this.comment = '';
+            this._changeDetectorRef.markForCheck();
+          });
+        }
+      }
 
-    }
+      toggleEmojiPicker(): void {
+        this.showEmojiPicker = !this.showEmojiPicker;
+      }
 
-    addEmoji()
-    {
-
-    }
-
-    toggleEmojiPicker()
-    {
-
+      addEmoji(event: any): void {
+        if (event && event.emoji && event.emoji.native) {
+            this.comment = (this.comment || '') + event.emoji.native;
+        }
+        this.showEmojiPicker = false;
     }
 
     ngOnDestroy(): void {

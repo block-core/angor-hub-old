@@ -7,15 +7,13 @@
         <div *ngIf="!loading && post">
             <div class="m-auto flex w-full max-w-140 flex-col items-start">
 
-                <app-post
-                class="mb-1 mt-8 flex w-full flex-col"
-                [item]="post" [more]="false" [actions]="false"></app-post>
+                <app-post class="mb-1 mt-8 flex w-full flex-col" [item]="post" [more]="false"
+                    [actions]="false"></app-post>
 
                 <angor-card class="mb-8 mt-1 flex w-full flex-col pt-4" #expandableReplay="angorCard">
                     <div class="mx-3 flex items-center sm:mx-5">
                         <button class="mr-1 px-3" mat-button (click)="toggleLike(post)">
-                            <mat-icon class="text-red-500 icon-size-5" [ngClass]="{ 'heart-beat': isLiked }"
-                                [svgIcon]="
+                            <mat-icon class="text-red-500 icon-size-5" [ngClass]="{ 'heart-beat': isLiked }" [svgIcon]="
                                 isLiked
                                         ? 'heroicons_solid:heart'
                                         : 'heroicons_outline:heart'
@@ -83,7 +81,7 @@
                             <div class="flex items-start">
                                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                     <textarea matInput [placeholder]="'Write a comment...'" [rows]="3"
-                                        cdkTextareaAutosize></textarea>
+                                        [(ngModel)]="comment" cdkTextareaAutosize></textarea>
                                 </mat-form-field>
                             </div>
                             <div class="mt-3 flex items-center justify-between">
@@ -93,8 +91,8 @@
                                             [svgIcon]="'heroicons_solid:face-smile'"></mat-icon>
                                     </button>
                                     <div *ngIf="showEmojiPicker" class="emoji-picker-container-global">
-                                        <emoji-mart (emojiClick)="addEmoji()" [darkMode]="darkMode"></emoji-mart>
-                                      </div>
+                                        <emoji-mart (emojiClick)="addEmoji($event)"  [darkMode]="darkMode"></emoji-mart>
+                                    </div>
                                     <button mat-icon-button>
                                         <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:photo'"></mat-icon>
                                     </button>
@@ -102,10 +100,10 @@
                                         <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:sparkles'"></mat-icon>
                                     </button>
                                 </div>
-                                <button mat-button (click)="sendComment()">
+                                <button mat-button (click)="sendComment(post)">
                                     <mat-icon [svgIcon]="'heroicons_solid:paper-airplane'"></mat-icon>
                                     <span class="ml-2">Send</span>
-                                  </button>
+                                </button>
                             </div>
                         </div>
 
@@ -117,92 +115,76 @@
                             <div class="max-h-120 overflow-y-auto">
                                 <div class="relative mx-4 my-6 flex flex-col sm:mx-8">
                                     <div *ngFor="let reply of replies" class="mb-6 flex flex-col items-start">
-                                        <app-replay-profile
-                                          [pubkey]="reply?.pubkey"
-                                          [avatarUrl]="'/images/avatars/avatar-placeholder.png'"
-                                        ></app-replay-profile>
+                                        <app-replay-profile [pubkey]="reply?.pubkey"
+                                            [avatarUrl]="'/images/avatars/avatar-placeholder.png'"></app-replay-profile>
 
                                         <div class="mt-0.5 flex flex-col">
-                                          <span>
-                                            <div
-                                              *ngFor="let token of (_parseContent.parseContent(reply?.content) || [])"
-                                              class="inline-block whitespace-pre-wrap break-words"
-                                            >
-                                              <!-- YouTube Embeds -->
-                                              <ng-container *ngIf="token?.token === 'youtube'">
-                                                <div class="relative mb-4 block">
-                                                  <iframe
-                                                    [src]="token?.safeWord"
-                                                    width="560"
-                                                    height="315"
-                                                    frameborder="0"
-                                                    allowfullscreen
-                                                  ></iframe>
-                                                </div>
-                                              </ng-container>
+                                            <span>
+                                                <div *ngFor="let token of (_parseContent.parseContent(reply?.content) || [])"
+                                                    class="inline-block whitespace-pre-wrap break-words">
+                                                    <!-- YouTube Embeds -->
+                                                    <ng-container *ngIf="token?.token === 'youtube'">
+                                                        <div class="relative mb-4 block">
+                                                            <iframe [src]="token?.safeWord" width="560" height="315"
+                                                                frameborder="0" allowfullscreen></iframe>
+                                                        </div>
+                                                    </ng-container>
 
-                                              <!-- Images -->
-                                              <ng-container *ngIf="token?.token === 'image'">
-                                                <div class="relative mb-4 block">
-                                                  <img
-                                                    [src]="token?.safeWord"
-                                                    alt="Embedded Image"
-                                                    style="width: 100%;"
-                                                    class="max-h-140 object-cover"
-                                                  />
-                                                </div>
-                                              </ng-container>
+                                                    <!-- Images -->
+                                                    <ng-container *ngIf="token?.token === 'image'">
+                                                        <div class="relative mb-4 block">
+                                                            <img [src]="token?.safeWord" alt="Embedded Image"
+                                                                style="width: 100%;" class="max-h-140 object-cover" />
+                                                        </div>
+                                                    </ng-container>
 
-                                              <!-- Videos -->
-                                              <ng-container *ngIf="token?.token === 'video'">
-                                                <div class="relative mb-4 block">
-                                                  <video controls style="width: 100%;">
-                                                    <source [src]="token?.safeWord" type="video/mp4" />
-                                                    Your browser does not support the video tag.
-                                                  </video>
-                                                </div>
-                                              </ng-container>
+                                                    <!-- Videos -->
+                                                    <ng-container *ngIf="token?.token === 'video'">
+                                                        <div class="relative mb-4 block">
+                                                            <video controls style="width: 100%;">
+                                                                <source [src]="token?.safeWord" type="video/mp4" />
+                                                                Your browser does not support the video tag.
+                                                            </video>
+                                                        </div>
+                                                    </ng-container>
 
-                                              <!-- Audio -->
-                                              <ng-container *ngIf="token?.token === 'audio'">
-                                                <div class="relative mb-4 block">
-                                                  <audio controls>
-                                                    <source [src]="token?.safeWord" type="audio/mpeg" />
-                                                    Your browser does not support the audio element.
-                                                  </audio>
-                                                </div>
-                                              </ng-container>
+                                                    <!-- Audio -->
+                                                    <ng-container *ngIf="token?.token === 'audio'">
+                                                        <div class="relative mb-4 block">
+                                                            <audio controls>
+                                                                <source [src]="token?.safeWord" type="audio/mpeg" />
+                                                                Your browser does not support the audio element.
+                                                            </audio>
+                                                        </div>
+                                                    </ng-container>
 
-                                              <!-- Links -->
-                                              <ng-container *ngIf="token?.token === 'link'">
-                                                <div class="mx-6 mb-6 mt-2 sm:mx-1">
-                                                  <a
-                                                    class="inline-block break-words text-blue-500 underline"
-                                                    [href]="token?.word"
-                                                    target="_blank"
-                                                  >
-                                                    <span class="inline-block break-words">
-                                                      {{ token?.word }}
-                                                    </span>
-                                                  </a>
-                                                </div>
-                                              </ng-container>
+                                                    <!-- Links -->
+                                                    <ng-container *ngIf="token?.token === 'link'">
+                                                        <div class="mx-6 mb-6 mt-2 sm:mx-1">
+                                                            <a class="inline-block break-words text-blue-500 underline"
+                                                                [href]="token?.word" target="_blank">
+                                                                <span class="inline-block break-words">
+                                                                    {{ token?.word }}
+                                                                </span>
+                                                            </a>
+                                                        </div>
+                                                    </ng-container>
 
-                                              <!-- Plain Text -->
-                                              <ng-container *ngIf="!token?.token">
-                                                <div class="mt-2 sm:mx-1">
-                                                  <span class="inline-block break-words">
-                                                    {{ token?.trim() }}
-                                                  </span>
+                                                    <!-- Plain Text -->
+                                                    <ng-container *ngIf="!token?.token">
+                                                        <div class="mt-2 sm:mx-1">
+                                                            <span class="inline-block break-words">
+                                                                {{ token?.trim() }}
+                                                            </span>
+                                                        </div>
+                                                    </ng-container>
                                                 </div>
-                                              </ng-container>
+                                            </span>
+                                            <div class="text-secondary mt-2 flex items-center text-sm">
+                                                <span>{{ reply?.created_at | ago }}</span>
                                             </div>
-                                          </span>
-                                          <div class="text-secondary mt-2 flex items-center text-sm">
-                                            <span>{{ reply?.created_at | ago }}</span>
-                                          </div>
                                         </div>
-                                      </div>
+                                    </div>
 
                                 </div>
                             </div>
