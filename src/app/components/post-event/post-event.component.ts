@@ -28,6 +28,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { PostComponent } from 'app/layout/common/post/post.component';
 import { NewEvent } from 'app/types/NewEvent';
 import { EventService } from 'app/services/event.service';
+import { AngorConfirmationService } from '@angor/services/confirmation';
 
 
 export interface PostReaction {
@@ -88,7 +89,9 @@ export class PostEventComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         public parseContent: ParseContentService,
         private _sanitizer: DomSanitizer,
-        private _eventService: EventService
+        private _eventService: EventService,
+        private _angorConfirmationService: AngorConfirmationService,
+
     ) { }
 
     ngOnInit(): void {
@@ -216,6 +219,42 @@ export class PostEventComponent implements OnInit, OnDestroy {
       toggleLike(event: NewEvent): void {
         this.sendLike(event);
       }
+
+      onShare(event: NewEvent): void {
+        const dialogRef = this._angorConfirmationService.open({
+            title: 'Share',
+            message:
+                'Are you sure you want to share this post on your profile? <span class="font-medium">This action is permanent and cannot be undone.</span>',
+            icon: {
+                show: true,
+                name: 'heroicons_solid:share',
+                color: 'primary',
+            },
+            actions: {
+                confirm: {
+                    show: true,
+                    label: 'Yes, Share',
+                    color: 'primary',
+                },
+                cancel: {
+                    show: true,
+                    label: 'Cancel',
+                },
+            },
+            dismissible: true,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log(result);
+            if (result === "confirmed") {
+                 this._eventService.shareEvent(event).then(() => {
+                     this._changeDetectorRef.detectChanges();
+                 }).catch(error => console.error('Failed to share post', error));
+
+            }
+        });
+    }
+
 
     ngOnDestroy(): void {
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { SubscriptionService } from './subscription.service';
 import { NostrEvent, Filter } from 'nostr-tools';
 import { ContactEvent, StorageService } from './storage.service';
-import { Contacts, EncryptedDirectMessage } from 'nostr-tools/kinds';
+import { Contacts, EncryptedDirectMessage, Reaction, ShortTextNote } from 'nostr-tools/kinds';
 
 @Injectable({
     providedIn: 'root',
@@ -121,7 +121,7 @@ export class StateService {
 
         const postsLastUpdate = await this.storageService.getLastUpdateDate('posts');
         const postFilter: Filter = {
-            kinds: [1],
+            kinds: [ShortTextNote],
             authors: [pubkey],
         };
 
@@ -151,7 +151,7 @@ export class StateService {
 
         const likesLastUpdate = await this.storageService.getLastUpdateDate('myLikes');
         const likeFilter: Filter = {
-            kinds: [7],
+            kinds: [Reaction],
             authors: [pubkey],
         };
 

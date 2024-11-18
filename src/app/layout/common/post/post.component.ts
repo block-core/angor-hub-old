@@ -171,6 +171,11 @@ export class PostComponent implements OnDestroy {
 
         dialogRef.afterClosed().subscribe((result) => {
             console.log(result);
+            if (result === "confirmed") {
+                this.eventService.shareEvent(event);
+
+
+            }
         });
     }
 

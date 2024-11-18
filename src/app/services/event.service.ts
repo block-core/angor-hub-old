@@ -169,4 +169,41 @@ export class EventService {
             console.error('Failed to send reply event:', error);
         }
     }
+
+
+    async shareEvent(event: NewEvent): Promise<void> {
+        if (!event) return;
+
+        try {
+            const tags = [
+                ['e', event.id],
+                ['p', event.pubkey],
+            ];
+
+            const content = '';
+
+            const unsignedEvent = this.signerService.getUnsignedEvent(
+                6,
+                tags,
+                content
+            );
+            let signedEvent: NostrEvent;
+
+            if (this.signerService.isUsingSecretKey()) {
+                const privateKey = await this.signerService.getDecryptedSecretKey();
+                const privateKeyBytes = hexToBytes(privateKey);
+                signedEvent = finalizeEvent(unsignedEvent, privateKeyBytes);
+            } else {
+                signedEvent = await this.signerService.signEventWithExtension(
+                    unsignedEvent
+                );
+            }
+
+            await this.relayService.publishEventToWriteRelays(signedEvent);
+            console.log('Event shared successfully:', signedEvent);
+        } catch (error) {
+            console.error('Failed to share event:', error);
+        }
+    }
+
 }
