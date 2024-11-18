@@ -36,7 +36,7 @@
                             <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:share'"></mat-icon>
                             <span class="ml-2">Share</span>
                         </button>
-                        <button class="mr-1 px-3" mat-button>
+                        <button class="mr-1 px-3" mat-button (click)="openZapDialog()">
                             <mat-icon class="text-orange-500 icon-size-5" [svgIcon]="'heroicons_solid:bolt'"></mat-icon>
                             <span class="ml-2">Zap</span>
                         </button>
@@ -112,7 +112,7 @@
                                         <div class="mt-0.5 flex flex-col">
                                           <span>
                                             <div
-                                              *ngFor="let token of (parseContent.parseContent(reply?.content) || [])"
+                                              *ngFor="let token of (_parseContent.parseContent(reply?.content) || [])"
                                               class="inline-block whitespace-pre-wrap break-words"
                                             >
                                               <!-- YouTube Embeds -->

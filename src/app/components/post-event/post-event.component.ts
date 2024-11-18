@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subscription, Subject } from 'rxjs';
@@ -29,6 +29,7 @@ import { PostComponent } from 'app/layout/common/post/post.component';
 import { NewEvent } from 'app/types/NewEvent';
 import { EventService } from 'app/services/event.service';
 import { AngorConfirmationService } from '@angor/services/confirmation';
+import { ZapService } from 'app/services/zap.service';
 
 
 export interface PostReaction {
@@ -87,10 +88,11 @@ export class PostEventComponent implements OnInit, OnDestroy {
         private _storageService: StorageService,
         private _subscriptionService: SubscriptionService,
         private _changeDetectorRef: ChangeDetectorRef,
-        public parseContent: ParseContentService,
+        public  _parseContent: ParseContentService,
         private _sanitizer: DomSanitizer,
         private _eventService: EventService,
         private _angorConfirmationService: AngorConfirmationService,
+        private _zapService: ZapService
 
     ) { }
 
@@ -180,7 +182,6 @@ export class PostEventComponent implements OnInit, OnDestroy {
     }
 
 
-
     private addReaction(postId: string, kind: number, reaction: PostReaction): void {
         switch (kind) {
             case 1:
@@ -255,6 +256,10 @@ export class PostEventComponent implements OnInit, OnDestroy {
         });
     }
 
+
+    openZapDialog() {
+        this._zapService.openZapDialog(this.postId, this.user);
+    }
 
     ngOnDestroy(): void {
 
