@@ -164,7 +164,8 @@
             </ng-container>
             <!-- Load More Button -->
             <div *ngIf="filteredProjects.length > 0" class="mt-10 flex justify-center">
-                <button mat-raised-button color="primary" (click)="loadMoreProjects()" [disabled]="loading">
+                <button mat-raised-button color="primary" class="bg-card text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
+                (click)="loadMoreProjects()" [disabled]="loading">
                     {{ loading ? 'Loading...' : 'Load More Projects' }}
                 </button>
             </div>

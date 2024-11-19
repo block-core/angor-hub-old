@@ -303,14 +303,13 @@
                         style="position: absolute; top: 16px; right: 16px"
                         aria-label="Toggle about section"
                     >
-                        <mat-icon>{{
-                            aboutExpanded ? 'expand_less' : 'expand_more'
-                        }}</mat-icon>
+                    <mat-icon [svgIcon]="aboutExpanded ? 'heroicons_outline:chevron-up' : 'heroicons_outline:chevron-down'"></mat-icon>
+
                     </button>
                 </div>
 
                 <div
-                    class="about-content text-base text-gray-700 transition-all duration-300"
+                    class="about-content text-base text-gray-700 dark:text-gray-50 transition-all duration-300"
                     [ngStyle]="{
                         'white-space': aboutExpanded ? 'normal' : 'nowrap',
                         'max-height': aboutExpanded ? 'none' : '1.5em',
@@ -673,6 +672,7 @@
             @if (hasMorePosts) {
                 <div class="m-auto mt-4 flex justify-center">
                     <button
+                        class="bg-card text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
                         mat-raised-button
                         color="primary"
                         (click)="loadNextPage()"

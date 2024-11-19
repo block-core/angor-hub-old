@@ -48,28 +48,28 @@
                 <mat-label>Secret Key</mat-label>
                 <input matInput [value]="generatedKeys.secretKey" readonly />
                 <button mat-icon-button matSuffix (click)="copyToClipboard(generatedKeys.secretKey)">
-                    <mat-icon>content_copy</mat-icon>
+                    <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
                 </button>
             </mat-form-field>
             <mat-form-field class="w-full" appearance="outline">
                 <mat-label>Public Key</mat-label>
                 <input matInput [value]="generatedKeys.pubkey" readonly />
                 <button mat-icon-button matSuffix (click)="copyToClipboard(generatedKeys.pubkey)">
-                    <mat-icon>content_copy</mat-icon>
+                    <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
                 </button>
             </mat-form-field>
             <mat-form-field class="w-full" appearance="outline">
                 <mat-label>NPUB</mat-label>
                 <input matInput [value]="generatedKeys.npub" readonly />
                 <button mat-icon-button matSuffix (click)="copyToClipboard(generatedKeys.npub)">
-                    <mat-icon>content_copy</mat-icon>
+                    <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
                 </button>
             </mat-form-field>
             <mat-form-field class="w-full" appearance="outline">
                 <mat-label>NSEC</mat-label>
                 <input matInput [value]="generatedKeys.nsec" readonly />
                 <button mat-icon-button matSuffix (click)="copyToClipboard(generatedKeys.nsec)">
-                    <mat-icon>content_copy</mat-icon>
+                    <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
                 </button>
             </mat-form-field>
         </div>
