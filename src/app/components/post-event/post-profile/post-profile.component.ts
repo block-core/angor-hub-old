@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { StorageService } from 'app/services/storage.service';
 import { CommonModule } from '@angular/common';
 import { AgoPipe } from "../../../shared/pipes/ago.pipe";
+import { MetadataService } from 'app/services/metadata.service';
 
 @Component({
   selector: 'app-post-profile',
@@ -21,12 +22,13 @@ export class PostProfileComponent implements OnInit, OnDestroy {
   private subscription!: Subscription;
    constructor(
     private _changeDetectorRef: ChangeDetectorRef,
-    private _storageService: StorageService
+    private _storageService: StorageService,
+    private _metadatasService: MetadataService
   ) {}
 
   ngOnInit(): void {
     this.loadUserProfile();
-
+    this._metadatasService.addPublicKey(this.pubkey);
     this.subscription = this._storageService.profile$.subscribe((data) => {
       if (data && data.pubKey === this.pubkey) {
         this.user = data.metadata;
