@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { hexToBytes } from '@noble/hashes/utils';
-import { NewEvent } from 'app/types/NewEvent';
 import { Filter, finalizeEvent, NostrEvent } from 'nostr-tools';
 import { RelayService } from './relay.service';
 import { SignerService } from './signer.service';
@@ -57,7 +56,7 @@ export class EventService {
         }
     }
 
-    async sendLikeEvent(event: NewEvent): Promise<void> {
+    async sendLikeEvent(event: NostrEvent): Promise<void> {
         if (!event) return;
 
         try {
@@ -97,7 +96,7 @@ export class EventService {
         }
     }
 
-    async sendZapEvent(event: NewEvent, zapAmount: number): Promise<void> {
+    async sendZapEvent(event: NostrEvent, zapAmount: number): Promise<void> {
         if (!event || zapAmount <= 0) return;
 
         try {
@@ -134,7 +133,7 @@ export class EventService {
     }
 
     async sendReplyEvent(
-        parentEvent: NewEvent,
+        parentEvent: NostrEvent,
         replyContent: string
     ): Promise<void> {
         if (!parentEvent) return;
@@ -171,7 +170,7 @@ export class EventService {
     }
 
 
-    async shareEvent(event: NewEvent): Promise<void> {
+    async shareEvent(event: NostrEvent): Promise<void> {
         if (!event) return;
 
         try {

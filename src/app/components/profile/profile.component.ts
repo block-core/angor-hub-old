@@ -33,7 +33,6 @@ import { EventService } from 'app/services/event.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
 import { ContactEvent, StorageService } from 'app/services/storage.service';
-import { LightningInvoice, LightningResponse } from 'app/types/post';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { Filter, NostrEvent } from 'nostr-tools';
 import { Observable, Subject, takeUntil } from 'rxjs';
@@ -109,8 +108,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     showEmojiPicker = false;
     showCommentEmojiPicker = false;
-    lightningResponse: LightningResponse | null = null;
-    lightningInvoice: LightningInvoice | null = null;
     sats: string;
     paymentInvoice: string = '';
     invoiceAmount: string = '?';

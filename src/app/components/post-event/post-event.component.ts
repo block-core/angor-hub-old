@@ -26,7 +26,6 @@ import { Filter, NostrEvent } from 'nostr-tools';
 import { ReplayProfileComponent } from './replay-profile/replay-profile.component';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { PostComponent } from 'app/layout/common/post/post.component';
-import { NewEvent } from 'app/types/NewEvent';
 import { EventService } from 'app/services/event.service';
 import { AngorConfirmationService } from '@angor/services/confirmation';
 import { ZapService } from 'app/services/zap.service';
@@ -212,7 +211,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
         return isSingleWord || isSingleEmoji;
     }
 
-    sendLike(event: NewEvent): void {
+    sendLike(event: NostrEvent): void {
         if (!this.isLiked) {
           this._eventService.sendLikeEvent(event).then(() => {
              this.isLiked = true;
@@ -221,11 +220,11 @@ export class PostEventComponent implements OnInit, OnDestroy {
         }
       }
 
-      toggleLike(event: NewEvent): void {
+      toggleLike(event: NostrEvent): void {
         this.sendLike(event);
       }
 
-      onShare(event: NewEvent): void {
+      onShare(event: NostrEvent): void {
         const dialogRef = this._angorConfirmationService.open({
             title: 'Share',
             message:
@@ -266,7 +265,7 @@ export class PostEventComponent implements OnInit, OnDestroy {
     }
 
 
-    sendComment(event: NewEvent): void {
+    sendComment(event: NostrEvent): void {
          if (this.comment.trim() !== '') {
           this._eventService.sendReplyEvent(event, this.comment).then(() => {
             this.comment = '';

@@ -27,7 +27,7 @@ import {
 } from 'app/services/parse-content.service';
 import { StorageService } from 'app/services/storage.service';
 import { ZapService } from 'app/services/zap.service';
-import { NewEvent } from 'app/types/NewEvent';
+import { NostrEvent } from 'nostr-tools';
 import { Subscription, take, takeUntil } from 'rxjs';
 
 @Component({
@@ -132,7 +132,7 @@ export class PostComponent implements OnDestroy {
 
 
 
-    sendLike(event: NewEvent): void {
+    sendLike(event: NostrEvent): void {
         if (!this.isLiked) {
             this.eventService.sendLikeEvent(event).then(() => {
                 this.isLiked = true;
@@ -141,11 +141,11 @@ export class PostComponent implements OnDestroy {
         }
     }
 
-    toggleLike(event: NewEvent): void {
+    toggleLike(event: NostrEvent): void {
         this.sendLike(event);
     }
 
-    onShare(event: NewEvent): void {
+    onShare(event: NostrEvent): void {
         const dialogRef = this.angorConfirmationService.open({
             title: 'Share',
             message:

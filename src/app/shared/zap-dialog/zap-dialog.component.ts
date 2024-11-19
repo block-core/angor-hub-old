@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, 
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogActions, MatDialogClose, MatDialogContent } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
-import { LightningService } from 'app/services/lightning.service';
 import { LNURLPayRequest, LNURLInvoice } from 'app/services/interfaces';
 import { finalizeEvent, NostrEvent, UnsignedEvent } from 'nostr-tools';
 import { SignerService } from 'app/services/signer.service';
@@ -49,7 +48,6 @@ import { hexToBytes } from '@noble/hashes/utils';
 })
 export class ZapDialogComponent implements OnInit {
     private readonly formBuilder = inject(FormBuilder);
-    private readonly lightningService = inject(LightningService);
     private readonly signerService = inject(SignerService);
     private readonly relayService = inject(RelayService);
     private readonly dialogRef = inject(MatDialogRef<ZapDialogComponent>);
