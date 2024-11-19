@@ -160,7 +160,6 @@ export class StateService {
         }
 
         this.subscriptionService.addSubscriptions([likeFilter], (event: NostrEvent) => {
-            console.log(event);
             this.storageService.saveLike(event);
         });
     }
