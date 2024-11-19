@@ -21,6 +21,7 @@ import { SettingsNotificationsComponent } from './notifications/notifications.co
 import { SettingsProfileComponent } from './profile/profile.component';
 import { SettingsRelayComponent } from './relay/relay.component';
 import { SettingsSecurityComponent } from './security/security.component';
+import { SettingsAdvancedProfileComponent } from './advanced-profile/advanced-profile.component';
 
 @Component({
     selector: 'settings',
@@ -39,6 +40,7 @@ import { SettingsSecurityComponent } from './security/security.component';
         SettingsRelayComponent,
         SettingsNetworkComponent,
         SettingsIndexerComponent,
+        SettingsAdvancedProfileComponent
     ],
 })
 export class SettingsComponent implements OnInit, OnDestroy {
@@ -73,6 +75,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
             title: 'Profile',
             description:
                 'Update your personal profile, manage your account details, and modify your private information.',
+        },
+        {
+            id: 'advanced-profile',
+            icon: 'heroicons_outline:check-badge',
+            title: 'Advanced Profile',
+            description:
+                'Manage and explore advanced settings of your profile, including privacy options, analytics, activity logs, and connected accounts.',
         },
         {
             id: 'notifications',

@@ -1,0 +1,21 @@
+<div class="w-full max-w-3xl">
+    <!-- Form -->
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-secondary">
+                Customize and enhance your profile with advanced modules and personalized settings.
+            </div>
+        </div>
+
+ 
+
+        <!-- Actions -->
+        <div class="mt-8 flex items-center justify-end">
+            <button mat-stroked-button type="button">Cancel</button>
+            <button class="ml-4" mat-flat-button type="submit" color="primary">
+                Save
+            </button>
+        </div>
+    </form>
+</div>
