@@ -10,8 +10,7 @@ import { RouterLink } from '@angular/router';
     templateUrl: './error-404.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
-    imports: [RouterLink],
+    imports: [RouterLink]
 })
 export class Error404Component {
     /**

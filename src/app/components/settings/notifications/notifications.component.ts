@@ -24,7 +24,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         ReactiveFormsModule,
         MatSlideToggleModule,
         MatButtonModule,
-    ],
+    ]
 })
 export class SettingsNotificationsComponent implements OnInit {
     notificationsForm: UntypedFormGroup;

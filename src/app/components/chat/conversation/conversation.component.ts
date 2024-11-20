@@ -43,7 +43,6 @@ import { ParseContentService } from 'app/services/parse-content.service';
     styleUrls: ['./conversation.component.css'],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
     imports: [
         MatSidenavModule,
         ContactInfoComponent,
@@ -59,7 +58,7 @@ import { ParseContentService } from 'app/services/parse-content.service';
         DatePipe,
         PickerComponent,
         CommonModule,
-    ],
+    ]
 })
 export class ConversationComponent implements OnInit, OnDestroy {
     @ViewChild('messageInput') messageInput: ElementRef;

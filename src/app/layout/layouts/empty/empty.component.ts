@@ -8,7 +8,7 @@ import { Subject } from 'rxjs';
     templateUrl: './empty.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone: true,
-    imports: [AngorLoadingBarComponent, RouterOutlet],
+    imports: [AngorLoadingBarComponent, RouterOutlet]
 })
 export class EmptyLayoutComponent implements OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();

@@ -28,7 +28,6 @@ import { AngorNavigationService, AngorVerticalNavigationComponent } from '@angor
     templateUrl: './chats.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
     imports: [
         MatSidenavModule,
         NewChatComponent,
@@ -44,7 +43,7 @@ import { AngorNavigationService, AngorVerticalNavigationComponent } from '@angor
         AgoPipe,
         CommonModule,
         CheckmessagePipe,
-    ],
+    ]
 })
 export class ChatsComponent implements OnInit, OnDestroy {
 

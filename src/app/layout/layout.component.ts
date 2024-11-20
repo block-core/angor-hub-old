@@ -28,8 +28,7 @@ import { ClassicLayoutComponent } from './layouts/vertical/classic/classic.compo
         EmptyLayoutComponent,
         ModernLayoutComponent,
         ClassicLayoutComponent,
-        SettingsComponent,
-    ],
+    ]
 })
 export class LayoutComponent implements OnInit, OnDestroy {
     config: AngorConfig;

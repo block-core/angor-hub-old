@@ -38,7 +38,7 @@ import { NostrLoginService } from 'app/services/nostr-login.service';
         MatDividerModule,
         CommonModule,
         RouterModule
-    ],
+    ]
 })
 export class UserComponent implements OnInit, OnDestroy {
 

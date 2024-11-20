@@ -10,8 +10,7 @@ import { RouterOutlet } from '@angular/router';
     templateUrl: './chat.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
-    imports: [RouterOutlet],
+    imports: [RouterOutlet]
 })
 export class ChatComponent {
     /**

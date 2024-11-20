@@ -5,7 +5,6 @@ import * as secp from '@noble/secp256k1';
 import { bech32 } from '@scure/base';
 import { Subscription } from 'rxjs';
  import { NostrProfileDocument, NostrProfile, NostrEvent, NostrEventDocument, NostrBadgeDefinition } from './interfaces';
-import { DataValidation } from './data-validation';
 
 export function sleep(durationInMillisecond: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, durationInMillisecond));
@@ -19,7 +18,7 @@ export function now() {
   providedIn: 'root',
 })
 export class Utilities {
-  constructor(private snackBar: MatSnackBar, private validator: DataValidation, private sanitizer: DomSanitizer) {}
+  constructor(private snackBar: MatSnackBar,    private sanitizer: DomSanitizer) {}
 
   unsubscribe(subscriptions: Subscription[]) {
     if (!subscriptions) {
@@ -92,25 +91,7 @@ export class Utilities {
     return Math.floor(millisatoshis / 1000);
   }
 
-  mapProfileEvent(event: NostrEventDocument): NostrProfileDocument | undefined {
-    // If a timeout is received, the event content will be: "The query timed out before it could complete: [{"kinds":[0],"authors":["edcd205..."]}]."
-    if (typeof event === 'string') {
-      return undefined;
-    }
-
-    try {
-      const jsonParsed = JSON.parse(event.content) as NostrProfileDocument;
-      const profile = this.validator.sanitizeProfile(jsonParsed) as NostrProfileDocument;
-      profile.pubkey = event.pubkey;
-      profile.created_at = event.created_at;
-      return profile;
-    } catch (err) {
-      console.warn(err);
-    }
-
-    return undefined;
-  }
-
+ 
   getRelayUrls(relays: any) {
     let preparedRelays = relays;
 

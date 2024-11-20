@@ -18,7 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
     templateUrl: './divider.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [NgClass],
+    imports: [NgClass]
 })
 export class AngorHorizontalNavigationDividerItemComponent
     implements OnInit, OnDestroy

@@ -46,7 +46,7 @@ import { NostrEvent, UnsignedEvent, finalizeEvent } from 'nostr-tools';
         MatOptionModule,
         MatButtonModule,
         CommonModule,
-    ],
+    ]
 })
 export class SettingsProfileComponent implements OnInit {
     profileForm: FormGroup;

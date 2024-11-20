@@ -22,9 +22,9 @@ import { hexToBytes } from '@noble/hashes/utils';
 
 @Component({
     selector: 'app-send-dialog',
-    standalone: true,
     templateUrl: './zap-dialog.component.html',
     styleUrls: ['./zap-dialog.component.scss'],
+    standalone: true,
     imports: [
         MatSidenavModule,
         MatButtonModule,
@@ -44,7 +44,7 @@ import { hexToBytes } from '@noble/hashes/utils';
         MatDivider,
         MatTooltip,
         MatDialogClose,
-    ],
+    ]
 })
 export class ZapDialogComponent implements OnInit {
     private readonly formBuilder = inject(FormBuilder);

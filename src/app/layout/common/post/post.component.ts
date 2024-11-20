@@ -44,7 +44,7 @@ import { Subscription, take, takeUntil } from 'rxjs';
         MatButton,
     ],
     templateUrl: './post.component.html',
-    styleUrls: ['./post.component.scss'],
+    styleUrls: ['./post.component.scss']
 })
 export class PostComponent implements OnDestroy {
 

@@ -41,7 +41,7 @@ import { Subject, takeUntil } from 'rxjs';
         MatInputModule,
         TextFieldModule,
         DatePipe,
-    ],
+    ]
 })
 export class QuickChatComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('messageInput') messageInput: ElementRef;

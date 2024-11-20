@@ -33,7 +33,7 @@ import { Subject, takeUntil } from 'rxjs';
         AngorVerticalNavigationDividerItemComponent,
         forwardRef(() => AngorVerticalNavigationGroupItemComponent),
         AngorVerticalNavigationSpacerItemComponent,
-    ],
+    ]
 })
 export class AngorVerticalNavigationGroupItemComponent
     implements OnInit, OnDestroy

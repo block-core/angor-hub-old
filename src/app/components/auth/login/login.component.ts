@@ -23,7 +23,6 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'auth-sign-in',
     templateUrl: './login.component.html',
-    standalone: true,
     imports: [
         RouterLink,
         AngorAlertComponent,
@@ -36,7 +35,7 @@ import { Subscription } from 'rxjs';
         MatCheckboxModule,
         MatProgressSpinnerModule,
         CommonModule,
-    ],
+    ]
 })
 export class LoginComponent implements OnInit {
     SecretKeyLoginForm: FormGroup;

@@ -18,7 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
     templateUrl: './spacer.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [NgClass],
+    imports: [NgClass]
 })
 export class AngorHorizontalNavigationSpacerItemComponent
     implements OnInit, OnDestroy

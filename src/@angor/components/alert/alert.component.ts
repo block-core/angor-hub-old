@@ -34,7 +34,7 @@ import { Subject, filter, takeUntil } from 'rxjs';
     animations: angorAnimations,
     exportAs: 'angorAlert',
     standalone: true,
-    imports: [MatIconModule, MatButtonModule],
+    imports: [MatIconModule, MatButtonModule]
 })
 export class AngorAlertComponent implements OnChanges, OnInit, OnDestroy {
     static ngAcceptInputType_dismissible: BooleanInput;

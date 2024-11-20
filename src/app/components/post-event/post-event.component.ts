@@ -40,7 +40,6 @@ export interface PostReaction {
 
 @Component({
     selector: 'app-post-event',
-    standalone: true,
     imports: [
         AngorCardComponent,
         MatIconModule,
@@ -63,7 +62,6 @@ export interface PostReaction {
         ReplayProfileComponent,
         PostComponent,
         PickerComponent,
-
     ],
     templateUrl: './post-event.component.html',
     styleUrls: ['./post-event.component.scss']

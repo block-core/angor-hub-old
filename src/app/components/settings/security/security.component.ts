@@ -32,7 +32,7 @@ import { SignerService } from 'app/services/signer.service';
         MatInputModule,
         MatSlideToggleModule,
         MatButtonModule,
-    ],
+    ]
 })
 export class SettingsSecurityComponent implements OnInit {
     securityForm: UntypedFormGroup;

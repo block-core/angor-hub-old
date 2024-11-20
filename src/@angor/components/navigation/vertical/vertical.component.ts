@@ -73,7 +73,7 @@ import {
         AngorVerticalNavigationDividerItemComponent,
         AngorVerticalNavigationGroupItemComponent,
         AngorVerticalNavigationSpacerItemComponent,
-    ],
+    ]
 })
 export class AngorVerticalNavigationComponent
     implements OnChanges, OnInit, AfterViewInit, OnDestroy

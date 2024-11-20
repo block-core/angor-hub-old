@@ -25,18 +25,15 @@ import { IndexerService } from 'app/services/indexer.service';
     imports: [
         FormsModule,
         ReactiveFormsModule,
-        AngorAlertComponent,
         MatRadioModule,
-        NgClass,
         MatIconModule,
         MatFormFieldModule,
         MatInputModule,
         MatSelectModule,
         MatOptionModule,
         MatButtonModule,
-        CurrencyPipe,
         CommonModule,
-    ],
+    ]
 })
 export class SettingsIndexerComponent implements OnInit {
     mainnetIndexers: Array<{ url: string; primary: boolean }> = [];

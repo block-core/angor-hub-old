@@ -41,7 +41,7 @@ import { SettingsAdvancedProfileComponent } from './advanced-profile/advanced-pr
         SettingsNetworkComponent,
         SettingsIndexerComponent,
         SettingsAdvancedProfileComponent
-    ],
+    ]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
     @ViewChild('drawer') drawer: MatDrawer;

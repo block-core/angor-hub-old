@@ -23,7 +23,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         MatTooltipModule,
         NgTemplateOutlet,
         MatIconModule,
-    ],
+    ]
 })
 export class AngorFullscreenComponent {
     private _document = inject(DOCUMENT);

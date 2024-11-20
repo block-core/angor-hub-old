@@ -6,7 +6,6 @@ import { MetadataService } from 'app/services/metadata.service';
 
 @Component({
     selector: 'app-replay-profile',
-    standalone: true,
     templateUrl: './replay-profile.component.html',
     styleUrls: ['./replay-profile.component.scss'],
     imports: [CommonModule]

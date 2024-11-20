@@ -6,11 +6,11 @@ import { AgoPipe } from "../../../shared/pipes/ago.pipe";
 import { MetadataService } from 'app/services/metadata.service';
 
 @Component({
-  selector: 'app-post-profile',
-  standalone: true,
-  templateUrl: './post-profile.component.html',
-  styleUrls: ['./post-profile.component.scss'],
-  imports: [CommonModule, AgoPipe]
+    selector: 'app-post-profile',
+    templateUrl: './post-profile.component.html',
+    styleUrls: ['./post-profile.component.scss'],
+    standalone: true,
+    imports: [CommonModule, AgoPipe]
 })
 export class PostProfileComponent implements OnInit, OnDestroy {
   @Input() pubkey!: string;

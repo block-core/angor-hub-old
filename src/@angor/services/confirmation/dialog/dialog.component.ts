@@ -24,8 +24,7 @@ import { MatIconModule } from '@angular/material/icon';
         `,
     ],
     encapsulation: ViewEncapsulation.None,
-    standalone: true,
-    imports: [MatButtonModule, MatDialogModule, MatIconModule, NgClass],
+    imports: [MatButtonModule, MatDialogModule, MatIconModule, NgClass]
 })
 export class AngorConfirmationDialogComponent {
     data: AngorConfirmationConfig = inject(MAT_DIALOG_DATA);

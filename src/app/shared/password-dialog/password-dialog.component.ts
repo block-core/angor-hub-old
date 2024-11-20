@@ -35,13 +35,6 @@ import { SettingsSecurityComponent } from 'app/components/settings/security/secu
         MatSidenavModule,
         MatButtonModule,
         MatIconModule,
-        NgClass,
-        SettingsProfileComponent,
-        SettingsSecurityComponent,
-        SettingsNotificationsComponent,
-        SettingsRelayComponent,
-        SettingsNetworkComponent,
-        SettingsIndexerComponent,
         FormsModule,
         MatOption,
         MatLabel,
@@ -59,7 +52,7 @@ import { SettingsSecurityComponent } from 'app/components/settings/security/secu
                 width: 100%;
             }
         `,
-    ],
+    ]
 })
 export class PasswordDialogComponent {
     passwordForm: FormGroup;

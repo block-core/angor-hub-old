@@ -33,7 +33,7 @@ import { Subject, takeUntil } from 'rxjs';
         MatTooltipModule,
         NgTemplateOutlet,
         MatIconModule,
-    ],
+    ]
 })
 export class AngorVerticalNavigationBasicItemComponent
     implements OnInit, OnDestroy

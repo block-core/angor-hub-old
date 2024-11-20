@@ -81,9 +81,8 @@ interface Chip {
         MatIconModule,
         MatExpansionModule,
         MatSidenavModule,
-        AgoPipe,
         PostComponent
-    ],
+    ]
 })
 export class ProfileComponent implements OnInit, OnDestroy {
 

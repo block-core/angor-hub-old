@@ -38,7 +38,7 @@ import { Subject, takeUntil } from 'rxjs';
         NgTemplateOutlet,
         RouterLink,
         DatePipe,
-    ],
+    ]
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
     @ViewChild('notificationsOrigin') private _notificationsOrigin: MatButton;

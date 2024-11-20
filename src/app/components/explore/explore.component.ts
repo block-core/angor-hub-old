@@ -32,29 +32,23 @@ import { BookmarkService } from 'app/services/bookmark.service';
 
 @Component({
     selector: 'explore',
-    standalone: true,
     templateUrl: './explore.component.html',
     encapsulation: ViewEncapsulation.None,
+    standalone: true,
     imports: [
-    MatButtonModule,
-    RouterLink,
-    MatIconModule,
-    AngorCardComponent,
-    CdkScrollable,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatInputModule,
-    MatSlideToggleModule,
-    NgClass,
-    MatTooltipModule,
-    MatProgressBarModule,
-    AngorFindByKeyPipe,
-    PercentPipe,
-    I18nPluralPipe,
-    CommonModule,
-
-],
+        MatButtonModule,
+        MatIconModule,
+        AngorCardComponent,
+        MatFormFieldModule,
+        MatSelectModule,
+        MatOptionModule,
+        MatInputModule,
+        MatSlideToggleModule,
+        NgClass,
+        MatTooltipModule,
+        MatProgressBarModule,
+        CommonModule,
+    ]
 })
 export class ExploreComponent implements OnInit, OnDestroy {
 

@@ -34,7 +34,7 @@ import { Subscription } from 'rxjs';
         TitleCasePipe,
         CommonModule,
         FormsModule,
-    ],
+    ]
 })
 export class SettingsRelayComponent implements OnInit {
     relays: any[] = [];

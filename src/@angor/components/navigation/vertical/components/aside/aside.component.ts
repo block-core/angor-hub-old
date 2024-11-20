@@ -38,7 +38,7 @@ import { Subject, filter, takeUntil } from 'rxjs';
         AngorVerticalNavigationDividerItemComponent,
         AngorVerticalNavigationGroupItemComponent,
         AngorVerticalNavigationSpacerItemComponent,
-    ],
+    ]
 })
 export class AngorVerticalNavigationAsideItemComponent
     implements OnChanges, OnInit, OnDestroy

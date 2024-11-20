@@ -42,7 +42,7 @@ import { Subject, takeUntil } from 'rxjs';
         MatButtonModule,
         NgClass,
         MatTooltipModule,
-    ],
+    ]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
     config: AngorConfig;

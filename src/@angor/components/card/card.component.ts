@@ -18,7 +18,6 @@ import {
     animations: angorAnimations,
     exportAs: 'angorCard',
     standalone: true,
-    imports: [],
 })
 export class AngorCardComponent implements OnChanges {
     static ngAcceptInputType_expanded: BooleanInput;

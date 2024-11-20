@@ -28,12 +28,8 @@ import { NewVersionCheckerService } from 'app/services/update.service';
         MatButtonModule,
         MatIconModule,
         MatTooltipModule,
-        NgClass,
-        NgTemplateOutlet,
-        RouterLink,
-        DatePipe,
         CommonModule,
-    ],
+    ]
 })
 export class UpdateComponent {
     @Input() tooltip: string;

@@ -34,9 +34,8 @@ import { UpdateComponent } from '../../../common/update/update.component';
         NotificationsComponent,
         UserComponent,
         RouterOutlet,
-        QuickChatComponent,
         UpdateComponent,
-    ],
+    ]
 })
 export class ClassicLayoutComponent implements OnInit, OnDestroy {
     isScreenSmall: boolean;

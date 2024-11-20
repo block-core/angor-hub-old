@@ -40,7 +40,6 @@ import { PostComponent } from 'app/layout/common/post/post.component';
     selector: 'help-center',
     templateUrl: './home.component.html',
     encapsulation: ViewEncapsulation.None,
-    standalone: true,
     imports: [
         CommonModule,
         FormsModule,
@@ -56,7 +55,7 @@ import { PostComponent } from 'app/layout/common/post/post.component';
         QRCodeModule,
         InfiniteScrollModule,
         PostComponent
-    ],
+    ]
 })
 export class LandingHomeComponent implements OnInit, OnDestroy {
     posts: NostrEvent[] = [];

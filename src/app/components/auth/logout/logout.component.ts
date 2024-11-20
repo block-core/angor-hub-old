@@ -8,8 +8,7 @@ import { Subject, finalize, takeUntil, takeWhile, tap, timer } from 'rxjs';
     selector: 'auth-logout',
     templateUrl: './logout.component.html',
     encapsulation: ViewEncapsulation.None,
-    standalone: true,
-    imports: [RouterLink, I18nPluralPipe],
+    imports: [RouterLink, I18nPluralPipe]
 })
 export class LogoutComponent implements OnInit, OnDestroy {
     countdown: number = 5;

@@ -39,7 +39,7 @@ import { Subject, filter, takeUntil } from 'rxjs';
         AngorVerticalNavigationDividerItemComponent,
         AngorVerticalNavigationGroupItemComponent,
         AngorVerticalNavigationSpacerItemComponent,
-    ],
+    ]
 })
 export class AngorVerticalNavigationCollapsableItemComponent
     implements OnInit, OnDestroy

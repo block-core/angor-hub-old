@@ -35,7 +35,7 @@ import { Subject, takeUntil } from 'rxjs';
         NgTemplateOutlet,
         MatMenuModule,
         MatIconModule,
-    ],
+    ]
 })
 export class AngorHorizontalNavigationBasicItemComponent
     implements OnInit, OnDestroy

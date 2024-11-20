@@ -32,7 +32,7 @@ import { AngorHorizontalNavigationSpacerItemComponent } from './components/space
         AngorHorizontalNavigationBasicItemComponent,
         AngorHorizontalNavigationBranchItemComponent,
         AngorHorizontalNavigationSpacerItemComponent,
-    ],
+    ]
 })
 export class AngorHorizontalNavigationComponent
     implements OnChanges, OnInit, OnDestroy

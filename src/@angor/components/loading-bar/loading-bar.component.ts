@@ -20,7 +20,7 @@ import { Subject, takeUntil } from 'rxjs';
     encapsulation: ViewEncapsulation.None,
     exportAs: 'angorLoadingBar',
     standalone: true,
-    imports: [MatProgressBarModule],
+    imports: [MatProgressBarModule]
 })
 export class AngorLoadingBarComponent implements OnChanges, OnInit, OnDestroy {
     private _angorLoadingService = inject(AngorLoadingService);

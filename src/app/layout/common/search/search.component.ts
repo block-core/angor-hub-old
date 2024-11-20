@@ -50,10 +50,8 @@ import { Subject, debounceTime, filter, map, takeUntil } from 'rxjs';
         ReactiveFormsModule,
         MatOptionModule,
         RouterLink,
-        NgTemplateOutlet,
         MatFormFieldModule,
         MatInputModule,
-        NgClass,
         CommonModule,
     ],
     providers: [
@@ -64,7 +62,7 @@ import { Subject, debounceTime, filter, map, takeUntil } from 'rxjs';
                 return () => overlay.scrollStrategies.block();
             },
         },
-    ],
+    ]
 })
 export class SearchComponent implements OnChanges, OnInit, OnDestroy {
     @Input() appearance: 'basic' | 'bar' = 'basic';

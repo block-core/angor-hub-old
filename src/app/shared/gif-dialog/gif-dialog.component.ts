@@ -35,15 +35,7 @@ import { GifService } from 'app/services/gif.service';
         MatSidenavModule,
         MatButtonModule,
         MatIconModule,
-        NgClass,
-        SettingsProfileComponent,
-        SettingsSecurityComponent,
-        SettingsNotificationsComponent,
-        SettingsRelayComponent,
-        SettingsNetworkComponent,
-        SettingsIndexerComponent,
         FormsModule,
-        MatOption,
         MatLabel,
         MatFormField,
         ReactiveFormsModule,
@@ -74,7 +66,7 @@ import { GifService } from 'app/services/gif.service';
                 transform: scale(1.1);
             }
         `,
-    ],
+    ]
 })
 export class GifDialogComponent {
     gifSearch: string = '';

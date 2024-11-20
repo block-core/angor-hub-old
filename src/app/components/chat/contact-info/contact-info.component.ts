@@ -15,8 +15,7 @@ import { Chat } from '../chat.types';
     templateUrl: './contact-info.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
-    imports: [MatButtonModule, MatIconModule, RouterModule],
+    imports: [MatButtonModule, MatIconModule, RouterModule]
 })
 export class ContactInfoComponent {
     @Input() chat: Chat;

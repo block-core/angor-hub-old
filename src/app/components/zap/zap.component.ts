@@ -24,7 +24,6 @@ import { AngorCardComponent } from '../../../@angor/components/card/card.compone
 
 @Component({
     selector: 'app-zap',
-    standalone: true,
     templateUrl: './zap.component.html',
     styleUrls: ['./zap.component.scss'],
     imports: [
@@ -37,7 +36,7 @@ import { AngorCardComponent } from '../../../@angor/components/card/card.compone
         TextFieldModule,
         ReactiveFormsModule,
         AngorCardComponent,
-    ],
+    ]
 })
 export class ZapComponent implements OnInit {
     private readonly formBuilder = inject(FormBuilder);

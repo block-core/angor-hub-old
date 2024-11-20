@@ -37,7 +37,7 @@ import { SignerService } from 'app/services/signer.service';
         MatCheckboxModule,
         MatProgressSpinnerModule,
         CommonModule,
-    ],
+    ]
 })
 export class RegisterComponent implements OnInit {
     @ViewChild('registerNgForm') registerNgForm: NgForm;

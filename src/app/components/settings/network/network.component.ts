@@ -24,7 +24,6 @@ import { IndexerService } from 'app/services/indexer.service';
     imports: [
         FormsModule,
         ReactiveFormsModule,
-        AngorAlertComponent,
         MatRadioModule,
         NgClass,
         MatIconModule,
@@ -33,9 +32,8 @@ import { IndexerService } from 'app/services/indexer.service';
         MatSelectModule,
         MatOptionModule,
         MatButtonModule,
-        CurrencyPipe,
         CommonModule,
-    ],
+    ]
 })
 export class SettingsNetworkComponent implements OnInit {
     networkForm: FormGroup;

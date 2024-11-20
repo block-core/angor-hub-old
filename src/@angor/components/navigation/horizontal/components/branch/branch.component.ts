@@ -35,7 +35,7 @@ import { Subject, takeUntil } from 'rxjs';
         AngorHorizontalNavigationDividerItemComponent,
         MatTooltipModule,
         MatIconModule,
-    ],
+    ]
 })
 export class AngorHorizontalNavigationBranchItemComponent
     implements OnInit, OnDestroy
