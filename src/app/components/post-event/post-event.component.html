@@ -1,7 +1,7 @@
 <div class="mx-auto w-full max-w-5xl px-6 sm:px-8">
     <div class="flex min-w-0 flex-auto flex-col">
-        <div *ngIf="loading" class="fixed inset-0 flex items-center justify-center z-50">
-            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        <div *ngIf="loading" class="flex justify-center items-center py-8">
+            <mat-progress-spinner mode="indeterminate" [diameter]="50"></mat-progress-spinner>
         </div>
 
         <div *ngIf="!loading && post">

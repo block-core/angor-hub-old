@@ -23,9 +23,9 @@ export class SubscriptionService {
 
     private subscriptionQueue: Subscription[] = [];
     private isProcessingQueue = false;
-    private queueInterval = 3000;
+    private queueInterval = 1000;
     private maxSubscriptionsPerBatch = 5;
-    private debounceInterval = 5000;
+    private debounceInterval = 1000;
     private lastActionTimestamp = new Map<string, number>();
 
     constructor(private relayService: RelayService) {

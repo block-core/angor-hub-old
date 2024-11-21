@@ -127,26 +127,43 @@ export class PostEventComponent implements OnInit, OnDestroy {
     }
 
     async loadPost(postId: string): Promise<void> {
-
         try {
             this.loading = true;
+
             this.post = await this._storageService.getPostById(postId);
 
-            this.loadUserProfile();
+            if (!this.post) {
+                const filter: Filter[] = [
+                    { ids: [postId], kinds: [1], limit: 1 }
+                ];
 
-            this._storageService.profile$.subscribe((data) => {
-                if (data && data.pubKey === this.post.pubkey) {
-                    this.user = data.metadata;
+                const subscriptionId = this._subscriptionService.addSubscriptions(filter, async (event: NostrEvent) => {
+                    this.post = event;
+                    console.log( this.post);
+
                     this._changeDetectorRef.detectChanges();
-                }
-            });
 
-            this.loading = false;
+                    await this._storageService.savePost(event);
+
+                    this._changeDetectorRef.detectChanges();
+
+                    if (subscriptionId) {
+                        this._subscriptionService.removeSubscriptionById(subscriptionId);
+                    }
+                    this.loading = false;
+                });
+            } else {
+                this.loading = false;
+                await this.loadUserProfile();
+            }
+
+
         } catch (error) {
             console.error('Error loading post:', error);
             this._router.navigate(['/404']);
         }
     }
+
 
     getSafeUrl(url: string): SafeUrl {
         return this._sanitizer.bypassSecurityTrustUrl(url);
