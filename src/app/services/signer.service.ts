@@ -583,5 +583,37 @@ export class SignerService {
         }
     }
 
+    getHexFromNpub(npub: string): string {
+        try {
+            const decoded = nip19.decode(npub);
+            if (decoded.type !== 'npub') {
+                throw new Error('Invalid npub format.');
+            }
+            return decoded.data.toString();
+        } catch (error) {
+            console.error('Error converting npub to hex:', error);
+            return '';
+        }
+    }
+
+    processKey(key: string): string {
+        try {
+            if (key.startsWith('npub')) {
+                const hexKey = this.getHexFromNpub(key);
+                if (!hexKey) {
+                    throw new Error('Failed to convert npub to hex.');
+                }
+                return hexKey;
+            }
+            if (/^[0-9a-fA-F]{64}$/.test(key)) {
+                return key;
+            }
+            throw new Error('Invalid key format. Must be either hex or npub.');
+        } catch (error) {
+            console.error('Error processing key:', error);
+            return '';
+        }
+    }
+
 
 }

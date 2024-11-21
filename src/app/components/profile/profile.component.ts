@@ -174,11 +174,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     private processRouteParams(): void {
         this._route.paramMap.subscribe((params) => {
-            const routePubKey = params.get('pubkey') || '';
+            const routeKey = params.get('pubkey') || '';
 
-            if (routePubKey) {
-                if (this.isValidHexPubkey(routePubKey)) {
-                    this.routePubKey = routePubKey;
+            if (routeKey) {
+                const hexPubKey = this._signerService.processKey(routeKey);
+                if (hexPubKey) {
+                    this.routePubKey = hexPubKey;
                     this.isCurrentUserProfile = false;
                 } else {
                     this.errorMessage = 'Public key is invalid. Please check your input.';
