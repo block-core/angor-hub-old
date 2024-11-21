@@ -340,25 +340,6 @@
                     </mat-slide-toggle>
                 </div>
                 <div class="mt-8 flex flex-col items-start sm:flex-row">
-                    <div class="mb-6 flex items-center sm:mb-0">
-                        <img
-                            class="mr-4 h-12 w-12 min-w-12 rounded-full object-cover"
-                            [src]="profileUser?.picture"
-                            onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-                            alt="{{
-                                profileUser?.display_name ||
-                                    profileUser?.name ||
-                                    ''
-                            }}"
-                        />
-                        <div class="sm:hidden">
-                            {{
-                                profileUser?.display_name ||
-                                    profileUser?.name ||
-                                    ''
-                            }}
-                        </div>
-                    </div>
                     <mat-form-field
                         class="w-full"
                         [subscriptSizing]="'dynamic'"
