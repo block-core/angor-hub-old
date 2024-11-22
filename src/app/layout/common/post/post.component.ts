@@ -179,5 +179,11 @@ export class PostComponent implements OnDestroy {
         });
     }
 
+    trackByToken(index: number, token: ParsedToken | string): string {
+        if (typeof token === 'string') {
+            return `${index}-${token}`;
+        }
+        return `${token.safeWord || ''}-${token.word || ''}-${index}`;
+    }
 
 }

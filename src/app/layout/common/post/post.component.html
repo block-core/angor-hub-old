@@ -77,7 +77,7 @@
         </mat-menu>
     </div>
 
-    @for (token of tokens(); track token) {
+    @for (token of tokens(); track trackByToken) {
         <div class="inline-block whitespace-pre-wrap break-words">
             <!-- YouTube Embeds -->
             @if (token.token === 'youtube') {
