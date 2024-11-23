@@ -127,43 +127,15 @@ export class SettingsProfileComponent implements OnInit {
         this.content = JSON.stringify(profileData);
 
         if (this._signerService.isUsingSecretKey()) {
-            const storedPassword = this._signerService.getPassword();
-            if (storedPassword) {
+
                 try {
                     const privateKey =
-                        await this._signerService.getSecretKey(storedPassword);
+                        await this._signerService.getDecryptedSecretKey();
                     this.signEvent(privateKey);
                 } catch (error) {
                     console.error(error);
                 }
-            } else {
-                const dialogRef = this._dialog.open(PasswordDialogComponent, {
-                    width: '300px',
-                    disableClose: true,
-                });
 
-                dialogRef.afterClosed().subscribe(async (result) => {
-                    if (result && result.password) {
-                        try {
-                            const privateKey =
-                                await this._signerService.getSecretKey(
-                                    result.password
-                                );
-                            this.signEvent(privateKey);
-                            if (result.duration != 0) {
-                                this._signerService.savePassword(
-                                    result.password,
-                                    result.duration
-                                );
-                            }
-                        } catch (error) {
-                            console.error(error);
-                        }
-                    } else {
-                        console.error('Password not provided');
-                    }
-                });
-            }
         } else if (this._signerService.isUsingExtension()) {
             const unsignedEvent: UnsignedEvent =
                 this._signerService.getUnsignedEvent(0, [], this.content);
