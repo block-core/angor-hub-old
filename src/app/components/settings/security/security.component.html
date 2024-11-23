@@ -32,6 +32,7 @@
             <button mat-flat-button type="submit" [color]="'primary'">Save</button>
         </div>
     </form>
+    @if (isPasswordEnabled) {
 
     <!-- Divider -->
     <div class="my-10 border-t"></div>
@@ -56,4 +57,5 @@
             <button mat-flat-button type="submit" [color]="'warn'">Remove Password</button>
         </div>
     </form>
+    }
 </div>
