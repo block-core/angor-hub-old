@@ -1,99 +1,59 @@
 <div class="w-full max-w-3xl">
-    <!-- Form -->
-    <form [formGroup]="securityForm">
-        <!-- Section -->
+    <form [formGroup]="changePasswordForm" (ngSubmit)="changePassword()">
         <div class="w-full">
             <div class="text-xl">Change your password</div>
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <div class="sm:col-span-4" *ngIf="securityForm.get('currentPassword')?.enabled">
+            <div class="sm:col-span-4" *ngIf="isPasswordEnabled">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Current password</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:key'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'currentPassword'"
-                        type="password"
-                        matInput
-                        required
-                    />
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:key'" matPrefix></mat-icon>
+                    <input [formControlName]="'currentPassword'" type="password" matInput />
                 </mat-form-field>
             </div>
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>New password</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:key'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'newPassword'"
-                        type="password"
-                        matInput
-                        required
-                    />
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:key'" matPrefix></mat-icon>
+                    <input [formControlName]="'newPassword'" type="password" matInput required />
                 </mat-form-field>
-                <div class="text-hint mt-1 text-md">Minimum 3 characters.</div>
+                <div class="text-hint mt-1 text-md">Enter a strong password with letters, numbers, and symbols.
+
+
+
+
+
+
+                </div>
             </div>
-
-
         </div>
 
-        <!-- Divider -->
-        <div class="my-10 border-t"></div>
+        <div class="flex items-center justify-end mt-4">
+            <button mat-flat-button type="submit" [color]="'primary'">Save</button>
+        </div>
+    </form>
 
-        <!-- Password preferences -->
+    <!-- Divider -->
+    <div class="my-10 border-t"></div>
+
+    <form [formGroup]="removePasswordForm" (ngSubmit)="removePassword()">
         <div class="w-full">
-            <div class="text-xl">Password preferences</div>
+            <div class="text-xl">Remove Password</div>
             <div class="text-secondary">
-                Manage how your password is saved for future logins.
+                Removing your password will save your private key without encryption. Ensure you understand the risks.
             </div>
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- Save password -->
-            <div class="flex items-center justify-between sm:col-span-4">
-                <div
-                    class="flex-auto cursor-pointer"
-                    (click)="savePasswordToggle.toggle()"
-                >
-                    <div class="font-medium leading-6">
-                        Save password for future decrypting sensitive
-                        information.
-                    </div>
-                    <div class="text-secondary text-md">
-                        Enable this option to save your password locally for 60
-                        minutes.
-                    </div>
-                </div>
-                <mat-slide-toggle
-                    class="ml-4"
-                    [color]="'primary'"
-                    [formControlName]="'savePassword'"
-                    #savePasswordToggle
-                >
-                </mat-slide-toggle>
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Current password</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:key'" matPrefix></mat-icon>
+                    <input [formControlName]="'currentPasswordRemove'" type="password" matInput required />
+                </mat-form-field>
             </div>
         </div>
-
-        <!-- Divider -->
-        <div class="my-10 border-t"></div>
-
-        <!-- Actions -->
-        <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancel</button>
-            <button
-                class="ml-4"
-                mat-flat-button
-                type="button"
-                [color]="'primary'"
-                (click)="changePassword()"
-            >
-                Save
-            </button>
+        <div class="flex items-center justify-end mt-4">
+            <button mat-flat-button type="submit" [color]="'warn'">Remove Password</button>
         </div>
     </form>
 </div>
