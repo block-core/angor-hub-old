@@ -17,7 +17,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { SignerService } from 'app/services/signer.service';
 import { StateService } from 'app/services/state.service';
-import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@blockcore/nostr-login';
 import { NostrLoginService } from 'app/services/nostr-login.service';
 import { Subscription } from 'rxjs';
 @Component({
@@ -101,13 +100,13 @@ export class LoginComponent implements OnInit {
     private initializeForms(): void {
         this.SecretKeyLoginForm = this._formBuilder.group({
             secretKey: ['', [Validators.required, Validators.minLength(3)]],
-            password: ['', Validators.required],
+            password: [''],
         });
 
         this.MenemonicLoginForm = this._formBuilder.group({
             menemonic: ['', [Validators.required, Validators.minLength(3)]],
-            passphrase: [''], // Passphrase is optional
-            password: ['', Validators.required],
+            passphrase: [''], 
+            password: [''],
         });
     }
 

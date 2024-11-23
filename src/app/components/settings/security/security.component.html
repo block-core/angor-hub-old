@@ -4,13 +4,9 @@
         <!-- Section -->
         <div class="w-full">
             <div class="text-xl">Change your password</div>
-            <div class="text-secondary">
-                You can only change your password twice within 24 hours!
-            </div>
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- Current password -->
-            <div class="sm:col-span-4">
+            <div class="sm:col-span-4" *ngIf="securityForm.get('currentPassword')?.enabled">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Current password</mat-label>
                     <mat-icon
@@ -26,7 +22,6 @@
                     />
                 </mat-form-field>
             </div>
-            <!-- New password -->
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>New password</mat-label>
@@ -44,6 +39,8 @@
                 </mat-form-field>
                 <div class="text-hint mt-1 text-md">Minimum 3 characters.</div>
             </div>
+
+
         </div>
 
         <!-- Divider -->

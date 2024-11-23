@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -16,6 +17,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { SignerService } from 'app/services/signer.service';
 
 @Component({
@@ -32,36 +34,37 @@ import { SignerService } from 'app/services/signer.service';
         MatInputModule,
         MatSlideToggleModule,
         MatButtonModule,
+        CommonModule
     ]
 })
 export class SettingsSecurityComponent implements OnInit {
     securityForm: UntypedFormGroup;
 
-    /**
-     * Constructor
-     */
+
     constructor(
         private _formBuilder: UntypedFormBuilder,
-        private _signerService: SignerService
+        private _signerService: SignerService,
+        private _snackBar: MatSnackBar,
+
     ) {}
 
-    /**
-     * On init
-     */
     ngOnInit(): void {
-        // Create the form
+        const isPasswordEnabled = localStorage.getItem('usePassword') === 'true';
+
         this.securityForm = this._formBuilder.group({
-            currentPassword: ['', Validators.required],
+            currentPassword: [
+                { value: '', disabled: !isPasswordEnabled },
+                isPasswordEnabled ? Validators.required : []
+            ],
             newPassword: ['', [Validators.required, Validators.minLength(3)]],
-            twoStep: [true],
-            askPasswordChange: [false],
-            savePassword: [false], // Toggle for saving password
+            savePassword: [false],
         });
     }
 
-    /**
-     * Change password method
-     */
+    openSnackBar(message: string, action: string = 'dismiss'): void {
+        this._snackBar.open(message, action, { duration: 3000 });
+    }
+
     async changePassword(): Promise<void> {
         if (this.securityForm.invalid) {
             return;
@@ -72,19 +75,36 @@ export class SettingsSecurityComponent implements OnInit {
         const savePassword = this.securityForm.get('savePassword')?.value;
 
         try {
-            const success = await this._signerService.changePassword(
-                currentPassword,
-                newPassword,
-                savePassword // Save password toggle value
-            );
+            const isPasswordEnabled = localStorage.getItem('usePassword') === 'true';
 
-            if (success) {
-                alert('Password successfully changed.');
+            if (isPasswordEnabled) {
+                const secretKey = await this._signerService.getSecretKey(currentPassword);
+                if (!secretKey) {
+                    this.openSnackBar('Current password is incorrect.');
+                    return;
+                }
+
+                await this._signerService.setSecretKey(secretKey, newPassword);
             } else {
-                alert('Password change failed. Please check your credentials.');
+                const secretKey = await this._signerService.getSecretKey();
+                if (!secretKey) {
+                    alert('Private key not found.');
+                    return;
+                }
+
+                await this._signerService.setSecretKey(secretKey, newPassword);
             }
+
+            if (savePassword) {
+                this._signerService.savePassword(newPassword, 60);
+            }
+
+            this.openSnackBar('Password successfully changed.');
         } catch (error) {
             console.error('Error during password change:', error);
+            this.openSnackBar('Failed to change the password.');
         }
     }
+
+
 }
