@@ -42,7 +42,8 @@ export class SettingsSecurityComponent implements OnInit {
     removePasswordForm: UntypedFormGroup;
 
     isPasswordEnabled: boolean;
-
+    secretKey: string | null = null;
+    nsecKey: string | null = null;
     constructor(
         private _formBuilder: UntypedFormBuilder,
         private _signerService: SignerService,
@@ -67,6 +68,60 @@ export class SettingsSecurityComponent implements OnInit {
         });
 
         this.updateFormState();
+    }
+
+
+    async fetchSecretKey(): Promise<void> {
+        try {
+            // Fetch the secret key using the existing method
+            this.secretKey = await this._signerService.getDecryptedSecretKey();
+
+            if (!this.secretKey) {
+                this.openSnackBar('Failed to retrieve the secret key. Please try again.');
+                return;
+            }
+            this.fetchNsecKey();
+            this.openSnackBar('Secret key retrieved successfully.');
+            this._changeDetectorRef.detectChanges();
+        } catch (error) {
+            console.error('Error retrieving secret key:', error);
+            this.openSnackBar('Failed to retrieve the secret key. Please try again later.');
+        }
+    }
+
+    async fetchNsecKey(): Promise<void> {
+        try {
+            // Generate the Nsec key from the secret key
+            if (!this.secretKey) {
+                this.openSnackBar('Secret key must be retrieved first.');
+                return;
+            }
+
+            this.nsecKey = this._signerService.getNsecFromSeckey(this.secretKey);
+
+            if (!this.nsecKey) {
+                this.openSnackBar('Failed to generate the Nsec key.');
+                return;
+            }
+
+            this.openSnackBar('Nsec key generated successfully.');
+            this._changeDetectorRef.detectChanges();
+        } catch (error) {
+            console.error('Error generating Nsec key:', error);
+            this.openSnackBar('Failed to generate the Nsec key. Please try again later.');
+        }
+    }
+
+    copyToClipboard(value: string): void {
+        navigator.clipboard.writeText(value).then(
+            () => {
+                this.openSnackBar('Copied to clipboard.');
+            },
+            (error) => {
+                console.error('Failed to copy to clipboard:', error);
+                this.openSnackBar('Failed to copy to clipboard.');
+            }
+        );
     }
 
     private updateFormState(): void {
@@ -102,7 +157,7 @@ export class SettingsSecurityComponent implements OnInit {
             } else {
                 secretKey = await this._signerService.getSecretKey();
                 if (!secretKey) {
-                    alert('Private key not found.');
+                    alert('Secret key not found.');
                     return;
                 }
             }

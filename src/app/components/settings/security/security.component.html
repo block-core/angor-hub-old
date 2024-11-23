@@ -1,4 +1,67 @@
-<div class="w-full max-w-3xl">
+<div class="w-full max-w-3xl mx-auto">
+
+
+         <!-- Secret Key Section -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800">Secret Key</h2>
+            <p class="text-gray-600 mb-4">
+                Your secret key is sensitive information. Keep it secure and do not share it.
+            </p>
+
+            <!-- Readonly Textbox with Copy Button -->
+            <mat-form-field *ngIf="secretKey" class="w-full mb-4" [subscriptSizing]="'dynamic'">
+                <mat-label>Secret Key</mat-label>
+                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:lock-open'" matPrefix></mat-icon>
+                <input matInput [value]="secretKey" readonly />
+                <button
+                    mat-icon-button
+                    matSuffix
+                    (click)="copyToClipboard(secretKey)"
+                    aria-label="Copy secret key"
+                >
+                    <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
+                </button>
+            </mat-form-field>
+
+
+            <mat-form-field *ngIf="nsecKey" class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Nsec Key</mat-label>
+                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:lock-open'" matPrefix></mat-icon>
+                <input matInput [value]="nsecKey" readonly />
+                <button
+                    mat-icon-button
+                    matSuffix
+                    (click)="copyToClipboard(nsecKey)"
+                    aria-label="Copy Nsec key"
+                >
+                    <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
+                </button>
+            </mat-form-field>
+
+
+            <!-- Fetch Secret Key Button -->
+            <div *ngIf="!secretKey" class="flex items-center justify-center mt-6">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    class="px-6 py-2 shadow"
+                    (click)="fetchSecretKey()"
+                >
+                    View Secret Key
+                </button>
+            </div>
+        </div>
+
+
+
+
+
+
+    <!-- Divider -->
+    <div class="my-10 border-t"></div>
+
+
     <form [formGroup]="changePasswordForm" (ngSubmit)="changePassword()">
         <div class="w-full">
             <div class="text-xl">Change your password</div>
@@ -41,7 +104,7 @@
         <div class="w-full">
             <div class="text-xl">Remove Password</div>
             <div class="text-secondary">
-                Removing your password will save your private key without encryption. Ensure you understand the risks.
+                Removing your password will save your secret key without encryption. Ensure you understand the risks.
             </div>
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
