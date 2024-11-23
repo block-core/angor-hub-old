@@ -77,7 +77,7 @@
         </mat-menu>
     </div>
 
-    @for (token of tokens(); track trackByToken) {
+    @for (token of tokens(); let i = $index; track trackByToken(i, token)) {
         <div class="inline-block whitespace-pre-wrap break-words">
             <!-- YouTube Embeds -->
             @if (token.token === 'youtube') {
@@ -156,19 +156,25 @@
 
     @if (actions) {
         <div class="mx-3 flex items-center sm:mx-5">
-
             <button class="mr-1 px-3" mat-button (click)="toggleLike(item)">
-                <mat-icon class="text-red-500 icon-size-5" [ngClass]="{ 'heart-beat': isLiked }"
+                <mat-icon
+                    class="text-red-500 icon-size-5"
+                    [ngClass]="{ 'heart-beat': isLiked }"
                     [svgIcon]="
-                    isLiked
+                        isLiked
                             ? 'heroicons_solid:heart'
                             : 'heroicons_outline:heart'
-                    ">
+                    "
+                >
                 </mat-icon>
-                <span class="ml-2">{{ isLiked ?'Liked':'Like' }} </span>
+                <span class="ml-2">{{ isLiked ? 'Liked' : 'Like' }} </span>
             </button>
 
-            <button class="mr-1 px-3" mat-button [routerLink]="['/post', item.id]">
+            <button
+                class="mr-1 px-3"
+                mat-button
+                [routerLink]="['/post', item.id]"
+            >
                 <mat-icon
                     class="text-blue-500 icon-size-5"
                     [svgIcon]="'heroicons_solid:chat-bubble-left-ellipsis'"
