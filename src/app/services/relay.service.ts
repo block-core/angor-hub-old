@@ -1,6 +1,10 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { NostrEvent, SimplePool, Filter } from 'nostr-tools';
-import { BehaviorSubject, Observable, Subject, timer } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, timer, from, of, merge, catchError, map, switchAll, retryWhen, delay, take, takeWhile, exhaustMap } from 'rxjs';
+import { filter, tap, finalize } from 'rxjs/operators';
+import { Inject, Optional } from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+
 interface Relay {
     url: string;
     connected: boolean;
@@ -22,7 +26,7 @@ export class RelayService implements OnDestroy {
     private readonly relaysSubject = new BehaviorSubject<Relay[]>([]);
     private readonly destroy$ = new Subject<void>();
 
-    constructor() {
+    constructor(@Optional() @Inject(DOCUMENT) private document: any, @Inject(PLATFORM_ID) private platformId: Object) {
         this.initializeRelays();
         this.setupVisibilityHandling();
     }
@@ -48,9 +52,7 @@ export class RelayService implements OnDestroy {
     }
 
     private saveRelaysToLocalStorage(): void {
-        const relaysToSave = this.relays.map(({ url, accessType, connected, retries, retryTimeout }) => ({
-            url, accessType, connected, retries, retryTimeout
-        }));
+        const relaysToSave = this.relays.map(relay => ({ url: relay.url, accessType: relay.accessType, connected: relay.connected, retries: relay.retries, retryTimeout: relay.retryTimeout }));
         localStorage.setItem('nostrRelays', JSON.stringify(relaysToSave));
         this.relaysSubject.next(this.relays);
     }
@@ -100,28 +102,24 @@ export class RelayService implements OnDestroy {
 
     public async ensureConnectedRelays(): Promise<void> {
         this.connectToRelays();
-        return new Promise(resolve => {
-            const checkConnection = () => {
+        return new Promise((resolve) => {
+            const interval = setInterval(() => {
                 if (this.getConnectedRelays().length > 0) {
+                    clearInterval(interval);
                     resolve();
-                } else {
-                    setTimeout(checkConnection, 1000);
                 }
-            };
-            checkConnection();
+            }, 1000);
         });
     }
 
     private setupVisibilityHandling(): void {
-        if (typeof document !== 'undefined') {
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') {
+        if (isPlatformBrowser(this.platformId)) {
+            this.document.addEventListener('visibilitychange', () => {
+                if (this.document.visibilityState === 'visible') {
                     this.connectToRelays();
                 }
             });
-        }
 
-        if (typeof window !== 'undefined') {
             window.addEventListener('beforeunload', () => {
                 this.relays.forEach(relay => relay.ws?.close());
             });
@@ -200,5 +198,6 @@ export class RelayService implements OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+        this.relays.forEach(relay => relay.ws?.close());
     }
 }
