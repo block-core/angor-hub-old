@@ -17,7 +17,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
-import { QRCodeModule } from 'angularx-qrcode';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { Subscription } from 'rxjs';
 import { NostrEvent } from 'nostr-tools';
@@ -52,7 +51,6 @@ import { PostComponent } from 'app/layout/common/post/post.component';
         MatMenuModule,
         MatProgressSpinnerModule,
         MatTooltipModule,
-        QRCodeModule,
         InfiniteScrollModule,
         PostComponent
     ]

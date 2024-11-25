@@ -9,7 +9,6 @@ import { SignerService } from 'app/services/signer.service';
 import { RelayService } from 'app/services/relay.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { QRCodeModule } from 'angularx-qrcode';
 import { CommonModule } from '@angular/common';
 import { MatDivider } from '@angular/material/divider';
 import { MatLabel, MatFormField, MatFormFieldModule } from '@angular/material/form-field';
@@ -19,6 +18,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Utilities } from 'app/services/utilities';
 import { hexToBytes } from '@noble/hashes/utils';
+import { QRCodeComponent } from 'angularx-qrcode';
 
 @Component({
     selector: 'app-send-dialog',
@@ -40,10 +40,10 @@ import { hexToBytes } from '@noble/hashes/utils';
         MatSelectModule,
         MatDialogContent,
         MatDialogActions,
-        QRCodeModule,
         MatDivider,
         MatTooltip,
         MatDialogClose,
+        QRCodeComponent
     ]
 })
 export class ZapDialogComponent implements OnInit {

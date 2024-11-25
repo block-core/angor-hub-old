@@ -15,7 +15,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { QRCodeModule } from 'angularx-qrcode';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { AgoPipe } from "../../shared/pipes/ago.pipe";
 import { ParseContentService } from 'app/services/parse-content.service';
@@ -52,7 +51,6 @@ export interface PostReaction {
         MatTooltipModule,
         CommonModule,
         FormsModule,
-        QRCodeModule,
         MatProgressSpinnerModule,
         InfiniteScrollModule,
         MatExpansionModule,

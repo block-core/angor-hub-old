@@ -28,7 +28,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
-import { QRCodeModule } from 'angularx-qrcode';
 import { EventService } from 'app/services/event.service';
 import { SignerService } from 'app/services/signer.service';
 import { SocialService } from 'app/services/social.service';
@@ -73,7 +72,6 @@ interface Chip {
         NgClass,
         CommonModule,
         FormsModule,
-        QRCodeModule,
         PickerComponent,
         MatSlideToggle,
         MatProgressSpinnerModule,
