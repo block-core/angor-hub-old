@@ -596,9 +596,6 @@ THE SOFTWARE.
 ```
 
 
-encode-utf8
-MIT
-
 flat
 BSD-3-Clause
 Copyright (c) 2014, Hugh Kennedy
