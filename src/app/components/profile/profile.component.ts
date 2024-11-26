@@ -30,7 +30,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { EventService } from 'app/services/event.service';
 import { SignerService } from 'app/services/signer.service';
-import { SocialService } from 'app/services/social.service';
 import { ContactEvent, StorageService } from 'app/services/storage.service';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { Filter, NostrEvent } from 'nostr-tools';
@@ -141,7 +140,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _sanitizer: DomSanitizer,
         private _route: ActivatedRoute,
         private _router: Router,
-        private _socialService: SocialService,
         private _snackBar: MatSnackBar,
         private _dialog: MatDialog,
         private _angorConfigService: AngorConfigService,
@@ -169,6 +167,17 @@ export class ProfileComponent implements OnInit, OnDestroy {
             }
         });
     }
+
+
+    private checkIfRoutePubKeyIsFollowing(): void {
+        if (!this.routePubKey || !this.followersList) {
+            this.isFollowing = false;
+            return;
+        }
+
+        this.isFollowing = this.followersList.some(follower => follower.pubkey === this.routePubKey);
+    }
+
 
     private processRouteParams(): void {
         this._route.paramMap.subscribe((params) => {
@@ -198,8 +207,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     private loadUserProfileData(pubKey: string): void {
         this.loadUserProfile(pubKey);
-        this.stats$ = this._storageService.getContactStats$(pubKey);
-    }
+     }
 
     private isValidHexPubkey(pubkey: string): boolean {
         const hexPattern = /^[a-fA-F0-9]{64}$/;
@@ -242,7 +250,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             this.loading = false;
         }
 
-        this._changeDetectorRef.detectChanges();
+        this.refreshUI();
     }
 
 
@@ -268,7 +276,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                     if (newPost.pubkey === this.routePubKey) {
                         this.posts.unshift(newPost);
                         this.posts.sort((a, b) => b.created_at - a.created_at);
-                        this._changeDetectorRef.detectChanges();
+                        this.refreshUI();
                     }
                 }
             });
@@ -312,12 +320,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.errorMessage = null;
         this.profileUser = null;
 
-        this._changeDetectorRef.detectChanges();
+        this.refreshUI();
 
         if (!publicKey) {
             this.errorMessage = 'No public key found. Please log in again.';
             this.isLoading = false;
-            this._changeDetectorRef.detectChanges();
+            this.refreshUI();
             return;
         }
         try {
@@ -325,7 +333,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             const cachedMetadata = await this._storageService.getProfile(publicKey);
             if (cachedMetadata) {
                 this.profileUser = cachedMetadata;
-                this._changeDetectorRef.detectChanges();
+                this.refreshUI();
             }
 
             this.subscribeToUserProfileAndContacts(publicKey);
@@ -386,52 +394,27 @@ export class ProfileComponent implements OnInit, OnDestroy {
         };
 
         if (isFollower) {
-            // Add to followers list
             this.followersList.push(contactEvent);
             this.followersCount++;
             this.totalContacts++;
-            this._changeDetectorRef.detectChanges();
-
         } else {
-            // Add to following list
             this.followingList.push(contactEvent);
             this.followingCount++;
             this.totalContacts++;
-            this._changeDetectorRef.detectChanges();
-
-
         }
-    }
 
+        this.checkIfRoutePubKeyIsFollowing();
+        this.refreshUI();
+    }
 
 
     getSafeUrl(url: string): SafeUrl {
         return this._sanitizer.bypassSecurityTrustUrl(url);
     }
 
-    async toggleFollow(): Promise<void> {
-        try {
-            const userPubKey = this._signerService.getPublicKey();
-            const routePubKey = this.routePubKey || this.currentUserPubKey;
 
-            if (!routePubKey || !userPubKey) {
-                console.error('Public key missing. Unable to toggle follow.');
-                return;
-            }
-
-            if (this.isFollowing) {
-                await this._socialService.unfollow(routePubKey);
-
-            } else {
-                await this._socialService.follow(routePubKey);
-            }
-
-            this.isFollowing = !this.isFollowing;
-
-            this._changeDetectorRef.detectChanges();
-        } catch (error) {
-            console.error('Failed to toggle follow:', error);
-        }
+    private refreshUI(): void {
+        this._changeDetectorRef.detectChanges();
     }
 
     openSnackBar(message: string, action: string = 'dismiss'): void {

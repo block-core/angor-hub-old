@@ -72,96 +72,29 @@
             </div>
 
             <!-- Separator -->
-            <div class="mx-8 hidden h-8 flex-shrink-0 border-l-2 lg:flex"></div>
-            <div class="flex flex-shrink-0 items-center space-x-6 lg:mt-0">
-                <div
-                    *ngIf="isCurrentUserProfile; else otherUserStats"
-                    class="mt-6 flex flex-shrink-0 items-center space-x-6 lg:mt-0"
-                >
-                    <ng-container *ngIf="stats$ | async as stats">
-                        <div class="flex flex-col items-center">
-                            <span
-                                [matTooltip]="
-                                    'Total contact: ' + stats.totalContacts
-                                "
-                                class="font-bold"
-                            >
-                                {{ stats.followersCount }}
-                            </span>
-                            <span class="text-secondary text-sm font-medium"
-                                >FOLLOWERS</span
-                            >
-                        </div>
+             <div class="flex flex-shrink-0 items-center space-x-6 lg:mt-0">
 
-                        <div class="flex flex-col items-center">
-                            <span class="font-bold">{{
-                                stats.followingCount
-                            }}</span>
-                            <span
-                                [matTooltip]="
-                                    'Total contact: ' + stats.totalContacts
-                                "
-                                class="text-secondary text-sm font-medium"
-                            >
-                                FOLLOWING
-                            </span>
-                        </div>
-                    </ng-container>
-                </div>
-
-                <ng-template #otherUserStats>
-                    <div
-                        class="mt-6 flex flex-shrink-0 items-center space-x-6 lg:mt-0"
-                    >
-                        <div class="flex flex-col items-center">
-                            <span
-                                [matTooltip]="'Total contact: ' + totalContacts"
-                                class="font-bold"
-                            >
-                                {{ followersCount }}
-                            </span>
-                            <span class="text-secondary text-sm font-medium"
-                                >FOLLOWERS</span
-                            >
-                        </div>
-
-                        <div class="flex flex-col items-center">
-                            <span class="font-bold">{{ followingCount }}</span>
-                            <span
-                                [matTooltip]="'Total contact: ' + totalContacts"
-                                class="text-secondary text-sm font-medium"
-                            >
-                                FOLLOWING
-                            </span>
-                        </div>
-                    </div>
-                </ng-template>
-
-                <!-- Separator -->
-                <div
-                    class="mx-8 hidden h-8 flex-shrink-0 border-l-2 lg:flex"
-                ></div>
 
                 <!-- Tools -->
                 <div
                     class="mb-4 mt-8 flex flex-shrink-0 items-center space-x-6 lg:m-0 lg:ml-auto"
                 >
-                    <div *ngIf="!isCurrentUserProfile">
-                        <button
-                            mat-icon-button
-                            (click)="toggleFollow()"
-                            [matTooltip]="isFollowing ? 'Unfollow' : 'Follow'"
-                        >
-                            <mat-icon
-                                [svgIcon]="
-                                    isFollowing
-                                        ? 'heroicons_outline:user-minus'
-                                        : 'heroicons_outline:user-plus'
-                                "
-                            >
+
+                     <div
+                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                        <button mat-icon-button  >
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
+                        </button>
+                    </div>
+                    <div
+                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                        <button mat-icon-button  >
+                            <mat-icon class="icon-size-5"
+                                      [svgIcon]="'heroicons_solid:bookmark'">
                             </mat-icon>
                         </button>
                     </div>
+
                     <div>
                         <button
                             mat-icon-button
@@ -508,7 +441,7 @@
                             eventInput.nativeElement.value
                         );
                         trackBy: trackByFn
-                        
+
                     "
                     class="inline-block whitespace-pre-wrap break-words"
                 >

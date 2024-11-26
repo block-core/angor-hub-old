@@ -16,23 +16,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ActivatedRoute, Router } from '@angular/router';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { Subscription } from 'rxjs';
 import { NostrEvent } from 'nostr-tools';
-import { AngorCardComponent } from '@angor/components/card';
-import { AngorConfigService } from '@angor/services/config';
-import { AngorConfirmationService } from '@angor/services/confirmation';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ParseContentService } from 'app/services/parse-content.service';
-import { SignerService } from 'app/services/signer.service';
-import { SocialService } from 'app/services/social.service';
 import { StorageService } from 'app/services/storage.service';
-import { SubscriptionService } from 'app/services/subscription.service';
-import { AgoPipe } from 'app/shared/pipes/ago.pipe';
-import { PostProfileComponent } from '../post-event/post-profile/post-profile.component';
 import { PostComponent } from 'app/layout/common/post/post.component';
 
 @Component({

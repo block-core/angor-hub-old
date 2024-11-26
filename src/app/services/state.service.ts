@@ -22,7 +22,7 @@ export class StateService {
         }
 
         await this.subscribeToUserProfile(pubkey);
-        await this.subscribeToUserContacts(pubkey);
+        // await this.subscribeToUserContacts(pubkey);
         await this.subscribeToUserChats(pubkey);
         await this.subscribeToUserPosts(pubkey);
         await this.subscribeToMyLikes(pubkey);
@@ -47,40 +47,40 @@ export class StateService {
         });
     }
 
-    private async subscribeToUserContacts(pubkey: string): Promise<void> {
+    // private async subscribeToUserContacts(pubkey: string): Promise<void> {
 
-        const contactsLastUpdate = await this.storageService.getLastUpdateDate('contacts');
+    //     const contactsLastUpdate = await this.storageService.getLastUpdateDate('contacts');
 
-        const contactsFilter: Filter[] = [
-            {
-                kinds: [Contacts],
-                authors: [pubkey],
-            },
-            {
-                kinds: [Contacts],
-                '#p': [pubkey],
-            },
-        ];
+    //     const contactsFilter: Filter[] = [
+    //         {
+    //             kinds: [Contacts],
+    //             authors: [pubkey],
+    //         },
+    //         {
+    //             kinds: [Contacts],
+    //             '#p': [pubkey],
+    //         },
+    //     ];
 
-        if (contactsLastUpdate) {
-            const lastUpdateTimestamp = parseInt(contactsLastUpdate, 10);
-            contactsFilter.forEach(filter => filter.since = lastUpdateTimestamp);
-        }
+    //     if (contactsLastUpdate) {
+    //         const lastUpdateTimestamp = parseInt(contactsLastUpdate, 10);
+    //         contactsFilter.forEach(filter => filter.since = lastUpdateTimestamp);
+    //     }
 
-        this.subscriptionService.addSubscriptions(contactsFilter, (event: NostrEvent) => {
-            const isFollower = event.pubkey === pubkey;
+    //     this.subscriptionService.addSubscriptions(contactsFilter, (event: NostrEvent) => {
+    //         const isFollower = event.pubkey === pubkey;
 
-            const contactEvent: ContactEvent = {
-                id: event.id,
-                pubkey: event.pubkey,
-                created_at: event.created_at,
-                tags: event.tags,
-                isFollower,
-            };
+    //         const contactEvent: ContactEvent = {
+    //             id: event.id,
+    //             pubkey: event.pubkey,
+    //             created_at: event.created_at,
+    //             tags: event.tags,
+    //             isFollower,
+    //         };
 
-            this.storageService.saveContacts(pubkey, [contactEvent]);
-        });
-    }
+    //         this.storageService.saveContacts(pubkey, [contactEvent]);
+    //     });
+    // }
 
 
     private async subscribeToUserChats(pubkey: string): Promise<void> {
