@@ -37,6 +37,7 @@ import { BookmarkService } from 'app/services/bookmark.service';
     encapsulation: ViewEncapsulation.None,
     standalone: true,
     imports: [
+        RouterLink,
         MatButtonModule,
         MatIconModule,
         AngorCardComponent,
@@ -201,18 +202,9 @@ export class ExploreComponent implements OnInit, OnDestroy {
             });
     }
 
-
     trackByFn(index: number, item: Project): string | number {
         return item.projectIdentifier || index;
     }
-
-
-    openChat(pubKey : string): void
-    {
-        this._router.navigate(['/chat', pubKey]);
-    }
-
-
 
    goToProjectDetails(project: Project): void {
     this._projectsService.fetchProjectStats(project.projectIdentifier).pipe(
