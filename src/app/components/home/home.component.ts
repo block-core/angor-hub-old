@@ -23,12 +23,14 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ParseContentService } from 'app/services/parse-content.service';
 import { StorageService } from 'app/services/storage.service';
 import { PostComponent } from 'app/layout/common/post/post.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'help-center',
     templateUrl: './home.component.html',
     encapsulation: ViewEncapsulation.None,
     imports: [
+        RouterLink,
         CommonModule,
         FormsModule,
         MatButtonModule,
