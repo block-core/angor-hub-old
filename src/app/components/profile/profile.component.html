@@ -80,12 +80,14 @@
                     class="mb-4 mt-8 flex flex-shrink-0 items-center space-x-6 lg:m-0 lg:ml-auto"
                 >
 
+                @if (projectIdentifier) {
                      <div
                         class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
                         <button mat-icon-button [routerLink]="['/chat', routePubKey]">
                             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
                         </button>
                     </div>
+             
                     <div
                         class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
                         <button mat-icon-button (click)="toggleBookmark(routePubKey)">
@@ -94,6 +96,7 @@
                             </mat-icon>
                         </button>
                     </div>
+                
 
                     <div>
                         <button
@@ -192,6 +195,7 @@
                             </ng-container>
                         </mat-menu>
                     </div>
+                }
                 </div>
             </div>
         </div>

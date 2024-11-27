@@ -100,6 +100,11 @@ export const appRoutes: Route[] = [
                     import('app/components/profile/profile.routes'),
             },
             {
+                path: 'profile/:pubkey/:project',
+                loadChildren: () =>
+                    import('app/components/profile/profile.routes'),
+            },
+            {
                 path: 'post',
                 loadChildren: () =>
                     import('app/components/post-event/post-event.routes'),

@@ -188,8 +188,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
         );
     }
 
+    projectIdentifier: string = '';
+
     private processRouteParams(): void {
         this._route.paramMap.subscribe((params) => {
+
+            this.projectIdentifier = params.get('project') || '';
             const routeKey = params.get('pubkey') || '';
 
             if (routeKey) {
@@ -348,6 +352,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 this.profileUser = cachedMetadata;
                 this.refreshUI();
             }
+
+            console.log('cachedMetadata: ', cachedMetadata);
 
             this.subscribeToUserProfileAndContacts(publicKey);
         } catch (error) {
