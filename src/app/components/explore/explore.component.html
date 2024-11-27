@@ -154,12 +154,21 @@
                     </angor-card>
                 </ng-container>
             </div>
-            <ng-container *ngIf="filteredProjects.length == 0">
-                <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
-                    <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
-                    <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
-                        No project
+            <ng-container *ngIf="!loading || initialLoadComplete">
+                <ng-container *ngIf="filteredProjects.length === 0">
+                    <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
+                        <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
+                        <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
+                            No projects
+                        </div>
                     </div>
+                </ng-container>
+            </ng-container>
+
+            <ng-container *ngIf="loading && !initialLoadComplete">
+                <div class="flex flex-auto flex-col items-center justify-center">
+                    <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+                    <div class="text-secondary mt-4 text-xl">Loading projects...</div>
                 </div>
             </ng-container>
             <!-- Load More Button -->

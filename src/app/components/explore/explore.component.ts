@@ -23,6 +23,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { Project } from 'app/interface/project.interface';
 import { StorageService } from 'app/services/storage.service';
@@ -48,6 +49,7 @@ import { BookmarkService } from 'app/services/bookmark.service';
         MatTooltipModule,
         MatProgressBarModule,
         CommonModule,
+        MatProgressSpinnerModule,
     ]
 })
 export class ExploreComponent implements OnInit, OnDestroy {
@@ -61,6 +63,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
     showCloseSearchButton: boolean;
     bookmarks$: Observable<string[]>;
     bookmarkedProjectNpubs: string[] = [];
+    initialLoadComplete: boolean = false;
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -88,6 +91,8 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
     private loadInitialProjects(): void {
         this._projectsService.resetProjects();
+        this.loading = true;
+        this.initialLoadComplete = false;
         this._projectsService.fetchProjects().pipe(
             takeUntil(this._unsubscribeAll)
         ).subscribe({
@@ -96,10 +101,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
                 this.filteredProjects = this.projects;
                 this.updateBookmarkStatus();
                 this.fetchMetadataForProjects(projects);
-                this._changeDetectorRef.detectChanges();
-            },
-            error: (error) => {
-                this.errorMessage = 'Error loading projects';
+                this.initialLoadComplete = true;
                 this._changeDetectorRef.detectChanges();
             }
         });
