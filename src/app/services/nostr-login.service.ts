@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@blockcore/nostr-login';
+import { init as initNostrLogin, launch as launchNostrLoginDialog } from 'nostr-login';
 import { Subject, Observable } from 'rxjs';
 
 @Injectable({

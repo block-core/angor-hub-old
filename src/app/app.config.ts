@@ -26,7 +26,7 @@ import { HashService } from './services/hash.service';
 import { NostrWindow } from './types/nostr';
 import { SignerService } from './services/signer.service';
 import { StateService } from './services/state.service';
-import { init as initNostrLogin, launch as launchNostrLoginDialog } from '@blockcore/nostr-login';
+import { init as initNostrLogin, launch as launchNostrLoginDialog } from 'nostr-login';
 
 
 export function initializeState(signerService: SignerService, stateService: StateService): () => Promise<void> {
