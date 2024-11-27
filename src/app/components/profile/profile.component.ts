@@ -44,6 +44,7 @@ import { ZapDialogComponent } from 'app/shared/zap-dialog/zap-dialog.component';
 import { ZapDialogData } from 'app/services/interfaces';
 import { Contacts } from 'nostr-tools/kinds';
 import { PostComponent } from 'app/layout/common/post/post.component';
+import { BookmarkService } from 'app/services/bookmark.service';
 interface Chip {
     color?: string;
     selected?: string;
@@ -130,9 +131,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
     aboutExpanded: boolean = true;
 
     stats$!: Observable<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }>;
-    totalContacts: number = 0;
-    followersCount: number = 0;
-    followingCount: number = 0;
+
+
+    bookmarks$: Observable<string[]>;
+    bookmarkedProjectNpubs: string[] = [];
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _signerService: SignerService,
@@ -147,8 +149,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _eventService: EventService,
         private _subscriptionService: SubscriptionService,
         private _clipboard: Clipboard,
-        private parseContent: ParseContentService
+        private parseContent: ParseContentService,
+        private _bookmarkService: BookmarkService,
+
     ) {
+        this.bookmarks$ = this._bookmarkService.bookmarks$;
     }
 
     async ngOnInit(): Promise<void> {
@@ -350,22 +355,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
             // Profile filter (kind 0)
             { authors: [pubKey], kinds: [0], limit: 1 },
 
-            // Contacts filters
-            { kinds: [Contacts], authors: [pubKey] },
-            { kinds: [Contacts], '#p': [pubKey] },
+
         ];
 
         this.subscriptionId = this._subscriptionService.addSubscriptions(combinedFilters, async (event: NostrEvent) => {
-            switch (event.kind) {
-                case 0:
                     // Handle profile metadata
                     await this.processProfileMetadata(event, pubKey);
-                    break;
-                case Contacts:
-                    // Handle contact data
-                    this.processContactData(event, pubKey);
-                    break;
-            }
         });
     }
 
@@ -383,29 +378,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
     }
 
-    private processContactData(event: NostrEvent, pubKey: string): void {
-        const isFollower = event.pubkey === pubKey;
-        const contactEvent: ContactEvent = {
-            id: event.id,
-            pubkey: event.pubkey,
-            created_at: event.created_at,
-            tags: event.tags,
-            isFollower,
-        };
-
-        if (isFollower) {
-            this.followersList.push(contactEvent);
-            this.followersCount++;
-            this.totalContacts++;
-        } else {
-            this.followingList.push(contactEvent);
-            this.followingCount++;
-            this.totalContacts++;
-        }
-
-        this.checkIfRoutePubKeyIsFollowing();
-        this.refreshUI();
-    }
 
 
     getSafeUrl(url: string): SafeUrl {
@@ -540,5 +512,16 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this._router.navigate(['/post', postId]);
     }
 
+    async toggleBookmark(projectNpub: string): Promise<void> {
+        const isBookmarked = await this._bookmarkService.isBookmarked(projectNpub);
+        if (isBookmarked) {
+            await this._bookmarkService.removeBookmark(projectNpub);
+        } else {
+            await this._bookmarkService.addBookmark(projectNpub);
+        }
+    }
 
+    async isProjectBookmarked(projectNpub: string): Promise<boolean> {
+        return await this._bookmarkService.isBookmarked(projectNpub);
+    }
 }

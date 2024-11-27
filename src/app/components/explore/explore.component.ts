@@ -60,7 +60,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
     noMoreProjects: boolean = false;
     showCloseSearchButton: boolean;
     bookmarks$: Observable<string[]>;
-    bookmarkedProjectIds: string[] = [];
+    bookmarkedProjectNpubs: string[] = [];
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -107,7 +107,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
     private subscribeToBookmarkChanges(): void {
         this.bookmarks$.pipe(takeUntil(this._unsubscribeAll)).subscribe(bookmarkIds => {
-            this.bookmarkedProjectIds = bookmarkIds;
+            this.bookmarkedProjectNpubs = bookmarkIds;
             this.updateBookmarkStatus();
             this._changeDetectorRef.detectChanges();
         });
@@ -115,7 +115,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
     private updateBookmarkStatus(): void {
         this.projects.forEach(project => {
-            project.isBookmarked = this.bookmarkedProjectIds.includes(project.projectIdentifier);
+            project.isBookmarked = this.bookmarkedProjectNpubs.includes(project.nostrPubKey);
         });
         this.filteredProjects = [...this.projects];
 
@@ -274,17 +274,17 @@ export class ExploreComponent implements OnInit, OnDestroy {
         this.showCloseSearchButton = false;
     }
 
-    async toggleBookmark(projectId: string): Promise<void> {
-        const isBookmarked = await this._bookmarkService.isBookmarked(projectId);
+    async toggleBookmark(projectNpub: string): Promise<void> {
+        const isBookmarked = await this._bookmarkService.isBookmarked(projectNpub);
         if (isBookmarked) {
-            await this._bookmarkService.removeBookmark(projectId);
+            await this._bookmarkService.removeBookmark(projectNpub);
         } else {
-            await this._bookmarkService.addBookmark(projectId);
+            await this._bookmarkService.addBookmark(projectNpub);
         }
     }
 
-    async isProjectBookmarked(projectId: string): Promise<boolean> {
-        return await this._bookmarkService.isBookmarked(projectId);
+    async isProjectBookmarked(projectNpub: string): Promise<boolean> {
+        return await this._bookmarkService.isBookmarked(projectNpub);
     }
 
     ngOnDestroy(): void {

@@ -381,21 +381,26 @@ export class StorageService {
         }
     }
 
-    async getProjectsByIds(ids: string[]): Promise<Project[]> {
-        if (!ids || ids.length === 0) {
+ 
+    async getProjectsByNostrPubKeys(nostrPubKeys: string[]): Promise<Project[]> {
+        if (!nostrPubKeys || nostrPubKeys.length === 0) {
             return [];
         }
 
         const projects: Project[] = [];
-        for (const id of ids) {
-            const project = await this.projectsStore.getItem<Project>(id);
-            if (project) {
+        const allKeys = await this.projectsStore.keys();
+        for (const key of allKeys) {
+            const project = await this.projectsStore.getItem<Project>(key);
+
+            if (project && nostrPubKeys.includes(project.nostrPubKey)) {
                 projects.push(project);
+
             }
         }
 
         return projects;
     }
+
 
     async getAllProjects(): Promise<Project[]> {
         try {
@@ -517,15 +522,15 @@ export class StorageService {
         try {
             const events: any[] = [];
 
-             const offset = (page - 1) * limit;
+            const offset = (page - 1) * limit;
 
-             await this.postsStore.iterate<any, void>((event) => {
+            await this.postsStore.iterate<any, void>((event) => {
                 if (pubKeys.includes(event.pubkey) && event.kind === 1) {
                     events.push(event);
                 }
             });
 
-             return events
+            return events
                 .sort((a, b) => b.created_at - a.created_at)
                 .slice(offset, offset + limit);
         } catch (error) {

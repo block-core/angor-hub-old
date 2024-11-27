@@ -56,7 +56,7 @@ export class BookmarkService {
     }
 
     // Add a bookmark for the current user
-    async addBookmark(projectId: string): Promise<void> {
+    async addBookmark(projectNpub: string): Promise<void> {
         if (!this.currentUserPubKey) {
             this.currentUserPubKey = await this._signerService.getPublicKey();
             if (!this.currentUserPubKey) {
@@ -68,8 +68,8 @@ export class BookmarkService {
         const allBookmarks = this.getUserBookmarks();
         const userBookmarks = allBookmarks[this.currentUserPubKey] || [];
 
-        if (!userBookmarks.includes(projectId)) {
-            userBookmarks.push(projectId);
+        if (!userBookmarks.includes(projectNpub)) {
+            userBookmarks.push(projectNpub);
             allBookmarks[this.currentUserPubKey] = userBookmarks;
             this.saveUserBookmarks(allBookmarks);
             this.bookmarksSubject.next(userBookmarks);
@@ -77,7 +77,7 @@ export class BookmarkService {
     }
 
     // Remove a bookmark for the current user
-    async removeBookmark(projectId: string): Promise<void> {
+    async removeBookmark(projectNpub: string): Promise<void> {
         if (!this.currentUserPubKey) {
             this.currentUserPubKey = await this._signerService.getPublicKey();
             if (!this.currentUserPubKey) {
@@ -88,7 +88,7 @@ export class BookmarkService {
 
         const allBookmarks = this.getUserBookmarks();
         const userBookmarks = allBookmarks[this.currentUserPubKey] || [];
-        const updatedBookmarks = userBookmarks.filter(id => id !== projectId);
+        const updatedBookmarks = userBookmarks.filter(id => id !== projectNpub);
 
         allBookmarks[this.currentUserPubKey] = updatedBookmarks;
         this.saveUserBookmarks(allBookmarks);
@@ -96,7 +96,7 @@ export class BookmarkService {
     }
 
     // Check if a project is bookmarked by the current user
-    async isBookmarked(projectId: string): Promise<boolean> {
+    async isBookmarked(projectNpub: string): Promise<boolean> {
         if (!this.currentUserPubKey) {
             this.currentUserPubKey = await this._signerService.getPublicKey();
             if (!this.currentUserPubKey) {
@@ -106,7 +106,7 @@ export class BookmarkService {
         }
 
         const userBookmarks = this.getUserBookmarks()[this.currentUserPubKey] || [];
-        return userBookmarks.includes(projectId);
+        return userBookmarks.includes(projectNpub);
     }
 
     // Retrieve all bookmarks for the current user

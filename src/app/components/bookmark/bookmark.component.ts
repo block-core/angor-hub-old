@@ -58,19 +58,19 @@ export class BookmarkComponent implements OnInit, OnDestroy {
     }
 
     trackByFn(index: number, item: Project): string | number {
-        return item.projectIdentifier || index;
+        return item.nostrPubKey || index;
     }
 
     private async loadBookmarkedProjects(): Promise<void> {
         const bookmarkIds = await this._bookmarkService.getBookmarks();
-        const projects = await this._storageService.getProjectsByIds(bookmarkIds);
+        const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
         this.savedProjects = projects;
         this.fetchMetadataForProjects(this.savedProjects); // Fetch metadata for loaded projects
     }
 
     private subscribeToBookmarkChanges(): void {
         this.bookmarks$.pipe(takeUntil(this._unsubscribeAll)).subscribe(async (bookmarkIds) => {
-            const projects = await this._storageService.getProjectsByIds(bookmarkIds);
+            const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
             this.savedProjects = projects;
             this.fetchMetadataForProjects(this.savedProjects); // Fetch metadata for updated projects
         });
@@ -93,12 +93,12 @@ export class BookmarkComponent implements OnInit, OnDestroy {
         project.banner = metadata.banner || project.banner;
     }
 
-    async toggleBookmark(projectId: string): Promise<void> {
-        const isBookmarked = await this._bookmarkService.isBookmarked(projectId);
+    async toggleBookmark(projectNpub: string): Promise<void> {
+        const isBookmarked = await this._bookmarkService.isBookmarked(projectNpub);
         if (isBookmarked) {
-            await this._bookmarkService.removeBookmark(projectId);
+            await this._bookmarkService.removeBookmark(projectNpub);
         } else {
-            await this._bookmarkService.addBookmark(projectId);
+            await this._bookmarkService.addBookmark(projectNpub);
         }
     }
 
