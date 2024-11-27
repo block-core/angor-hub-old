@@ -38,7 +38,7 @@ import { Subject, takeUntil } from 'rxjs';
         NgTemplateOutlet,
         RouterLink,
         DatePipe,
-    ]
+    ],
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
     @ViewChild('notificationsOrigin') private _notificationsOrigin: MatButton;
@@ -78,6 +78,10 @@ export class NotificationsComponent implements OnInit, OnDestroy {
                     this._changeDetectorRef.markForCheck();
                 });
         });
+    }
+
+    deleteNotification(notification: NostrNotification) {
+        throw new Error('Method not implemented.');
     }
 
     ngOnDestroy(): void {

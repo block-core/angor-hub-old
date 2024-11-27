@@ -73,6 +73,9 @@ export class PostEventComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<void> = new Subject<void>();
     private subscription: Subscription = new Subscription();
 
+    // TODO: This should obviously not be on the component but come from some service. Added to fix strict mode.
+    darkMode: boolean = false;
+
     likes: PostReaction[] = [];
     reposts: PostReaction[] = [];
     zaps: PostReaction[] = [];

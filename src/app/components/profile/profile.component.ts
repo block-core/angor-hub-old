@@ -1,8 +1,9 @@
 import { AngorCardComponent } from '@angor/components/card';
 import { AngorConfigService } from '@angor/services/config';
 import { AngorConfirmationService } from '@angor/services/confirmation';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { TextFieldModule } from '@angular/cdk/text-field';
-import { CommonModule, DatePipe, NgClass, NgTemplateOutlet } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -17,34 +18,31 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
-import { EventService } from 'app/services/event.service';
-import { SignerService } from 'app/services/signer.service';
-import { ContactEvent, StorageService } from 'app/services/storage.service';
-import { InfiniteScrollModule } from 'ngx-infinite-scroll';
-import { Filter, NostrEvent } from 'nostr-tools';
-import { Observable, Subject, takeUntil } from 'rxjs';
-import { SubscriptionService } from 'app/services/subscription.service';
-import { Clipboard } from '@angular/cdk/clipboard';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { ParseContentService } from 'app/services/parse-content.service';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { AgoPipe } from 'app/shared/pipes/ago.pipe';
-import { ZapDialogComponent } from 'app/shared/zap-dialog/zap-dialog.component';
-import { ZapDialogData } from 'app/services/interfaces';
-import { Contacts } from 'nostr-tools/kinds';
 import { PostComponent } from 'app/layout/common/post/post.component';
 import { BookmarkService } from 'app/services/bookmark.service';
+import { EventService } from 'app/services/event.service';
+import { ZapDialogData } from 'app/services/interfaces';
+import { ParseContentService } from 'app/services/parse-content.service';
+import { SignerService } from 'app/services/signer.service';
+import { ContactEvent, StorageService } from 'app/services/storage.service';
+import { SubscriptionService } from 'app/services/subscription.service';
+import { ZapDialogComponent } from 'app/shared/zap-dialog/zap-dialog.component';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+import { Filter, NostrEvent } from 'nostr-tools';
+import { Observable, Subject } from 'rxjs';
 interface Chip {
     color?: string;
     selected?: string;
@@ -79,11 +77,10 @@ interface Chip {
         MatIconModule,
         MatExpansionModule,
         MatSidenavModule,
-        PostComponent
-    ]
+        PostComponent,
+    ],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
-
     @ViewChild('eventInput', { static: false }) eventInput: ElementRef;
     @ViewChild('commentInput') commentInput: ElementRef;
 
@@ -130,8 +127,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
     followingList: ContactEvent[] = [];
     aboutExpanded: boolean = true;
 
-    stats$!: Observable<{ pubKey: string, totalContacts: number, followersCount: number, followingCount: number }>;
-
+    stats$!: Observable<{
+        pubKey: string;
+        totalContacts: number;
+        followersCount: number;
+        followingCount: number;
+    }>;
 
     bookmarks$: Observable<string[]>;
     bookmarkedProjectNpubs: string[] = [];
@@ -149,9 +150,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _eventService: EventService,
         private _subscriptionService: SubscriptionService,
         private _clipboard: Clipboard,
-        private parseContent: ParseContentService,
-        private _bookmarkService: BookmarkService,
-
+        public parseContent: ParseContentService,
+        private _bookmarkService: BookmarkService
     ) {
         this.bookmarks$ = this._bookmarkService.bookmarks$;
     }
@@ -173,6 +173,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
         });
     }
 
+    trackByFn(index: number, item: any): number {
+        return index;
+    }
 
     private checkIfRoutePubKeyIsFollowing(): void {
         if (!this.routePubKey || !this.followersList) {
@@ -180,9 +183,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.isFollowing = this.followersList.some(follower => follower.pubkey === this.routePubKey);
+        this.isFollowing = this.followersList.some(
+            (follower) => follower.pubkey === this.routePubKey
+        );
     }
-
 
     private processRouteParams(): void {
         this._route.paramMap.subscribe((params) => {
@@ -194,7 +198,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
                     this.routePubKey = hexPubKey;
                     this.isCurrentUserProfile = false;
                 } else {
-                    this.errorMessage = 'Public key is invalid. Please check your input.';
+                    this.errorMessage =
+                        'Public key is invalid. Please check your input.';
                     this.setCurrentUserProfile();
                 }
             } else {
@@ -212,7 +217,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     private loadUserProfileData(pubKey: string): void {
         this.loadUserProfile(pubKey);
-     }
+    }
 
     private isValidHexPubkey(pubkey: string): boolean {
         const hexPattern = /^[a-fA-F0-9]{64}$/;
@@ -227,11 +232,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
         try {
             while (attemptCount < maxAttempts) {
-                const additionalPosts = await this._storageService.getPostsByPubKeysWithPagination(
-                    [this.routePubKey],
-                    this.currentPage,
-                    10
-                );
+                const additionalPosts =
+                    await this._storageService.getPostsByPubKeysWithPagination(
+                        [this.routePubKey],
+                        this.currentPage,
+                        10
+                    );
 
                 if (additionalPosts.length > 0) {
                     this.posts = [...this.posts, ...additionalPosts];
@@ -258,24 +264,25 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.refreshUI();
     }
 
-
     private delay(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
-
 
     private subscribeToNewPosts(): void {
         if (!this.isCurrentUserProfile) {
             const filters: Filter[] = [
                 { authors: [this.routePubKey], kinds: [1] },
             ];
-            this.postsSubscriptionId = this._subscriptionService.addSubscriptions(filters, async (event: NostrEvent) => {
-                if (!this.isReply(event)) {
-                    this._storageService.savePost(event);
-                }
-            });
-        }
-        else {
+            this.postsSubscriptionId =
+                this._subscriptionService.addSubscriptions(
+                    filters,
+                    async (event: NostrEvent) => {
+                        if (!this.isReply(event)) {
+                            this._storageService.savePost(event);
+                        }
+                    }
+                );
+        } else {
             this._storageService.posts$.subscribe((newPost) => {
                 if (newPost) {
                     if (newPost.pubkey === this.routePubKey) {
@@ -285,7 +292,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
                     }
                 }
             });
-
         }
     }
 
@@ -296,13 +302,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
         return replyTags.length > 0;
     }
 
-
     loadNextPage(): void {
         if (this.loading) return;
         this.currentPage++;
         this.loadInitialPosts();
     }
-
 
     toggleAbout(): void {
         this.aboutExpanded = !this.aboutExpanded;
@@ -310,10 +314,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         if (this.subscriptionId) {
-            this._subscriptionService.removeSubscriptionById(this.subscriptionId);
+            this._subscriptionService.removeSubscriptionById(
+                this.subscriptionId
+            );
         }
         if (this.postsSubscriptionId) {
-            this._subscriptionService.removeSubscriptionById(this.postsSubscriptionId);
+            this._subscriptionService.removeSubscriptionById(
+                this.postsSubscriptionId
+            );
         }
 
         this._unsubscribeAll.next(null);
@@ -334,8 +342,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
             return;
         }
         try {
-
-            const cachedMetadata = await this._storageService.getProfile(publicKey);
+            const cachedMetadata =
+                await this._storageService.getProfile(publicKey);
             if (cachedMetadata) {
                 this.profileUser = cachedMetadata;
                 this.refreshUI();
@@ -345,26 +353,29 @@ export class ProfileComponent implements OnInit, OnDestroy {
         } catch (error) {
             console.error('Error loading user profile:', error);
         }
-
     }
 
-
-
-    private async subscribeToUserProfileAndContacts(pubKey: string): Promise<void> {
+    private async subscribeToUserProfileAndContacts(
+        pubKey: string
+    ): Promise<void> {
         const combinedFilters: Filter[] = [
             // Profile filter (kind 0)
             { authors: [pubKey], kinds: [0], limit: 1 },
-
-
         ];
 
-        this.subscriptionId = this._subscriptionService.addSubscriptions(combinedFilters, async (event: NostrEvent) => {
-                    // Handle profile metadata
-                    await this.processProfileMetadata(event, pubKey);
-        });
+        this.subscriptionId = this._subscriptionService.addSubscriptions(
+            combinedFilters,
+            async (event: NostrEvent) => {
+                // Handle profile metadata
+                await this.processProfileMetadata(event, pubKey);
+            }
+        );
     }
 
-    private async processProfileMetadata(event: NostrEvent, pubKey: string): Promise<void> {
+    private async processProfileMetadata(
+        event: NostrEvent,
+        pubKey: string
+    ): Promise<void> {
         try {
             const newMetadata = JSON.parse(event.content);
             this.profileUser = newMetadata;
@@ -378,12 +389,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
     }
 
-
-
     getSafeUrl(url: string): SafeUrl {
         return this._sanitizer.bypassSecurityTrustUrl(url);
     }
-
 
     private refreshUI(): void {
         this._changeDetectorRef.detectChanges();
@@ -394,23 +402,27 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     async canUseZap(): Promise<boolean> {
-        const canReceiveZap = this.profileUser && (this.profileUser.lud06 || this.profileUser.lud16);
+        const canReceiveZap =
+            this.profileUser &&
+            (this.profileUser.lud06 || this.profileUser.lud16);
         if (canReceiveZap) {
             return true;
         } else {
-            this.openSnackBar("Using Zap is not possible. Please complete your profile to include lud06 or lud16.");
+            this.openSnackBar(
+                'Using Zap is not possible. Please complete your profile to include lud06 or lud16.'
+            );
             return false;
         }
     }
 
-    async openZapDialog(eventId: string = ""): Promise<void> {
+    async openZapDialog(eventId: string = ''): Promise<void> {
         const canZap = await this.canUseZap();
         if (canZap) {
             const zapData: ZapDialogData = {
                 lud16: this.profileUser.lud16,
                 lud06: this.profileUser.lud06,
                 pubkey: this.profileUser.pubkey,
-                eventId: eventId
+                eventId: eventId,
             };
 
             // Open dialog with mapped data
@@ -468,7 +480,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             this._eventService
                 .sendTextEvent(this.eventInput.nativeElement.value)
                 .then(() => {
-                    this.eventInput.nativeElement.value = "";
+                    this.eventInput.nativeElement.value = '';
                     this._changeDetectorRef.markForCheck();
                 })
                 .catch((error) => {
@@ -483,7 +495,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     copyNpub() {
-        var npub = this._signerService.getNpubFromPubkey(this.routePubKey)
+        var npub = this._signerService.getNpubFromPubkey(this.routePubKey);
         this._clipboard.copy(npub);
         this.openSnackBar('npub public key copied', 'dismiss');
     }
@@ -493,7 +505,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
             this._clipboard.copy(this.routePubKey);
             this.openSnackBar('hex public key copied', 'dismiss');
         } else if (keyType === 'npub') {
-            const npub = this._signerService.getNpubFromPubkey(this.routePubKey);
+            const npub = this._signerService.getNpubFromPubkey(
+                this.routePubKey
+            );
             this._clipboard.copy(npub);
             this.openSnackBar('npub public key copied', 'dismiss');
         }
@@ -513,7 +527,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     async toggleBookmark(projectNpub: string): Promise<void> {
-        const isBookmarked = await this._bookmarkService.isBookmarked(projectNpub);
+        const isBookmarked =
+            await this._bookmarkService.isBookmarked(projectNpub);
         if (isBookmarked) {
             await this._bookmarkService.removeBookmark(projectNpub);
         } else {

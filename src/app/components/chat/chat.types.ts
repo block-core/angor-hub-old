@@ -16,6 +16,7 @@ export interface Contact {
     pubKey?: string;
     name?: string;
     username?: string;
+    avatar?: string; // TODO: I introduced this to fix strict mode, must be verified.
     picture?: string;
     about?: string;
     displayName?: string;
@@ -33,7 +34,7 @@ export interface Chat {
     unreadCount?: number;
     muted?: boolean;
     lastMessage?: string;
-    lastMessageAt?: string;
+    lastMessageAt?: number;
     messages?: {
         id?: string;
         chatId?: string;

@@ -80,9 +80,9 @@ export class PostComponent implements OnDestroy {
     private subscription: Subscription = new Subscription();
 
     profileUser: any;
-    tokens = signal<(string | ParsedToken)[]>([]);
+    tokens = signal<(string | ParsedToken | any)[]>([]);
 
-    private isLiked = false;
+    isLiked = false;
 
 
 

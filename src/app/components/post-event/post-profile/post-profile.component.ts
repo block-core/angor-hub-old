@@ -15,7 +15,7 @@ import { MetadataService } from 'app/services/metadata.service';
 export class PostProfileComponent implements OnInit, OnDestroy {
   @Input() pubkey!: string;
   @Input() avatarUrl?: string;
-  @Input() created_at?: string;
+  @Input() created_at?: number;
   @Output() userChange = new EventEmitter<any>();
 
   user: any;

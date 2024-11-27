@@ -187,10 +187,6 @@
                                             *ngIf="chat.contact?.picture"
                                             class="h-full w-full rounded-full object-cover"
                                             [src]="chat.contact?.picture"
-                                            (error)="
-                                                this.src =
-                                                    '/images/avatars/avatar-placeholder.png'
-                                            "
                                             alt="Contact picture"
                                         />
 

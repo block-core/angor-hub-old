@@ -35,7 +35,7 @@ export class ParseContentService {
 
     constructor(private utilities: Utilities) {}
 
-    parseContent(text: string): (string | ParsedToken)[] {
+    parseContent(text: string): (string | ParsedToken | any)[] {
         const sanitizedText = this.sanitizeText(text);
         const tokens = this.tokenizeText(sanitizedText);
         return this.combinePlainText(tokens.map(token => this.processToken(token)));

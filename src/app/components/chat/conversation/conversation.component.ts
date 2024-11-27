@@ -30,18 +30,19 @@ import { AngorConfigService } from '@angor/services/config';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
-import { Chat } from 'app/layout/common/quick-chat/quick-chat.types';
 import { GifDialogComponent } from 'app/shared/gif-dialog/gif-dialog.component';
 import { Subject, takeUntil } from 'rxjs';
 import { ChatService } from '../chat.service';
 import { ContactInfoComponent } from '../contact-info/contact-info.component';
 import { ParseContentService } from 'app/services/parse-content.service';
+import { Chat } from '../chat.types';
 
 @Component({
     selector: 'chat-conversation',
     templateUrl: './conversation.component.html',
     styleUrls: ['./conversation.component.css'],
     encapsulation: ViewEncapsulation.None,
+    standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         MatSidenavModule,
@@ -81,7 +82,7 @@ export class ConversationComponent implements OnInit, OnDestroy {
         private _angorConfigService: AngorConfigService,
         public dialog: MatDialog,
         private sanitizer: DomSanitizer,
-        private parseContent: ParseContentService
+        public parseContent: ParseContentService
     ) {
         const SpeechRecognition =
             (window as any).SpeechRecognition ||

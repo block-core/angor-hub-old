@@ -1,4 +1,4 @@
-import { AngorAlertComponent } from '@angor/components/alert';
+import { AngorAlertComponent, AngorAlertType } from '@angor/components/alert';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import {
@@ -22,6 +22,7 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'auth-sign-in',
     templateUrl: './login.component.html',
+    standalone: true,
     imports: [
         RouterLink,
         AngorAlertComponent,
@@ -39,10 +40,10 @@ import { Subscription } from 'rxjs';
 export class LoginComponent implements OnInit {
     SecretKeyLoginForm: FormGroup;
     MenemonicLoginForm: FormGroup;
-    secAlert = { type: 'error', message: '' };
+    secAlert = { type: 'error' as AngorAlertType, message: '' };
     showSecAlert = false;
 
-    menemonicAlert = { type: 'error', message: '' };
+    menemonicAlert = { type: 'error' as AngorAlertType, message: '' };
     showMenemonicAlert = false;
 
     loading = false;

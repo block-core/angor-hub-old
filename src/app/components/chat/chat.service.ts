@@ -310,7 +310,7 @@ export class ChatService implements OnDestroy {
 
                 if (Number(existingChat.lastMessageAt) < createdAt) {
                     existingChat.lastMessage = message;
-                    existingChat.lastMessageAt = createdAt.toString();
+                    existingChat.lastMessageAt = createdAt;
                 }
             }
         } else {
@@ -329,7 +329,7 @@ export class ChatService implements OnDestroy {
                     displayName: contactInfo.displayName || contactInfo.name || 'Unknown',
                 },
                 lastMessage: message,
-                lastMessageAt: createdAt.toString(),
+                lastMessageAt: createdAt,
                 messages: [newMessage],
             };
             this.chatList.push(newChat);
@@ -544,7 +544,7 @@ export class ChatService implements OnDestroy {
                 picture: '/images/avatars/avatar-placeholder.png',
               },
           lastMessage: 'new chat...',
-          lastMessageAt: Math.floor(Date.now() / 1000).toString() || '0',
+          lastMessageAt: Math.floor(Date.now() / 1000) || 0,
           messages: [],
         };
 
