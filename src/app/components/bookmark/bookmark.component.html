@@ -126,15 +126,22 @@
                     </angor-card>
                 </ng-container>
             </div>
-            <ng-container *ngIf="savedProjects.length == 0">
+            <!-- Loading spinner -->
+            <ng-container *ngIf="isLoading">
+                <div class="flex flex-auto flex-col items-center justify-center">
+                    <mat-spinner [diameter]="40"></mat-spinner>
+                    <div class="text-secondary mt-4 text-lg">Loading projects...</div>
+                </div>
+            </ng-container>
+            <!-- No projects message -->
+            <ng-container *ngIf="!isLoading && savedProjects.length === 0">
                 <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
                     <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
                     <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
-                        No project
+                        No projects
                     </div>
                 </div>
             </ng-container>
-
         </div>
     </div>
 </div>

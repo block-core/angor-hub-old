@@ -1,20 +1,19 @@
 import { AngorCardComponent } from '@angor/components/card';
-import { AngorFindByKeyPipe } from '@angor/pipes/find-by-key';
-import { CdkScrollable } from '@angular/cdk/scrolling';
-import { NgClass, PercentPipe, I18nPluralPipe, CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule, NgClass } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router, RouterLink } from '@angular/router';
-import { BookmarkService } from 'app/services/bookmark.service';
+import { Router } from '@angular/router';
 import { Project } from 'app/interface/project.interface';
+import { BookmarkService } from 'app/services/bookmark.service';
 import { StorageService } from 'app/services/storage.service';
 import { Observable, Subject, takeUntil } from 'rxjs';
 
@@ -34,19 +33,21 @@ import { Observable, Subject, takeUntil } from 'rxjs';
         MatTooltipModule,
         MatProgressBarModule,
         CommonModule,
+        MatProgressSpinnerModule,
     ],
     templateUrl: './bookmark.component.html',
-    styleUrls: ['./bookmark.component.scss']
+    styleUrls: ['./bookmark.component.scss'],
 })
 export class BookmarkComponent implements OnInit, OnDestroy {
     savedProjects: Project[] = [];
     bookmarks$: Observable<string[]>;
+    isLoading = true; // Add this line
     private _unsubscribeAll = new Subject<any>();
 
     constructor(
         private _bookmarkService: BookmarkService,
         private _storageService: StorageService,
-        private _router: Router,
+        private _router: Router
     ) {
         this.bookmarks$ = this._bookmarkService.bookmarks$;
     }
@@ -62,27 +63,34 @@ export class BookmarkComponent implements OnInit, OnDestroy {
     }
 
     private async loadBookmarkedProjects(): Promise<void> {
+        this.isLoading = true; // Add this line
         const bookmarkIds = await this._bookmarkService.getBookmarks();
-        const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
-        this.savedProjects = projects;
-        this.fetchMetadataForProjects(this.savedProjects); // Fetch metadata for loaded projects
+        const projects =
+            await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
     }
 
     private subscribeToBookmarkChanges(): void {
-        this.bookmarks$.pipe(takeUntil(this._unsubscribeAll)).subscribe(async (bookmarkIds) => {
-            const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
-            this.savedProjects = projects;
-            this.fetchMetadataForProjects(this.savedProjects); // Fetch metadata for updated projects
-        });
+        this.bookmarks$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(async (bookmarkIds) => {
+                const projects =
+                    await this._storageService.getProjectsByNostrPubKeys(
+                        bookmarkIds
+                    );
+                this.savedProjects = projects;
+                this.fetchMetadataForProjects(this.savedProjects); // Fetch metadata for updated projects
+            });
     }
 
     private fetchMetadataForProjects(projects: Project[]): void {
-        projects.forEach(project => {
-            this._storageService.getProfile(project.nostrPubKey).then(profileMetadata => {
-                if (profileMetadata) {
-                    this.updateProjectMetadata(project, profileMetadata);
-                }
-            });
+        projects.forEach((project) => {
+            this._storageService
+                .getProfile(project.nostrPubKey)
+                .then((profileMetadata) => {
+                    if (profileMetadata) {
+                        this.updateProjectMetadata(project, profileMetadata);
+                    }
+                });
         });
     }
 
@@ -94,7 +102,8 @@ export class BookmarkComponent implements OnInit, OnDestroy {
     }
 
     async toggleBookmark(projectNpub: string): Promise<void> {
-        const isBookmarked = await this._bookmarkService.isBookmarked(projectNpub);
+        const isBookmarked =
+            await this._bookmarkService.isBookmarked(projectNpub);
         if (isBookmarked) {
             await this._bookmarkService.removeBookmark(projectNpub);
         } else {
@@ -110,9 +119,7 @@ export class BookmarkComponent implements OnInit, OnDestroy {
     goToProjectDetails(project: Project): void {
         this._router.navigate(['/profile', project.nostrPubKey]);
     }
-    openChat(pubKey : string): void
-    {
+    openChat(pubKey: string): void {
         this._router.navigate(['/chat', pubKey]);
     }
-
 }
