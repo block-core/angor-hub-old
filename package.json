@@ -67,7 +67,6 @@
     "ngx-infinite-scroll": "^18.0.0",
     "ngx-quill": "27.0.0",
     "nostr-login": "^1.6.12",
-    "nostr-login-components": "^1.0.1",
     "nostr-tools": "^2.10.3",
     "npm": "^10.9.1",
     "perfect-scrollbar": "1.5.6",
