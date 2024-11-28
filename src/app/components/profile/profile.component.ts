@@ -136,6 +136,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     bookmarks$: Observable<string[]>;
     bookmarkedProjectNpubs: string[] = [];
+
+    projectIdentifier: string = '';
+
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _signerService: SignerService,
@@ -188,12 +191,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
         );
     }
 
-    projectIdentifier: string = '';
-
     private processRouteParams(): void {
         this._route.paramMap.subscribe((params) => {
 
-            this.projectIdentifier = params.get('project') || '';
+            const projectParam = params.get('project') || '';
+
+            if (projectParam.startsWith('angor')) {
+                this.projectIdentifier = projectParam;
+            } else {
+                console.error('Invalid project identifier. It must start with "angor".');
+                this.projectIdentifier = '';
+            }
+
             const routeKey = params.get('pubkey') || '';
 
             if (routeKey) {

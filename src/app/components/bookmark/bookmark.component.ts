@@ -14,8 +14,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { Project } from 'app/interface/project.interface';
 import { BookmarkService } from 'app/services/bookmark.service';
+import { ProjectsService, ProjectStats } from 'app/services/projects.service';
 import { StorageService } from 'app/services/storage.service';
-import { Observable, Subject, takeUntil } from 'rxjs';
+import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
 
 @Component({
     selector: 'app-bookmark',
@@ -47,40 +48,59 @@ export class BookmarkComponent implements OnInit, OnDestroy {
     constructor(
         private _bookmarkService: BookmarkService,
         private _storageService: StorageService,
-        private _router: Router
+        private _router: Router,
+        private _projectsService: ProjectsService,
     ) {
         this.bookmarks$ = this._bookmarkService.bookmarks$;
     }
 
     async ngOnInit(): Promise<void> {
-        await this._bookmarkService.initializeForCurrentUser(); // Clear previous bookmarks and load current user's bookmarks
-        await this.loadBookmarkedProjects();
-        this.subscribeToBookmarkChanges();
+        try {
+            await this._bookmarkService.initializeForCurrentUser();
+            await this.loadBookmarkedProjects();
+            this.subscribeToBookmarkChanges();
+            this.isLoading = false;
+        } catch (error) {
+            console.error('Error during initialization:', error);
+            this.isLoading = false;
+        }
     }
+
 
     trackByFn(index: number, item: Project): string | number {
         return item.nostrPubKey || index;
     }
 
     private async loadBookmarkedProjects(): Promise<void> {
-        this.isLoading = true; // Add this line
-        const bookmarkIds = await this._bookmarkService.getBookmarks();
-        const projects =
-            await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
+        this.isLoading = true;
+        try {
+            const bookmarkIds = await this._bookmarkService.getBookmarks();
+            const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
+            this.savedProjects = projects;
+            this.isLoading = false;
+        } catch (error) {
+            console.error('Error loading bookmarked projects:', error);
+            this.isLoading = false;
+        }
     }
+
 
     private subscribeToBookmarkChanges(): void {
         this.bookmarks$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(async (bookmarkIds) => {
-                const projects =
-                    await this._storageService.getProjectsByNostrPubKeys(
-                        bookmarkIds
-                    );
-                this.savedProjects = projects;
-                this.fetchMetadataForProjects(this.savedProjects); // Fetch metadata for updated projects
+                try {
+                    const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
+                    this.savedProjects = projects;
+                    this.fetchMetadataForProjects(this.savedProjects);
+                    this.isLoading = false; // پایان موفق لودینگ
+                } catch (error) {
+                    console.error('Error updating bookmarks:', error);
+                    this.isLoading = false; // پایان لودینگ حتی در صورت خطا
+                }
             });
     }
+
 
     private fetchMetadataForProjects(projects: Project[]): void {
         projects.forEach((project) => {
@@ -117,8 +137,22 @@ export class BookmarkComponent implements OnInit, OnDestroy {
     }
 
     goToProjectDetails(project: Project): void {
-        this._router.navigate(['/profile', project.nostrPubKey]);
+        this._projectsService.fetchProjectStats(project.projectIdentifier).pipe(
+            tap((stats: ProjectStats) => {
+
+                this._storageService.saveProjectStats(project.projectIdentifier, stats);
+            }),
+            tap(() => {
+
+                this._router.navigate(['/profile', project.nostrPubKey, project.projectIdentifier]);
+            }),
+            catchError((error) => {
+                console.error(`Failed to navigate to project details for ${project.projectIdentifier}:`, error);
+                return of(null);
+            })
+        ).subscribe();
     }
+
     openChat(pubKey: string): void {
         this._router.navigate(['/chat', pubKey]);
     }

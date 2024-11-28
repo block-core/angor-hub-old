@@ -49,18 +49,14 @@
                             Select messages
                         </button>
                         <button mat-menu-item (click)="toggleMuteNotifications()">
-                            @if (!chat.muted) {
-                            <mat-icon [svgIcon]="
-                                            'heroicons_outline:speaker-x-mark'
-                                        "></mat-icon>
-                            Mute notifications
-                            }
-                            @if (chat.muted) {
-                            <mat-icon [svgIcon]="
-                                            'heroicons_outline:speaker-wave'
-                                        "></mat-icon>
-                            Unmute notifications
-                            }
+                            <ng-container *ngIf="!chat.muted">
+                                <mat-icon [svgIcon]="'heroicons_outline:speaker-x-mark'"></mat-icon>
+                                Mute notifications
+                            </ng-container>
+                            <ng-container *ngIf="chat.muted">
+                                <mat-icon [svgIcon]="'heroicons_outline:speaker-wave'"></mat-icon>
+                                Unmute notifications
+                            </ng-container>
                         </button>
                         <button mat-menu-item>
                             <mat-icon [svgIcon]="'heroicons_outline:backspace'"></mat-icon>
