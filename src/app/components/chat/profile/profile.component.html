@@ -9,13 +9,7 @@
 
     <div class="px-6">
         <!-- Profile photo -->
-        <div class="group relative mx-auto mt-8 flex h-40 w-40 flex-0 rounded-full">
-            <div class="absolute inset-0 hidden cursor-pointer flex-col items-center justify-center rounded-full bg-gray-800 bg-opacity-80 backdrop-blur backdrop-filter group-hover:flex">
-                <mat-icon class="text-white" [svgIcon]="'heroicons_outline:camera'"></mat-icon>
-                <div class="mx-6 mt-2 text-center font-medium text-white">
-                    Change Profile Photo
-                </div>
-            </div>
+        <div class="relative mx-auto mt-8 flex h-40 w-40 flex-0 rounded-full">
             @if (profile.picture) {
             <img class="h-full w-full rounded-full object-cover"
                 [src]="profile.picture"
