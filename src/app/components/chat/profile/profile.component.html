@@ -1,84 +1,57 @@
 <div class="bg-card flex flex-auto flex-col overflow-y-auto dark:bg-default">
     <!-- Header -->
-    <div
-        class="flex h-18 flex-0 items-center border-b bg-gray-50 px-6 dark:bg-transparent"
-    >
+    <div class="flex h-18 flex-0 items-center border-b bg-gray-50 px-6 dark:bg-transparent">
         <button mat-icon-button (click)="drawer.close()">
-            <mat-icon
-                [svgIcon]="'heroicons_outline:arrow-long-left'"
-            ></mat-icon>
+            <mat-icon [svgIcon]="'heroicons_outline:arrow-long-left'"></mat-icon>
         </button>
         <div class="ml-2 text-2xl font-semibold">Profile</div>
     </div>
 
     <div class="px-6">
         <!-- Profile photo -->
-        <div
-            class="group relative mx-auto mt-8 flex h-40 w-40 flex-0 rounded-full"
-        >
-            <div
-                class="absolute inset-0 hidden cursor-pointer flex-col items-center justify-center rounded-full bg-gray-800 bg-opacity-80 backdrop-blur backdrop-filter group-hover:flex"
-            >
-                <mat-icon
-                    class="text-white"
-                    [svgIcon]="'heroicons_outline:camera'"
-                ></mat-icon>
+        <div class="group relative mx-auto mt-8 flex h-40 w-40 flex-0 rounded-full">
+            <div class="absolute inset-0 hidden cursor-pointer flex-col items-center justify-center rounded-full bg-gray-800 bg-opacity-80 backdrop-blur backdrop-filter group-hover:flex">
+                <mat-icon class="text-white" [svgIcon]="'heroicons_outline:camera'"></mat-icon>
                 <div class="mx-6 mt-2 text-center font-medium text-white">
                     Change Profile Photo
                 </div>
             </div>
             @if (profile.picture) {
-                <img
-                    class="h-full w-full rounded-full object-cover"
-                    [src]="profile.picture"
-                    onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-                    [alt]="'Profile picture'"
-                />
+            <img class="h-full w-full rounded-full object-cover"
+                [src]="profile.picture"
+                onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
+                [alt]="'Profile picture'" />
             }
             @if (!profile.picture) {
-                <div
-                    class="flex h-full w-full items-center justify-center rounded-full bg-gray-200 text-8xl font-semibold uppercase text-gray-600 dark:bg-gray-700 dark:text-gray-200"
-                >
-                    {{ profile.name.charAt(0) }}
-                </div>
+            <div class="flex h-full w-full items-center justify-center rounded-full bg-gray-200 text-8xl font-semibold uppercase text-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                {{ profile.name.charAt(0) }}
+            </div>
             }
         </div>
 
         <!-- Profile info -->
-        <div class="mx-2 mt-8 flex flex-col">
-            <mat-form-field>
-                <mat-label>Name</mat-label>
-                <mat-icon
-                    class="icon-size-5"
-                    matPrefix
-                    [svgIcon]="'heroicons_solid:user-circle'"
-                ></mat-icon>
-                <input matInput [ngModel]="profile.name" />
-            </mat-form-field>
-            <mat-form-field>
-                <mat-label>Username</mat-label>
-                <mat-icon
-                    class="icon-size-5"
-                    matPrefix
-                    [svgIcon]="'heroicons_solid:envelope'"
-                ></mat-icon>
-                <input matInput [ngModel]="profile.username" />
-            </mat-form-field>
-            <mat-form-field>
-                <mat-label>About</mat-label>
-                <mat-icon
-                    class="icon-size-5"
-                    matPrefix
-                    [svgIcon]="'heroicons_solid:identification'"
-                ></mat-icon>
-                <input matInput [ngModel]="profile.about" />
-            </mat-form-field>
-            <!-- <div class="mt-4 flex items-center justify-end">
-                <button (click)="drawer.close()" mat-button>Cancel</button>
-                <button class="ml-2" mat-flat-button [color]="'primary'">
-                    Save
-                </button>
-            </div> -->
+        <div class="mx-2 mt-8 flex flex-col space-y-6">
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-gray-500" [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                <div>
+                    <div class="text-sm font-medium text-gray-500">Name</div>
+                    <div class="text-lg">{{profile.name}}</div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-gray-500" [svgIcon]="'heroicons_solid:envelope'"></mat-icon>
+                <div>
+                    <div class="text-sm font-medium text-gray-500">Username</div>
+                    <div class="text-lg">{{profile.username}}</div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-gray-500" [svgIcon]="'heroicons_solid:identification'"></mat-icon>
+                <div>
+                    <div class="text-sm font-medium text-gray-500">About</div>
+                    <div class="text-lg">{{profile.about}}</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
