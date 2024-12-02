@@ -1,6 +1,6 @@
 <div class="w-full max-w-3xl">
     <!-- Form -->
-    <form [formGroup]="notificationsForm">
+    <form [formGroup]="notificationsForm()" (ngSubmit)="saveSettings()">
         <div class="w-full text-xl">Notification Settings</div>
         <div class="mt-8 grid w-full grid-cols-1 gap-6">
             <!-- Mention -->

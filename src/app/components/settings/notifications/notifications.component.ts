@@ -1,15 +1,12 @@
 import {
     ChangeDetectionStrategy,
     Component,
-    OnInit,
     ViewEncapsulation,
+    inject,
+    signal,
+    effect,
 } from '@angular/core';
-import {
-    FormsModule,
-    ReactiveFormsModule,
-    UntypedFormBuilder,
-    UntypedFormGroup,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
@@ -19,39 +16,52 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [
+     imports: [
         FormsModule,
         ReactiveFormsModule,
         MatSlideToggleModule,
         MatButtonModule,
-    ]
+    ],
 })
-export class SettingsNotificationsComponent implements OnInit {
-    notificationsForm: UntypedFormGroup;
-    notificationKinds: { [key: string]: number } = {
+export class SettingsNotificationsComponent {
+    private readonly _formBuilder = inject(FormBuilder);
+
+    // Signal to manage the FormGroup
+    notificationsForm = signal<FormGroup>(
+        this._formBuilder.group({
+            mention: [false],
+            privateMessage: [false],
+            zap: [false],
+            follower: [false],
+        })
+    );
+
+    notificationKinds = {
         mention: 1,
         privateMessage: 4,
         zap: 9735,
         follower: 3,
     };
 
-    constructor(private _formBuilder: UntypedFormBuilder) {}
+    constructor() {
+        this.initializeForm();
+    }
 
-    ngOnInit(): void {
+    initializeForm(): void {
         const savedSettings = this.loadNotificationSettings();
 
-        this.notificationsForm = this._formBuilder.group({
-            mention: [savedSettings.includes(this.notificationKinds.mention)],
-            privateMessage: [
-                savedSettings.includes(this.notificationKinds.privateMessage),
-            ],
-            zap: [savedSettings.includes(this.notificationKinds.zap)],
-            follower: [savedSettings.includes(this.notificationKinds.follower)],
+        this.notificationsForm().setValue({
+            mention: savedSettings.includes(this.notificationKinds.mention),
+            privateMessage: savedSettings.includes(
+                this.notificationKinds.privateMessage
+            ),
+            zap: savedSettings.includes(this.notificationKinds.zap),
+            follower: savedSettings.includes(this.notificationKinds.follower),
         });
     }
 
     saveSettings(): void {
-        const formValues = this.notificationsForm.value;
+        const formValues = this.notificationsForm().value;
         const enabledKinds: number[] = [];
 
         if (formValues.mention) {
@@ -67,16 +77,12 @@ export class SettingsNotificationsComponent implements OnInit {
             enabledKinds.push(this.notificationKinds.follower);
         }
 
-        this.saveNotificationSettings(enabledKinds);
+        localStorage.setItem('notificationSettings', JSON.stringify(enabledKinds));
         console.log('Notification settings saved:', enabledKinds);
-    }
-
-    private saveNotificationSettings(settings: number[]): void {
-        localStorage.setItem('notificationSettings', JSON.stringify(settings));
     }
 
     private loadNotificationSettings(): number[] {
         const storedSettings = localStorage.getItem('notificationSettings');
-        return storedSettings ? JSON.parse(storedSettings) : [1, 3, 4, 7, 9735]; // Default to all kinds if not set
+        return storedSettings ? JSON.parse(storedSettings) : [1, 3, 4, 9735];
     }
 }
