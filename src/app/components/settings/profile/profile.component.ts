@@ -2,10 +2,11 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
-    OnInit,
     ViewEncapsulation,
+    inject,
+    signal,
+    effect,
 } from '@angular/core';
 import {
     FormBuilder,
@@ -26,7 +27,6 @@ import { hexToBytes } from '@noble/hashes/utils';
 import { RelayService } from 'app/services/relay.service';
 import { SignerService } from 'app/services/signer.service';
 import { StorageService } from 'app/services/storage.service';
-import { PasswordDialogComponent } from 'app/shared/password-dialog/password-dialog.component';
 import { NostrEvent, UnsignedEvent, finalizeEvent } from 'nostr-tools';
 
 @Component({
@@ -46,27 +46,20 @@ import { NostrEvent, UnsignedEvent, finalizeEvent } from 'nostr-tools';
         MatOptionModule,
         MatButtonModule,
         CommonModule,
-    ]
+    ],
 })
-export class SettingsProfileComponent implements OnInit {
-    profileForm: FormGroup;
-    content: string;
-    user: any;
+export class SettingsProfileComponent {
+    private readonly _fb = inject(FormBuilder);
+    private readonly _signerService = inject(SignerService);
+    private readonly _relayService = inject(RelayService);
+    private readonly _router = inject(Router);
+    private readonly _dialog = inject(MatDialog);
+    private readonly _storageService = inject(StorageService);
 
-    constructor(
-        private _fb: FormBuilder,
-        private _signerService: SignerService,
-        private _relayService: RelayService,
-        private _router: Router,
-        private _dialog: MatDialog,
-        private _storageService: StorageService,
-        private _changeDetectorRef: ChangeDetectorRef,
-
-
-    ) {}
-
-    ngOnInit(): void {
-        this.profileForm = this._fb.group({
+    // Signals
+    user = signal<any>(null);
+    profileForm = signal<FormGroup>(
+        this._fb.group({
             name: ['', Validators.required],
             username: [''],
             displayName: [''],
@@ -83,8 +76,31 @@ export class SettingsProfileComponent implements OnInit {
                 '',
                 Validators.pattern('^[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$'),
             ],
-        });
+        })
+    );
 
+    content = signal<string>('');
+
+    // Effect to update the form when the user data changes
+    private readonly userEffect = effect(() => {
+        const user = this.user();
+        if (user) {
+            this.profileForm().setValue({
+                name: user?.name || '',
+                username: user?.username || '',
+                displayName: user?.displayName || '',
+                website: user?.website || '',
+                about: user?.about || '',
+                picture: user?.picture || '',
+                banner: user?.banner || '',
+                lud06: user?.lud06 || '',
+                lud16: user?.lud16 || '',
+                nip05: user?.nip05 || '',
+            });
+        }
+    });
+
+    constructor() {
         this.setValues();
     }
 
@@ -92,30 +108,14 @@ export class SettingsProfileComponent implements OnInit {
         try {
             const publicKey = await this._signerService.getPublicKey();
             const metadata = await this._storageService.getProfile(publicKey);
-
-            this.user = metadata;
-
-            this.profileForm.setValue({
-                name: this.user?.name || '',
-                username: this.user?.username || '',
-                displayName: this.user?.displayName || '',
-                website: this.user?.website || '',
-                about: this.user?.about || '',
-                picture: this.user?.picture || '',
-                banner: this.user?.banner || '',
-                lud06: this.user?.lud06 || '',
-                lud16: this.user?.lud16 || '',
-                nip05: this.user?.nip05 || '',
-            });
-
-            this._changeDetectorRef.detectChanges();
+            this.user.set(metadata);
         } catch (error) {
             console.error('Error fetching profile:', error);
         }
     }
 
     onSubmit() {
-        if (this.profileForm.valid) {
+        if (this.profileForm().valid) {
             this.submit();
         } else {
             console.error('Form is invalid');
@@ -123,36 +123,35 @@ export class SettingsProfileComponent implements OnInit {
     }
 
     async submit() {
-        const profileData = this.profileForm.value;
-        this.content = JSON.stringify(profileData);
+        const profileData = this.profileForm().value;
+        this.content.set(JSON.stringify(profileData));
 
         if (this._signerService.isUsingSecretKey()) {
-
-                try {
-                    const privateKey =
-                        await this._signerService.getDecryptedSecretKey();
-                    this.signEvent(privateKey);
-                } catch (error) {
-                    console.error(error);
-                }
-
+            try {
+                const privateKey = await this._signerService.getDecryptedSecretKey();
+                this.signEvent(privateKey);
+            } catch (error) {
+                console.error(error);
+            }
         } else if (this._signerService.isUsingExtension()) {
-            const unsignedEvent: UnsignedEvent =
-                this._signerService.getUnsignedEvent(0, [], this.content);
-            const signedEvent =
-                await this._signerService.signEventWithExtension(unsignedEvent);
+            const unsignedEvent: UnsignedEvent = this._signerService.getUnsignedEvent(
+                0,
+                [],
+                this.content()
+            );
+            const signedEvent = await this._signerService.signEventWithExtension(unsignedEvent);
             this.publishSignedEvent(signedEvent);
         }
     }
 
     async signEvent(privateKey: string) {
-        const unsignedEvent: UnsignedEvent =
-            this._signerService.getUnsignedEvent(0, [], this.content);
-        const privateKeyBytes = hexToBytes(privateKey);
-        const signedEvent: NostrEvent = finalizeEvent(
-            unsignedEvent,
-            privateKeyBytes
+        const unsignedEvent: UnsignedEvent = this._signerService.getUnsignedEvent(
+            0,
+            [],
+            this.content()
         );
+        const privateKeyBytes = hexToBytes(privateKey);
+        const signedEvent: NostrEvent = finalizeEvent(unsignedEvent, privateKeyBytes);
         this.publishSignedEvent(signedEvent);
     }
 
