@@ -1,19 +1,15 @@
-import { AngorAlertComponent } from '@angor/components/alert';
-import { CommonModule, CurrencyPipe, NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import {
-    FormBuilder,
-    FormGroup,
-    FormsModule,
-    ReactiveFormsModule,
-} from '@angular/forms';
+    ChangeDetectionStrategy,
+    Component,
+    OnInit,
+    signal,
+    effect,
+    inject,
+} from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatOptionModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule } from '@angular/material/select';
 import { IndexerService } from 'app/services/indexer.service';
 
 @Component({
@@ -22,45 +18,43 @@ import { IndexerService } from 'app/services/indexer.service';
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
     imports: [
-        FormsModule,
         ReactiveFormsModule,
-        MatRadioModule,
-        NgClass,
         MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatOptionModule,
         MatButtonModule,
         CommonModule,
-    ]
+    ],
 })
 export class SettingsNetworkComponent implements OnInit {
+    private readonly _indexerService = inject(IndexerService);
     networkForm: FormGroup;
-    selectedNetwork: 'mainnet' | 'testnet' = 'testnet';
-    constructor(
-        private _fb: FormBuilder,
-        private _indexerService: IndexerService
-    ) {}
+    selectedNetwork = signal<'mainnet' | 'testnet'>('testnet');
+
+    constructor(private _fb: FormBuilder) {}
 
     ngOnInit(): void {
+        const initialNetwork = this._indexerService.getNetwork();
         this.networkForm = this._fb.group({
-            network: [this._indexerService.getNetwork()],
+            network: [initialNetwork],
         });
+        this.selectedNetwork.set(initialNetwork);
 
-        this.selectedNetwork = this._indexerService.getNetwork();
+        // Effect to handle real-time changes
+        effect(() => {
+            console.log('Selected Network:', this.selectedNetwork());
+        });
     }
 
     setNetwork(network: 'mainnet' | 'testnet'): void {
-        this.selectedNetwork = network;
-        this._indexerService.setNetwork(this.selectedNetwork);
+        this.selectedNetwork.set(network);
     }
 
     save(): void {
-        this._indexerService.setNetwork(this.selectedNetwork);
+        const network = this.selectedNetwork();
+        this._indexerService.setNetwork(network);
     }
 
     cancel(): void {
-        this.selectedNetwork = this._indexerService.getNetwork();
+        const currentNetwork = this._indexerService.getNetwork();
+        this.selectedNetwork.set(currentNetwork);
     }
 }

@@ -1,52 +1,56 @@
 <div class="w-full max-w-3xl">
-    <div class="text-xl">Change your network</div>
-    <div class="text-secondary">
-        Switch between Mainnet and Testnet to change your network settings.
+    <div class="text-xl font-bold">Change Your Network</div>
+    <div class="text-secondary mt-2">
+        Switch between Mainnet and Testnet to update your network preferences.
     </div>
 </div>
 
 <div class="mt-8 grid w-full max-w-3xl gap-6 sm:grid-cols-2">
     <!-- Mainnet Card -->
     <div
-        class="bg-card relative flex cursor-pointer flex-col items-start justify-start rounded-md p-6 shadow"
+        class="bg-card relative flex cursor-pointer flex-col items-start justify-start rounded-md p-6 shadow hover:shadow-lg transition-shadow"
         [ngClass]="{
-            'ring ring-inset ring-primary': selectedNetwork === 'mainnet',
+            'ring-2 ring-primary': selectedNetwork() === 'mainnet'
         }"
         (click)="setNetwork('mainnet')"
     >
-        <mat-icon
-            *ngIf="selectedNetwork === 'mainnet'"
-            class="absolute right-0 top-0 mr-3 mt-3 text-primary icon-size-7"
-            [svgIcon]="'heroicons_solid:check-circle'"
-        ></mat-icon>
-        <div class="font-semibold">Mainnet</div>
-        <div class="text-secondary mt-1 whitespace-normal">
-            The live Bitcoin network.
+        @if (selectedNetwork() === 'mainnet') {
+            <mat-icon
+                class="absolute right-2 top-2 text-primary icon-size-7"
+                [svgIcon]="'heroicons_solid:check-circle'"
+                aria-label="Selected Network"
+            ></mat-icon>
+        }
+        <div class="font-semibold text-lg">Mainnet</div>
+        <div class="text-secondary mt-2">
+            The live Bitcoin network for real transactions.
         </div>
     </div>
 
     <!-- Testnet Card -->
     <div
-        class="bg-card relative flex cursor-pointer flex-col items-start justify-start rounded-md p-6 shadow"
+        class="bg-card relative flex cursor-pointer flex-col items-start justify-start rounded-md p-6 shadow hover:shadow-lg transition-shadow"
         [ngClass]="{
-            'ring ring-inset ring-primary': selectedNetwork === 'testnet',
+            'ring-2 ring-primary': selectedNetwork() === 'testnet'
         }"
         (click)="setNetwork('testnet')"
     >
-        <mat-icon
-            *ngIf="selectedNetwork === 'testnet'"
-            class="absolute right-0 top-0 mr-3 mt-3 text-primary icon-size-7"
-            [svgIcon]="'heroicons_solid:check-circle'"
-        ></mat-icon>
-        <div class="font-semibold">Testnet</div>
-        <div class="text-secondary mt-1 whitespace-normal">
-            The Bitcoin testing network.
+        @if (selectedNetwork() === 'testnet') {
+            <mat-icon
+                class="absolute right-2 top-2 text-primary icon-size-7"
+                [svgIcon]="'heroicons_solid:check-circle'"
+                aria-label="Selected Network"
+            ></mat-icon>
+        }
+        <div class="font-semibold text-lg">Testnet</div>
+        <div class="text-secondary mt-2">
+            A Bitcoin testing network for developers and testing purposes.
         </div>
     </div>
 </div>
 
 <!-- Divider -->
-<div class="mb-10 mt-11 w-full max-w-3xl border-t"></div>
+<div class="my-10 w-full max-w-3xl border-t"></div>
 
 <!-- Actions -->
 <div class="flex w-full max-w-3xl items-center justify-end">
