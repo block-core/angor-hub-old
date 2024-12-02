@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Project } from 'app/interface/project.interface';
 import { BookmarkService } from 'app/services/bookmark.service';
 import { ProjectsService, ProjectStats } from 'app/services/projects.service';
@@ -22,6 +22,7 @@ import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
     selector: 'app-bookmark',
     standalone: true,
     imports: [
+        RouterLink,
         MatButtonModule,
         MatIconModule,
         AngorCardComponent,
@@ -151,9 +152,5 @@ export class BookmarkComponent implements OnInit, OnDestroy {
                 return of(null);
             })
         ).subscribe();
-    }
-
-    openChat(pubKey: string): void {
-        this._router.navigate(['/chat', pubKey]);
     }
 }
