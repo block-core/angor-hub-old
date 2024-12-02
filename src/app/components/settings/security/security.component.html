@@ -1,124 +1,66 @@
-<div class="w-full max-w-3xl mx-auto">
+<div class="w-full max-w-3xl">
+    <!-- Secret Key Section -->
+    <section class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-800">Secret Key</h2>
+        <p class="text-gray-600 mb-4">
+            Your secret key is sensitive information. Keep it secure and do not share it.
+        </p>
 
+        <mat-form-field *ngIf="secretKey()" class="w-full mb-4">
+            <mat-label>Secret Key</mat-label>
+            <input matInput [value]="secretKey()" readonly />
+            <button mat-icon-button matSuffix (click)="copyToClipboard(secretKey()!)">
+                <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
+            </button>
+        </mat-form-field>
 
-         <!-- Secret Key Section -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold text-gray-800">Secret Key</h2>
-            <p class="text-gray-600 mb-4">
-                Your secret key is sensitive information. Keep it secure and do not share it.
-            </p>
+        <mat-form-field *ngIf="nsecKey()" class="w-full">
+            <mat-label>Nsec Key</mat-label>
+            <input matInput [value]="nsecKey()" readonly />
+            <button mat-icon-button matSuffix (click)="copyToClipboard(nsecKey()!)">
+                <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
+            </button>
+        </mat-form-field>
 
-            <!-- Readonly Textbox with Copy Button -->
-            <mat-form-field *ngIf="secretKey" class="w-full mb-4" [subscriptSizing]="'dynamic'">
-                <mat-label>Secret Key</mat-label>
-                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:lock-open'" matPrefix></mat-icon>
-                <input matInput [value]="secretKey" readonly />
-                <button
-                    mat-icon-button
-                    matSuffix
-                    (click)="copyToClipboard(secretKey)"
-                    aria-label="Copy secret key"
-                >
-                    <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
-                </button>
-            </mat-form-field>
-
-
-            <mat-form-field *ngIf="nsecKey" class="w-full" [subscriptSizing]="'dynamic'">
-                <mat-label>Nsec Key</mat-label>
-                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:lock-open'" matPrefix></mat-icon>
-                <input matInput [value]="nsecKey" readonly />
-                <button
-                    mat-icon-button
-                    matSuffix
-                    (click)="copyToClipboard(nsecKey)"
-                    aria-label="Copy Nsec key"
-                >
-                    <mat-icon svgIcon="heroicons_outline:clipboard-document"></mat-icon>
-                </button>
-            </mat-form-field>
-
-
-            <!-- Fetch Secret Key Button -->
-            <div *ngIf="!secretKey" class="flex items-center justify-center mt-6">
-                <button
-                    mat-flat-button
-                    color="primary"
-                    type="button"
-                    class="px-6 py-2 shadow"
-                    (click)="fetchSecretKey()"
-                >
-                    View Secret Key
-                </button>
-            </div>
+        <div *ngIf="!secretKey()" class="mt-6 text-center">
+            <button mat-flat-button color="primary" (click)="fetchSecretKey()">View Secret Key</button>
         </div>
-
-
-
-
-
+    </section>
 
     <!-- Divider -->
     <div class="my-10 border-t"></div>
 
-
+    <!-- Change Password Section -->
     <form [formGroup]="changePasswordForm" (ngSubmit)="changePassword()">
-        <div class="w-full">
-            <div class="text-xl">Change your password</div>
-        </div>
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <div class="sm:col-span-4" *ngIf="isPasswordEnabled">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Current password</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:key'" matPrefix></mat-icon>
-                    <input [formControlName]="'currentPassword'" type="password" matInput />
-                </mat-form-field>
-            </div>
-            <div class="sm:col-span-4">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>New password</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:key'" matPrefix></mat-icon>
-                    <input [formControlName]="'newPassword'" type="password" matInput required />
-                </mat-form-field>
-                <div class="text-hint mt-1 text-md">Enter a strong password with letters, numbers, and symbols.
-
-
-
-
-
-
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <button mat-flat-button type="submit" [color]="'primary'">Save</button>
+        <h3 class="text-xl">Change Your Password</h3>
+        <mat-form-field class="w-full mt-4" *ngIf="isPasswordEnabled()">
+            <mat-label>Current Password</mat-label>
+            <input matInput formControlName="currentPassword" type="password" />
+        </mat-form-field>
+        <mat-form-field class="w-full mt-4">
+            <mat-label>New Password</mat-label>
+            <input matInput formControlName="newPassword" type="password" />
+        </mat-form-field>
+        <div class="flex justify-end mt-6">
+            <button mat-flat-button color="primary" type="submit">Save</button>
         </div>
     </form>
-    @if (isPasswordEnabled) {
 
     <!-- Divider -->
-    <div class="my-10 border-t"></div>
+    <div *ngIf="isPasswordEnabled()" class="my-10 border-t"></div>
 
-    <form [formGroup]="removePasswordForm" (ngSubmit)="removePassword()">
-        <div class="w-full">
-            <div class="text-xl">Remove Password</div>
-            <div class="text-secondary">
-                Removing your password will save your secret key without encryption. Ensure you understand the risks.
-            </div>
-        </div>
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <div class="sm:col-span-4">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Current password</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:key'" matPrefix></mat-icon>
-                    <input [formControlName]="'currentPasswordRemove'" type="password" matInput required />
-                </mat-form-field>
-            </div>
-        </div>
-        <div class="flex items-center justify-end mt-4">
-            <button mat-flat-button type="submit" [color]="'warn'">Remove Password</button>
+    <!-- Remove Password Section -->
+    <form *ngIf="isPasswordEnabled()" [formGroup]="removePasswordForm" (ngSubmit)="removePassword()">
+        <h3 class="text-xl">Remove Password</h3>
+        <p class="text-secondary mt-2">
+            Removing your password will store your secret key unencrypted. Ensure you understand the risks.
+        </p>
+        <mat-form-field class="w-full mt-4">
+            <mat-label>Current Password</mat-label>
+            <input matInput formControlName="currentPasswordRemove" type="password" />
+        </mat-form-field>
+        <div class="flex justify-end mt-6">
+            <button mat-flat-button color="warn" type="submit">Remove Password</button>
         </div>
     </form>
-    }
 </div>
