@@ -1,19 +1,19 @@
-import { AngorAlertComponent } from '@angor/components/alert';
-import { CommonModule, CurrencyPipe, NgClass } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
-    OnInit,
     ViewEncapsulation,
+    signal,
+    effect,
+    WritableSignal,
+    inject,
 } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { IndexerService } from 'app/services/indexer.service';
 
 @Component({
@@ -24,84 +24,69 @@ import { IndexerService } from 'app/services/indexer.service';
     standalone: true,
     imports: [
         FormsModule,
-        ReactiveFormsModule,
-        MatRadioModule,
         MatIconModule,
         MatFormFieldModule,
         MatInputModule,
-        MatSelectModule,
-        MatOptionModule,
         MatButtonModule,
         CommonModule,
-    ]
+        MatTooltipModule 
+    ],
 })
-export class SettingsIndexerComponent implements OnInit {
-    mainnetIndexers: Array<{ url: string; primary: boolean }> = [];
-    testnetIndexers: Array<{ url: string; primary: boolean }> = [];
-    newMainnetIndexerUrl: string = '';
-    newTestnetIndexerUrl: string = '';
+export class SettingsIndexerComponent {
+    private readonly _indexerService = inject(IndexerService);
 
-    constructor(private _indexerService: IndexerService) {}
+    mainnetIndexers: WritableSignal<{ url: string; primary: boolean }[]> = signal([]);
+    testnetIndexers: WritableSignal<{ url: string; primary: boolean }[]> = signal([]);
+    newMainnetIndexerUrl: WritableSignal<string> = signal('');
+    newTestnetIndexerUrl: WritableSignal<string> = signal('');
 
-    ngOnInit(): void {
+    constructor() {
         this.loadIndexers();
     }
 
-    loadIndexers(): void {
-        this.mainnetIndexers = this._indexerService
-            .getIndexers('mainnet')
-            .map((url) => ({
+    private loadIndexers(): void {
+        this.mainnetIndexers.set(
+            this._indexerService.getIndexers('mainnet').map((url) => ({
                 url,
-                primary:
-                    url === this._indexerService.getPrimaryIndexer('mainnet'),
-            }));
-        this.testnetIndexers = this._indexerService
-            .getIndexers('testnet')
-            .map((url) => ({
-                url,
-                primary:
-                    url === this._indexerService.getPrimaryIndexer('testnet'),
-            }));
+                primary: url === this._indexerService.getPrimaryIndexer('mainnet'),
+            }))
+        );
 
-        console.log('Mainnet Indexers:', this.mainnetIndexers);
-        console.log('Testnet Indexers:', this.testnetIndexers);
+        this.testnetIndexers.set(
+            this._indexerService.getIndexers('testnet').map((url) => ({
+                url,
+                primary: url === this._indexerService.getPrimaryIndexer('testnet'),
+            }))
+        );
     }
 
     addIndexer(network: 'mainnet' | 'testnet'): void {
-        if (network === 'mainnet' && this.newMainnetIndexerUrl) {
-            this._indexerService.addIndexer(
-                this.newMainnetIndexerUrl,
-                'mainnet'
-            );
+        const newIndexerUrl = network === 'mainnet'
+            ? this.newMainnetIndexerUrl()
+            : this.newTestnetIndexerUrl();
+
+        if (newIndexerUrl.trim()) {
+            this._indexerService.addIndexer(newIndexerUrl, network);
             this.loadIndexers();
-            this.newMainnetIndexerUrl = '';
-        } else if (network === 'testnet' && this.newTestnetIndexerUrl) {
-            this._indexerService.addIndexer(
-                this.newTestnetIndexerUrl,
-                'testnet'
-            );
-            this.loadIndexers();
-            this.newTestnetIndexerUrl = '';
+            if (network === 'mainnet') {
+                this.newMainnetIndexerUrl.set('');
+            } else {
+                this.newTestnetIndexerUrl.set('');
+            }
         }
     }
 
-    removeIndexer(
-        network: 'mainnet' | 'testnet',
-        indexer: { url: string; primary: boolean }
-    ): void {
+    removeIndexer(network: 'mainnet' | 'testnet', indexer: { url: string; primary: boolean }): void {
         this._indexerService.removeIndexer(indexer.url, network);
         this.loadIndexers();
     }
 
-    setPrimaryIndexer(
-        network: 'mainnet' | 'testnet',
-        indexer: { url: string; primary: boolean }
-    ): void {
+    setPrimaryIndexer(network: 'mainnet' | 'testnet', indexer: { url: string; primary: boolean }): void {
         this._indexerService.setPrimaryIndexer(indexer.url, network);
         this.loadIndexers();
     }
 
-    trackByFn(index: number, item: any): any {
+    trackByFn(index: number, item: { url: string; primary: boolean }): string {
         return item.url;
     }
 }
