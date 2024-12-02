@@ -1,11 +1,13 @@
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import {
     ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
     NgZone,
     OnInit,
     ViewEncapsulation,
+    inject,
+    signal,
+    effect,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,14 +18,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { RelayService } from 'app/services/relay.service';
-import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'settings-relay',
     templateUrl: './relay.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
     imports: [
         MatFormFieldModule,
         MatIconModule,
@@ -34,72 +34,63 @@ import { Subscription } from 'rxjs';
         TitleCasePipe,
         CommonModule,
         FormsModule,
-    ]
+    ],
 })
 export class SettingsRelayComponent implements OnInit {
-    relays: any[] = [];
-    accessOptions: any[] = [];
-    newRelayUrl: string = '';
-    private subscriptions: Subscription = new Subscription();
+    private readonly _relayService = inject(RelayService);
+    private readonly _zone = inject(NgZone);
+    private readonly _sanitizer = inject(DomSanitizer);
 
-    constructor(
-        private _relayService: RelayService,
-        private _changeDetectorRef: ChangeDetectorRef,
-        private _zone: NgZone,
-        private _sanitizer: DomSanitizer
-    ) {}
+    // Signals for state management
+    relays = signal<any[]>([]);
+    newRelayUrl = signal<string>('');
+    accessOptions = signal<any[]>([
+        {
+            label: 'Read',
+            value: 'read',
+            description:
+                'Reads only, does not write, unless explicitly specified on publish action.',
+        },
+        {
+            label: 'Write',
+            value: 'write',
+            description:
+                'Writes your events, profile, and other metadata updates. Connects on-demand.',
+        },
+        {
+            label: 'Read and Write',
+            value: 'read-write',
+            description:
+                'Reads and writes events, profiles, and other metadata. Always connected.',
+        },
+    ]);
 
-    ngOnInit(): void {
-        // Subscribe to relays observable
-        this.subscriptions.add(
+    constructor() {
+        // Effect to sync relays with service
+        effect(() => {
             this._relayService.getRelays().subscribe((relays) => {
                 this._zone.run(() => {
-                    this.relays = relays;
-                    this._changeDetectorRef.markForCheck(); // Mark the component for check
+                    this.relays.set(relays);
                 });
-            })
-        );
-
-        // Setup access roles
-        this.accessOptions = [
-            {
-                label: 'Read',
-                value: 'read',
-                description:
-                    'Reads only, does not write, unless explicitly specified on publish action.',
-            },
-            {
-                label: 'Write',
-                value: 'write',
-                description:
-                    'Writes your events, profile, and other metadata updates. Connects on-demand.',
-            },
-            {
-                label: 'Read and Write',
-                value: 'read-write',
-                description:
-                    'Reads and writes events, profiles, and other metadata. Always connected.',
-            },
-        ];
+            });
+        });
     }
 
-    ngOnDestroy(): void {
-        this.subscriptions.unsubscribe();
-    }
+    ngOnInit(): void {}
 
-    addRelay() {
-        if (this.newRelayUrl) {
-            this._relayService.addRelay(this.newRelayUrl);
-            this.newRelayUrl = '';
+    addRelay(): void {
+        if (this.newRelayUrl()) {
+            this._relayService.addRelay(this.newRelayUrl());
+            this.newRelayUrl.set('');
         }
     }
 
-    updateRelayAccess(relay: any) {
+    updateRelayAccess(relay: any): void {
         console.log('Relay Access Updated:', relay.url, relay.accessType);
         this._relayService.updateRelayAccessType(relay.url, relay.accessType);
     }
 
-    removeRelay(url: string) {
+    removeRelay(url: string): void {
         this._relayService.removeRelay(url);
     }
 
@@ -116,14 +107,17 @@ export class SettingsRelayComponent implements OnInit {
     }
 
     relayFavIcon(url: string): string {
-        let safeUrl = url
+        const safeUrl = url
             .replace('wss://', 'https://')
             .replace('ws://', 'https://');
-
         return safeUrl + '/favicon.ico';
     }
 
     getSafeUrl(url: string): SafeUrl {
         return this._sanitizer.bypassSecurityTrustUrl(url);
+    }
+
+    onImageError(event: Event): void {
+        (event.target as HTMLImageElement).src = '/images/avatars/avatar-placeholder.png';
     }
 }
