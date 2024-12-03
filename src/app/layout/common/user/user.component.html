@@ -1,16 +1,11 @@
 <button mat-icon-button [matMenuTriggerFor]="userActions">
     <span class="relative">
-        <ng-container *ngIf="user?.picture; else defaultAvatar">
-            <img
-                class="h-7 w-7 rounded-full object-cover"
-                [src]="getSafeUrl(user?.picture)"
-                alt=""
-                onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-            />
-        </ng-container>
-        <ng-template #defaultAvatar>
-            <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
-        </ng-template>
+        @if (user()?.picture) {
+        <img class="h-7 w-7 rounded-full object-cover" [src]="getSafeUrl(user()?.picture)" alt=""
+            onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';" />
+        } @else {
+        <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+        }
     </span>
 </button>
 
@@ -19,8 +14,8 @@
         <span class="flex flex-col leading-none">
             <span>Logged in as</span>
             <span class="mt-1.5 text-md font-medium">{{
-                user?.display_name || user?.name || 'Unknown User'
-            }}</span>
+                user()?.display_name || user?.name || 'Unknown User'
+                }}</span>
         </span>
     </button>
     <mat-divider class="my-2"></mat-divider>
@@ -38,9 +33,7 @@
     </button>
     <mat-divider class="my-2"></mat-divider>
     <button mat-menu-item (click)="logout()">
-        <mat-icon
-            [svgIcon]="'heroicons_outline:arrow-right-on-rectangle'"
-        ></mat-icon>
+        <mat-icon [svgIcon]="'heroicons_outline:arrow-right-on-rectangle'"></mat-icon>
         <span>logout</span>
     </button>
 </mat-menu>

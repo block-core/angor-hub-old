@@ -3,16 +3,15 @@ import {
     AngorConfigService,
     Scheme,
     Theme,
-    Themes,
 } from '@angor/services/config';
-import { CommonModule, NgClass } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
-    OnDestroy,
-    OnInit,
-    ViewEncapsulation,
+    Signal,
+    inject,
+    signal,
+    effect,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
@@ -22,13 +21,11 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Router, RouterModule } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
 import { SignerService } from 'app/services/signer.service';
-import { Subject, takeUntil } from 'rxjs';
 import { NostrLoginService } from 'app/services/nostr-login.service';
 
 @Component({
     selector: 'user',
     templateUrl: './user.component.html',
-    encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
     imports: [
@@ -37,96 +34,79 @@ import { NostrLoginService } from 'app/services/nostr-login.service';
         MatIconModule,
         MatDividerModule,
         CommonModule,
-        RouterModule
-    ]
+        RouterModule,
+    ],
 })
-export class UserComponent implements OnInit, OnDestroy {
+export class UserComponent {
+    // Signals
+    user = signal<{ picture?: string; display_name?: string; name?: string } | null>(null);
+    config = signal<AngorConfig | null>(null);
+    userPubKey = signal<string>('');
 
-    user: any;
-    isLoading: boolean = true;
-    errorMessage: string | null = null;
+    private signerService = inject(SignerService);
+    private storageService = inject(StorageService);
+    private angorConfigService = inject(AngorConfigService);
+    private router = inject(Router);
+    private sanitizer = inject(DomSanitizer);
+    private nostrLoginService = inject(NostrLoginService);
 
-    private _unsubscribeAll: Subject<any> = new Subject<any>();
-    config: AngorConfig;
-    layout: string;
-    scheme: 'dark' | 'light';
-    theme: string;
-    themes: Themes;
-    userPubKey: string;
+    constructor() {
+        // Initialize userPubKey signal
+        this.userPubKey.set(this.signerService.getPublicKey());
 
-    constructor(
-        private _changeDetectorRef: ChangeDetectorRef,
-        private _router: Router,
-        private _angorConfigService: AngorConfigService,
-        private _signerService: SignerService,
-        private _storageService: StorageService,
-        private sanitizer: DomSanitizer,
-        private _nostrLoginService: NostrLoginService
-    ) { }
-
-
-    ngOnInit(): void {
-        this.userPubKey = this._signerService.getPublicKey()
-
-        this._angorConfigService.config$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((config: AngorConfig) => {
-                localStorage.setItem('angorConfig', JSON.stringify(config));
-                this.config = config;
-                this._changeDetectorRef.detectChanges();
-            });
+        // Load user profile
         this.loadUserProfile();
 
-        this._storageService.profile$.subscribe((data) => {
-            if (data && data.pubKey === this.userPubKey) {
-                this.user = data.metadata;
-                this._changeDetectorRef.detectChanges();
+        // Subscribe to configuration changes
+        effect(() => {
+            this.config.set(this.angorConfigService.config);
+            if (this.config()) {
+                localStorage.setItem(
+                    'angorConfig',
+                    JSON.stringify(this.config())
+                );
+            }
+        });
+
+        // Listen to profile changes from the storage service
+        this.storageService.profile$.subscribe((data) => {
+            if (data && data.pubKey === this.userPubKey()) {
+                this.user.set(data.metadata || {});
             }
         });
     }
 
-    ngOnDestroy(): void {
-        this._unsubscribeAll.next(null);
-        this._unsubscribeAll.complete();
-    }
-
-    private async loadUserProfile(): Promise<void> {
-
-        this._storageService.getProfile(this.userPubKey).then((metadata) => {
-            this.user = metadata;
-            this._changeDetectorRef.detectChanges();
+    private loadUserProfile(): void {
+        this.storageService.getProfile(this.userPubKey()).then((metadata) => {
+            this.user.set(metadata || {});
         });
-
     }
 
     logout(): void {
-        this._router.navigate(['/logout']);
+        this.router.navigate(['/logout']);
     }
 
+    Switch(): void {
+        this.nostrLoginService.switchAccount();
+    }
+    
     profile(): void {
-        this._router.navigate(['/profile']);
-    }
-
-    setLayout(layout: string): void {
-        this._angorConfigService.config = { layout };
-        this._changeDetectorRef.detectChanges();
+        this.router.navigate(['/profile']);
     }
 
     setScheme(scheme: Scheme): void {
-        this._angorConfigService.config = { scheme };
-        this._changeDetectorRef.detectChanges();
+        this.angorConfigService.config = { scheme };
     }
 
     setTheme(theme: Theme): void {
-        this._angorConfigService.config = { theme };
-        this._changeDetectorRef.detectChanges();
+        this.angorConfigService.config = { theme };
     }
 
     getSafeUrl(url: string): SafeUrl {
         return this.sanitizer.bypassSecurityTrustUrl(url);
     }
 
-    Switch() {
-        this._nostrLoginService.switchAccount();
+    switchAccount(): void {
+        this.nostrLoginService.switchAccount();
     }
 }
