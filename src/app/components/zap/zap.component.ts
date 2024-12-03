@@ -36,7 +36,7 @@ import { AngorCardComponent } from '../../../@angor/components/card/card.compone
         TextFieldModule,
         ReactiveFormsModule,
         AngorCardComponent,
-    ]
+    ],
 })
 export class ZapComponent implements OnInit {
     private readonly formBuilder = inject(FormBuilder);
@@ -46,12 +46,10 @@ export class ZapComponent implements OnInit {
 
     sendZapForm!: FormGroup;
     payRequest: LNURLPayRequest | null = null;
-    invoice: LNURLInvoice = {
-        pr: '',
-    };
+    invoice: LNURLInvoice = { pr: '' };
     canZap = false;
     loading = false;
-    error = '';
+    error: string | null = null;
 
     ngOnInit(): void {
         this.initializeForm();
@@ -59,25 +57,18 @@ export class ZapComponent implements OnInit {
 
     private initializeForm(): void {
         this.sendZapForm = this.formBuilder.group({
-            lightningAddress: [
-                '',
-                [Validators.required, this.validateLightningAddress],
-            ],
-            eventId: [''], // Optional for zapping specific events
+            lightningAddress: ['', [Validators.required, this.validateLightningAddress]],
+            eventId: [''], // Optional field for specific zaps
             amount: ['', [Validators.required, Validators.min(1)]],
-            comment: [''],
+            comment: [''], // Optional comment field
         });
     }
 
-    private validateLightningAddress(
-        control: AbstractControl
-    ): ValidationErrors | null {
+    private validateLightningAddress(control: AbstractControl): ValidationErrors | null {
         const value = control.value;
         return value.includes('@')
             ? null
-            : {
-                  invalidFormat: true,
-              };
+            : { invalidFormat: true };
     }
 
     private getCallbackUrl(lightningAddress: string): string | null {
@@ -85,10 +76,9 @@ export class ZapComponent implements OnInit {
             if (lightningAddress.includes('@')) {
                 const [username, domain] = lightningAddress.split('@');
                 return `https://${domain}/.well-known/lnurlp/${username}`;
-            } else if (lightningAddress.toLowerCase().startsWith('lnurl')) {
-                return this.utilities
-                    .convertBech32ToText(lightningAddress)
-                    .toString();
+            }
+            if (lightningAddress.toLowerCase().startsWith('lnurl')) {
+                return this.utilities.convertBech32ToText(lightningAddress).toString();
             }
             return null;
         } catch (error) {
@@ -99,9 +89,8 @@ export class ZapComponent implements OnInit {
 
     async fetchPayRequest(): Promise<void> {
         this.resetState();
+        const lightningAddress = this.sendZapForm.get('lightningAddress')?.value;
 
-        const lightningAddress =
-            this.sendZapForm.get('lightningAddress')?.value;
         if (!lightningAddress) {
             this.setError('Lightning Address is required.');
             return;
@@ -116,16 +105,12 @@ export class ZapComponent implements OnInit {
         try {
             const response = await fetch(callbackUrl);
             if (!response.ok) {
-                throw new Error(
-                    `Failed to fetch pay request: ${response.statusText}`
-                );
+                throw new Error(`Failed to fetch pay request: ${response.statusText}`);
             }
 
             const result = await response.json();
             if (result.status === 'ERROR') {
-                throw new Error(
-                    result.reason || 'Error fetching the pay request.'
-                );
+                throw new Error(result.reason || 'Error fetching the pay request.');
             }
 
             this.payRequest = result as LNURLPayRequest;
@@ -145,11 +130,7 @@ export class ZapComponent implements OnInit {
         const max = (this.payRequest.maxSendable || 21000000) / 1000;
 
         const amountControl = this.sendZapForm.get('amount');
-        amountControl?.setValidators([
-            Validators.required,
-            Validators.min(min),
-            Validators.max(max),
-        ]);
+        amountControl?.setValidators([Validators.required, Validators.min(min), Validators.max(max)]);
         amountControl?.updateValueAndValidity();
     }
 
@@ -160,8 +141,7 @@ export class ZapComponent implements OnInit {
         }
 
         this.resetState();
-        const { lightningAddress, eventId, amount, comment } =
-            this.sendZapForm.value;
+        const { lightningAddress, eventId, amount, comment } = this.sendZapForm.value;
 
         if (!this.payRequest) {
             this.setError('Pay request is not loaded.');
@@ -170,29 +150,20 @@ export class ZapComponent implements OnInit {
 
         try {
             const callback = new URL(this.payRequest.callback);
-            const query = new URLSearchParams({
-                amount: (amount * 1000).toString(),
-            });
+            const query = new URLSearchParams({ amount: (amount * 1000).toString() });
 
             if (comment && this.payRequest.commentAllowed) {
                 query.set('comment', comment);
             }
 
             if (eventId) {
-                const zapRequest = await this.createAndSignZapRequest(
-                    eventId,
-                    comment
-                );
+                const zapRequest = await this.createAndSignZapRequest(eventId, comment);
                 query.set('nostr', JSON.stringify(zapRequest));
             }
 
-            const response = await fetch(
-                `${callback.origin}${callback.pathname}?${query.toString()}`
-            );
+            const response = await fetch(`${callback.origin}${callback.pathname}?${query.toString()}`);
             if (!response.ok) {
-                throw new Error(
-                    `Failed to fetch invoice: ${response.statusText}`
-                );
+                throw new Error(`Failed to fetch invoice: ${response.statusText}`);
             }
 
             const result = await response.json();
@@ -208,23 +179,13 @@ export class ZapComponent implements OnInit {
         }
     }
 
-    private async createAndSignZapRequest(
-        eventId: string,
-        msg?: string
-    ): Promise<NostrEvent> {
+    private async createAndSignZapRequest(eventId: string, msg?: string): Promise<NostrEvent> {
         try {
             const unsignedZapRequest = this.createZapRequestData(eventId, msg);
 
             const signedEvent = this.signerService.isUsingSecretKey()
-                ? finalizeEvent(
-                      unsignedZapRequest,
-                      hexToBytes(
-                          await this.signerService.getDecryptedSecretKey()
-                      )
-                  )
-                : await this.signerService.signEventWithExtension(
-                      unsignedZapRequest
-                  );
+                ? finalizeEvent(unsignedZapRequest, hexToBytes(await this.signerService.getDecryptedSecretKey()))
+                : await this.signerService.signEventWithExtension(unsignedZapRequest);
 
             if (!signedEvent) {
                 throw new Error('Signing failed. Signed event is null.');
@@ -252,11 +213,9 @@ export class ZapComponent implements OnInit {
     }
 
     private resetState(): void {
-        this.error = '';
+        this.error = null;
         this.loading = true;
-        this.invoice = {
-            pr: '',
-        };
+        this.invoice = { pr: '' };
     }
 
     private setError(message: string): void {

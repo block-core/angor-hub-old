@@ -183,7 +183,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
 
     private updateProjectMetadata(project: ProjectDetails, metadata: any): void {
-        project.displayName = metadata.additionalData.display_name ||  metadata.name || project.displayName;
+        project.displayName = metadata.name || project.displayName;
         project.about = metadata.about || project.about;
         project.picture = metadata.picture || project.picture;
         project.banner= metadata.banner || project.banner;

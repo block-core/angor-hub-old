@@ -145,7 +145,7 @@ export class BookmarkComponent implements OnInit, OnDestroy {
             }),
             tap(() => {
 
-              //  this._router.navigate(['/profile', project.nostrPubKey, project.projectIdentifier]);
+                this._router.navigate(['/profile', project.nostrPubKey, project.projectIdentifier]);
             }),
             catchError((error) => {
                 console.error(`Failed to navigate to project details for ${project.projectIdentifier}:`, error);
