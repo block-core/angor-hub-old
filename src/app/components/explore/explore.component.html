@@ -53,7 +53,7 @@
             <!-- Project Cards -->
             <div class="mt-10 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
                 <!-- Loop through projects and render cards -->
-                <ng-container *ngFor="let project of filteredProjects; trackBy: trackByFn">
+                <ng-container *ngFor="let project of projectDetails;">
                     <angor-card class="filter-info flex w-full flex-col">
                         <div class="flex h-32">
                             <img class="object-cover" [src]="project.banner || '/images/pages/profile/cover.jpg'" alt="Card cover image"
@@ -73,7 +73,7 @@
                             <div class="flex items-center justify-between">
                                 <div class="min-w-0 flex-1">
                                     @if (project.displayName || project.name) {
-                                    <div class="truncate text-2xl font-semibold leading-tight" role="button" (click)="
+                                     <div class="truncate text-2xl font-semibold leading-tight" role="button" (click)="
                                                 goToProjectDetails(project)
                                             ">
                                         {{
@@ -122,7 +122,7 @@
 
                             </div>
                             <hr class="my-6 w-full border-t" />
-                            <div class="flex items-center justify-between">
+                            <!-- <div class="flex items-center justify-between">
                                 <div class="text-secondary mr-3 text-md font-medium">
                                     {{ project.totalInvestmentsCount || 0 }}
                                     investors
@@ -149,13 +149,13 @@
                                         </ng-container>
                                     </ng-container>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                     </angor-card>
                 </ng-container>
             </div>
             <ng-container *ngIf="!loading || initialLoadComplete">
-                <ng-container *ngIf="filteredProjects.length === 0">
+                <ng-container *ngIf="projectDetails.length === 0">
                     <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
                         <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
                         <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">

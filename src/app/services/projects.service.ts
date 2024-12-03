@@ -5,24 +5,8 @@ import { catchError, map, mergeMap, switchMap, tap, toArray, filter, retry, shar
 import { StorageService } from './storage.service';
 import { IndexerService } from './indexer.service';
 import { SubscriptionService } from './subscription.service';
+import { Project, ProjectDetails, ProjectStatistics } from 'app/interface/project.interface';
 
-export interface Project {
-    founderKey: string;
-    nostrPubKey: string;
-    projectIdentifier: string;
-    createdOnBlock: number;
-    trxId: string;
-    totalInvestmentsCount: number;
-    isBookmarked: boolean;
-}
-
-export interface ProjectStats {
-    investorCount: number;
-    amountInvested: number;
-    amountSpentSoFarByFounder: number;
-    amountInPenalties: number;
-    countInPenalties: number;
-}
 
 @Injectable({
     providedIn: 'root',
@@ -35,6 +19,7 @@ export class ProjectsService {
     private totalProjectsFetched = false;
 
     private projectsSubject = new BehaviorSubject<Project[]>([]);
+
     public projects$ = this.projectsSubject.asObservable().pipe(shareReplay(1));
 
     private loadingSubject = new BehaviorSubject<boolean>(false);
@@ -43,7 +28,7 @@ export class ProjectsService {
     private noMoreProjectsSubject = new BehaviorSubject<boolean>(false);
     public noMoreProjects$ = this.noMoreProjectsSubject.asObservable();
 
-    private projectStatsSubject = new BehaviorSubject<Record<string, ProjectStats>>({});
+    private projectStatsSubject = new BehaviorSubject<Record<string, ProjectStatistics>>({});
     public projectStats$ = this.projectStatsSubject.asObservable().pipe(shareReplay(1));
 
     private selectedNetwork: 'mainnet' | 'testnet';
@@ -121,8 +106,7 @@ export class ProjectsService {
 
     private fetchProjectDetails(project: Project): Observable<Project> {
         return from(this.storageService.getProjectStats(project.projectIdentifier)).pipe(
-            map((projectStats: ProjectStats) => {
-                project.totalInvestmentsCount = projectStats?.investorCount ?? 0;
+            map((projectStats: ProjectStatistics) => {
                 this.updateProjectStats(project.projectIdentifier, projectStats);
                 return project;
             }),
@@ -136,11 +120,11 @@ export class ProjectsService {
     private updateProjectsList(updatedProjects: Project[]): void {
         const updatedProjectList = [...this.projectsSubject.value, ...updatedProjects];
         this.projectsSubject.next(updatedProjectList);
-        this.subscribeToProjectsMetadata(updatedProjects.map(proj => proj.nostrPubKey));
+        this.subscribeToProjectDetails(updatedProjects.map(proj => proj.nostrEventId));
         this.offset = Math.max(this.offset - this.LIMIT, 0);
     }
 
-    private updateProjectStats(projectIdentifier: string, projectStats: ProjectStats): void {
+    private updateProjectStats(projectIdentifier: string, projectStats: ProjectStatistics): void {
         const currentStats = this.projectStatsSubject.value;
         this.projectStatsSubject.next({
             ...currentStats,
@@ -162,6 +146,35 @@ export class ProjectsService {
         });
     }
 
+    private subscribeToProjectDetails(ids: string[]): void {
+        const projectDetailsFilter = { kinds: [30078], ids: ids };
+
+        this.subscriptionService.addSubscriptions([projectDetailsFilter], async (events) => {
+            try {
+                const eventArray = Array.isArray(events) ? events : [events];
+                const nostrPubKeys: string[] = [];
+
+                for (const event of eventArray) {
+                    const projectDetails = this.parseMetadataEvent(event);
+
+                    await this.storageService.saveProjectDetails(projectDetails);
+
+                    if (projectDetails.nostrPubKey && !nostrPubKeys.includes(projectDetails.nostrPubKey)) {
+                        nostrPubKeys.push(projectDetails.nostrPubKey);
+                    }
+                }
+
+                if (nostrPubKeys.length > 0) {
+                    this.subscribeToProjectsMetadata(nostrPubKeys);
+                }
+            } catch (error) {
+                console.error('Error handling project details subscription:', error);
+            }
+        });
+    }
+
+
+
     private parseMetadataEvent(event: any): any {
         try {
             return JSON.parse(event.content);
@@ -171,19 +184,19 @@ export class ProjectsService {
         }
     }
 
-    fetchProjectStats(projectIdentifier: string): Observable<ProjectStats> {
+    fetchProjectStats(projectIdentifier: string): Observable<ProjectStatistics> {
         const indexerUrl = this.indexerService.getPrimaryIndexer(this.selectedNetwork);
         const url = `${indexerUrl}api/query/Angor/projects/${projectIdentifier}/stats`;
-        return this.http.get<ProjectStats>(url).pipe(
+        return this.http.get<ProjectStatistics>(url).pipe(
             tap(stats => this.updateProjectStats(projectIdentifier, stats)),
             catchError(error => {
                 console.error(`Error fetching stats for project ${projectIdentifier}:`, error);
-                return of({} as ProjectStats);
+                return of({} as ProjectStatistics);
             })
         );
     }
 
-    
+
 
     resetProjects(): void {
         this.projectsSubject.next([]);

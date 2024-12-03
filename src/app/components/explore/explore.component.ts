@@ -25,11 +25,11 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
-import { Project } from 'app/interface/project.interface';
-import { StorageService } from 'app/services/storage.service';
+ import { StorageService } from 'app/services/storage.service';
 import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
-import { ProjectsService, ProjectStats } from '../../services/projects.service';
-import { BookmarkService } from 'app/services/bookmark.service';
+ import { BookmarkService } from 'app/services/bookmark.service';
+import { Project, ProjectDetails, ProjectStatistics } from 'app/interface/project.interface';
+import { ProjectsService } from 'app/services/projects.service';
 
 @Component({
     selector: 'explore',
@@ -46,7 +46,6 @@ import { BookmarkService } from 'app/services/bookmark.service';
         MatOptionModule,
         MatInputModule,
         MatSlideToggleModule,
-        NgClass,
         MatTooltipModule,
         MatProgressBarModule,
         CommonModule,
@@ -57,7 +56,9 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
 
     projects: Project[] = [];
-    filteredProjects: Project[] = []
+    projectDetails: ProjectDetails[] = [];
+
+    filteredProjects: ProjectDetails[] = []
     loading: boolean = false;
     errorMessage: string = '';
     noMoreProjects: boolean = false;
@@ -99,11 +100,14 @@ export class ExploreComponent implements OnInit, OnDestroy {
         ).subscribe({
             next: (projects: Project[]) => {
                 this.projects = projects;
-                this.filteredProjects = this.projects;
+                this.filteredProjects = this.projectDetails;
                 this.updateBookmarkStatus();
-                this.fetchMetadataForProjects(projects);
+                this.fetchProjectDetails(projects);
                 this.initialLoadComplete = true;
                 this._changeDetectorRef.detectChanges();
+
+                console.log(projects);
+
             }
         });
     }
@@ -117,32 +121,58 @@ export class ExploreComponent implements OnInit, OnDestroy {
     }
 
     private updateBookmarkStatus(): void {
-        this.projects.forEach(project => {
+        this.projectDetails.forEach(project => {
             project.isBookmarked = this.bookmarkedProjectNpubs.includes(project.nostrPubKey);
         });
-        this.filteredProjects = [...this.projects];
+        this.filteredProjects = [...this.projectDetails];
 
     }
 
 
-    private fetchMetadataForProjects(projects: Project[]): void {
-        projects.forEach(project => {
-            this._storageService.getProfile(project.nostrPubKey)
-                .then(profileMetadata => {
-                    if (profileMetadata) {
-                        this.updateProjectMetadata(project, profileMetadata);
+    private async fetchMetadataForProjects(projects: ProjectDetails[]): Promise<void> {
+        for (const project of projects) {
+            try {
+                const profileMetadata = await this._storageService.getProfile(project.nostrPubKey);
+                if (profileMetadata) {
+                    this.updateProjectMetadata(project, profileMetadata);
+                } else {
+                    console.warn(`No metadata found for project with pubKey: ${project.nostrPubKey}`);
+                }
+            } catch (error) {
+                console.error(`Error fetching metadata for pubKey: ${project.nostrPubKey}`, error);
+            }
+        }
+    }
+
+    private async fetchProjectDetails(projects: Project[]): Promise<void> {
+        for (const project of projects) {
+            try {
+
+                const projectDetails = await this._storageService.getProjectDetails(project.projectIdentifier);
+
+                if (projectDetails) {
+                    this.projectDetails.push(projectDetails);
+                    const metadata = await this._storageService.getProfile(projectDetails.nostrPubKey);
+                    if (metadata) {
+                        this.updateProjectMetadata(projectDetails, metadata);
+                    } else {
+                        console.warn(`No metadata found for project with nostrPubKey: ${projectDetails.nostrPubKey}`);
                     }
-                });
-        });
+                } else {
+                    console.warn(`No details found for project with eventId: ${project.nostrEventId}`);
+                }
+            } catch (error) {
+                console.error(`Error fetching details for eventId: ${project.nostrEventId}`, error);
+            }
+        }
     }
-
 
     private subscribeToProjectsUpdates(): void {
         this._storageService.profile$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((data) => {
                 if (data && data.pubKey) {
-                    const project = this.projects.find(proj => proj.nostrPubKey === data.pubKey);
+                    const project = this.projectDetails.find(proj => proj.nostrPubKey === data.pubKey);
                     if (project) {
                         this.updateProjectMetadata(project, data.metadata);
                         this._changeDetectorRef.detectChanges();
@@ -152,8 +182,8 @@ export class ExploreComponent implements OnInit, OnDestroy {
     }
 
 
-    private updateProjectMetadata(project: Project, metadata: any): void {
-        project.displayName = metadata.name || project.displayName;
+    private updateProjectMetadata(project: ProjectDetails, metadata: any): void {
+        project.displayName = metadata.additionalData.display_name ||  metadata.name || project.displayName;
         project.about = metadata.about || project.about;
         project.picture = metadata.picture || project.picture;
         project.banner= metadata.banner || project.banner;
@@ -171,8 +201,8 @@ export class ExploreComponent implements OnInit, OnDestroy {
                     )
                 );
                 this.projects = [...this.projects, ...uniqueNewProjects];
-                this.filteredProjects = [...this.projects];
-                this.fetchMetadataForProjects(uniqueNewProjects);
+                this.filteredProjects = [...this.projectDetails];
+                this.fetchProjectDetails(uniqueNewProjects);
                 this._changeDetectorRef.detectChanges();
             },
             error: (error) => {
@@ -206,9 +236,9 @@ export class ExploreComponent implements OnInit, OnDestroy {
         return item.projectIdentifier || index;
     }
 
-   goToProjectDetails(project: Project): void {
+   goToProjectDetails(project: ProjectDetails): void {
     this._projectsService.fetchProjectStats(project.projectIdentifier).pipe(
-        tap((stats: ProjectStats) => {
+        tap((stats: ProjectStatistics) => {
 
             this._storageService.saveProjectStats(project.projectIdentifier, stats);
         }),
@@ -226,7 +256,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
     filterByQuery(query: string): void {
         if (!query || query.trim() === '') {
-            this.filteredProjects = [...this.projects];
+            this.filteredProjects = [...this.projectDetails];
             this.showCloseSearchButton = false;
             this._changeDetectorRef.detectChanges();
             return;
@@ -234,7 +264,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
         const lowerCaseQuery = query.toLowerCase();
 
-        this.filteredProjects = this.projects.filter((project) => {
+        this.filteredProjects = this.projectDetails.filter((project) => {
             return (
                 (project.displayName &&
                     project.displayName

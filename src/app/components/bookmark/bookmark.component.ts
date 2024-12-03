@@ -12,9 +12,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
-import { Project } from 'app/interface/project.interface';
+import { Project, ProjectDetails, ProjectStatistics } from 'app/interface/project.interface';
 import { BookmarkService } from 'app/services/bookmark.service';
-import { ProjectsService, ProjectStats } from 'app/services/projects.service';
+import { ProjectsService } from 'app/services/projects.service';
 import { StorageService } from 'app/services/storage.service';
 import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
 
@@ -31,7 +31,6 @@ import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
         MatOptionModule,
         MatInputModule,
         MatSlideToggleModule,
-        NgClass,
         MatTooltipModule,
         MatProgressBarModule,
         CommonModule,
@@ -42,8 +41,9 @@ import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
 })
 export class BookmarkComponent implements OnInit, OnDestroy {
     savedProjects: Project[] = [];
+    savedProjectDetailes: ProjectDetails[] = [];
     bookmarks$: Observable<string[]>;
-    isLoading = true; // Add this line
+    isLoading = true;
     private _unsubscribeAll = new Subject<any>();
 
     constructor(
@@ -68,7 +68,7 @@ export class BookmarkComponent implements OnInit, OnDestroy {
     }
 
 
-    trackByFn(index: number, item: Project): string | number {
+    trackByFn(index: number, item: ProjectDetails): string | number {
         return item.nostrPubKey || index;
     }
 
@@ -77,7 +77,7 @@ export class BookmarkComponent implements OnInit, OnDestroy {
         try {
             const bookmarkIds = await this._bookmarkService.getBookmarks();
             const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
-            this.savedProjects = projects;
+            this.savedProjectDetailes = projects;
             this.isLoading = false;
         } catch (error) {
             console.error('Error loading bookmarked projects:', error);
@@ -92,18 +92,18 @@ export class BookmarkComponent implements OnInit, OnDestroy {
             .subscribe(async (bookmarkIds) => {
                 try {
                     const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
-                    this.savedProjects = projects;
-                    this.fetchMetadataForProjects(this.savedProjects);
-                    this.isLoading = false; // پایان موفق لودینگ
+                    this.savedProjectDetailes = projects;
+                    this.fetchMetadataForProjects(this.savedProjectDetailes);
+                    this.isLoading = false;
                 } catch (error) {
                     console.error('Error updating bookmarks:', error);
-                    this.isLoading = false; // پایان لودینگ حتی در صورت خطا
+                    this.isLoading = false;
                 }
             });
     }
 
 
-    private fetchMetadataForProjects(projects: Project[]): void {
+    private fetchMetadataForProjects(projects: ProjectDetails[]): void {
         projects.forEach((project) => {
             this._storageService
                 .getProfile(project.nostrPubKey)
@@ -115,7 +115,7 @@ export class BookmarkComponent implements OnInit, OnDestroy {
         });
     }
 
-    private updateProjectMetadata(project: Project, metadata: any): void {
+    private updateProjectMetadata(project: ProjectDetails, metadata: any): void {
         project.displayName = metadata.name || project.displayName;
         project.about = metadata.about || project.about;
         project.picture = metadata.picture || project.picture;
@@ -137,15 +137,15 @@ export class BookmarkComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
-    goToProjectDetails(project: Project): void {
+    goToProjectDetails(project: ProjectDetails): void {
         this._projectsService.fetchProjectStats(project.projectIdentifier).pipe(
-            tap((stats: ProjectStats) => {
+            tap((stats: ProjectStatistics) => {
 
                 this._storageService.saveProjectStats(project.projectIdentifier, stats);
             }),
             tap(() => {
 
-                this._router.navigate(['/profile', project.nostrPubKey, project.projectIdentifier]);
+              //  this._router.navigate(['/profile', project.nostrPubKey, project.projectIdentifier]);
             }),
             catchError((error) => {
                 console.error(`Failed to navigate to project details for ${project.projectIdentifier}:`, error);
