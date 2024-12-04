@@ -1,48 +1,39 @@
 import {
-    CommonModule,
-    DatePipe,
-    NgClass,
-    NgTemplateOutlet,
-} from '@angular/common';
-import {
     ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
-    Input,
-    ViewEncapsulation,
+    Signal,
+    inject,
+    signal,
+    effect,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
 import { NewVersionCheckerService } from 'app/services/update.service';
 
 @Component({
     selector: 'update',
-    templateUrl: './update.component.html',
-    encapsulation: ViewEncapsulation.None,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    exportAs: 'update',
     standalone: true,
     imports: [
+        CommonModule,
         MatButtonModule,
         MatIconModule,
         MatTooltipModule,
-        CommonModule,
-    ]
+    ],
+    templateUrl: './update.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpdateComponent {
-    @Input() tooltip: string;
+    tooltip: Signal<string> = signal('Update App');
 
-    constructor(
-        public updateService: NewVersionCheckerService,
-        private _changeDetectorRef: ChangeDetectorRef // Injecting ChangeDetectorRef
-    ) {
-        // Listen to the update available event and trigger change detection
+    isNewVersionAvailable = signal(false);
+
+    private updateService = inject(NewVersionCheckerService);
+
+    constructor() {
         this.updateService.isNewVersionAvailable$.subscribe((isAvailable) => {
-            if (isAvailable) {
-                this._changeDetectorRef.detectChanges(); // Trigger change detection
-            }
+            this.isNewVersionAvailable.set(isAvailable);
         });
     }
 

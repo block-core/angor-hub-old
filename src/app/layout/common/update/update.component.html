@@ -1,9 +1,9 @@
-<!-- Update toggle -->
-<button
-    *ngIf="updateService.isNewVersionAvailable$ | async"
-    mat-icon-button
-    [matTooltip]="tooltip || 'Update App'"
-    (click)="applyUpdate()"
->
-    <mat-icon [svgIcon]="'heroicons_outline:cloud-arrow-down'"></mat-icon>
-</button>
+@if (isNewVersionAvailable()) {
+    <button
+        mat-icon-button
+        [matTooltip]="tooltip()"
+        (click)="applyUpdate()"
+    >
+        <mat-icon [svgIcon]="'heroicons_outline:cloud-arrow-down'"></mat-icon>
+    </button>
+}
