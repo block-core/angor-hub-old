@@ -1,90 +1,58 @@
-<div *ngIf="appearance === 'bar'">
-    <button *ngIf="!opened" mat-icon-button (click)="open()">
-        <mat-icon [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
-    </button>
-    <div
-        *ngIf="opened"
-        class="bg-card absolute inset-0 z-99 flex shrink-0 items-center"
-        @slideInTop
-        @slideOutTop
-    >
-        <mat-icon
-            class="absolute ml-6 sm:ml-8"
-            [svgIcon]="'heroicons_outline:magnifying-glass'"
-        ></mat-icon>
-        <input
-            class="h-full w-full px-16 sm:px-18"
-            [formControl]="searchControl"
-            [matAutocomplete]="matAutocomplete"
-            [placeholder]="'Search...'"
-            (keydown)="onKeydown($event)"
-            #barSearchInput
-        />
-        <mat-autocomplete
-            class="max-h-128 rounded-b border-t shadow-md sm:px-2"
-            [autoSelectActiveOption]="true"
-            [disableRipple]="true"
-            #matAutocomplete="matAutocomplete"
-        >
-            <mat-option
-                *ngIf="resultSets && !resultSets.length"
-                class="text-secondary pointer-events-none bg-transparent px-6 py-0 text-md"
-            >
-                No results found!
-            </mat-option>
-            <ng-container
-                *ngFor="let resultSet of resultSets; trackBy: trackByFn"
-            >
-                <ng-container
-                    *ngFor="let result of resultSet.results; trackBy: trackByFn"
-                >
-                    <mat-option
-                        class="group relative mb-1 rounded-md px-6 py-0 text-md dark:hover:bg-hover hover:bg-gray-100"
-                        [routerLink]="result.link"
-                        [value]="result.name"
-                    >
-                        <div class="flex items-center">
-                            <div
-                                class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-100 dark:bg-primary-800"
-                            >
-                                <img
-                                    *ngIf="result.avatar"
-                                    [src]="result.avatar"
-                                    (error)="handleImageError($event)"
-                                    class="h-full w-full object-cover"
-                                    alt="{{ result.name }}'s avatar"
-                                />
-                                <ng-container *ngIf="!result.avatar">
-                                    <mat-icon
-                                        class="m-0 text-primary icon-size-5 dark:text-primary-400"
-                                        [svgIcon]="
-                                            'heroicons_outline:user-circle'
-                                        "
-                                    ></mat-icon>
-                                </ng-container>
-                            </div>
-                            <div class="ml-3 truncate">
-                                <span class="font-semibold">{{
-                                    result.name
-                                }}</span>
-                                <div
-                                    *ngIf="result.about"
-                                    class="text-sm text-gray-500"
-                                >
-                                    {{ result.about }}
+<div>
+    @if (appearance === 'bar') {
+        @if (!opened()) {
+            <button mat-icon-button (click)="open()">
+                <mat-icon [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
+            </button>
+        }
+        @if (opened()) {
+            <div class="bg-card absolute inset-0 z-99 flex items-center">
+                <mat-icon class="absolute ml-6 sm:ml-8" [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
+                <input
+                    class="h-full w-full px-16 sm:px-18"
+                    [formControl]="searchControl"
+                    [matAutocomplete]="matAutocomplete"
+                    placeholder="Search..."
+                    (keydown)="onKeydown($event)"
+                    #barSearchInput
+                />
+                <mat-autocomplete #matAutocomplete="matAutocomplete" class="max-h-128 rounded-b border-t shadow-md">
+                    @if (resultSets()?.length === 0) {
+                        <mat-option class="text-secondary pointer-events-none">
+                            No results found!
+                        </mat-option>
+                    }
+                    @for (resultSet of resultSets(); track resultSet.id) {
+                        @for (result of resultSet.results; track result.id) {
+                            <mat-option [routerLink]="result.link" [value]="result.name">
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-800">
+                                        @if (result.avatar) {
+                                            <img
+                                                [src]="result.avatar"
+                                                (error)="handleImageError($event)"
+                                                class="h-full w-full object-cover"
+                                                alt="{{ result.name }}"
+                                            />
+                                        } @else {
+                                            <mat-icon class="m-0 text-primary" [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+                                        }
+                                    </div>
+                                    <div class="ml-3 truncate">
+                                        <span class="font-semibold">{{ result.name }}</span>
+                                        @if (result.about) {
+                                            <div class="text-sm text-gray-500">{{ result.about }}</div>
+                                        }
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </mat-option>
-                </ng-container>
-            </ng-container>
-        </mat-autocomplete>
-        <button
-            class="absolute right-5 top-1/2 -mt-5 h-10 w-10 shrink-0 sm:right-7"
-            mat-icon-button
-            (click)="close()"
-        >
-            <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
-        </button>
-    </div>
+                            </mat-option>
+                        }
+                    }
+                </mat-autocomplete>
+                <button mat-icon-button class="absolute right-5 top-1/2 -mt-5" (click)="close()">
+                    <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                </button>
+            </div>
+        }
+    }
 </div>
