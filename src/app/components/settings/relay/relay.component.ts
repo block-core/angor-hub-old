@@ -5,6 +5,7 @@ import {
     NgZone,
     OnInit,
     ViewEncapsulation,
+    ChangeDetectorRef,
     inject,
     signal,
     effect,
@@ -40,6 +41,7 @@ export class SettingsRelayComponent implements OnInit {
     private readonly _relayService = inject(RelayService);
     private readonly _zone = inject(NgZone);
     private readonly _sanitizer = inject(DomSanitizer);
+    private readonly _cdr = inject(ChangeDetectorRef);
 
     // Signals for state management
     relays = signal<any[]>([]);
@@ -65,12 +67,15 @@ export class SettingsRelayComponent implements OnInit {
         },
     ]);
 
+    private relayIconsCache = new Map<string, SafeUrl>();
+
     constructor() {
         // Effect to sync relays with service
         effect(() => {
             this._relayService.getRelays().subscribe((relays) => {
                 this._zone.run(() => {
                     this.relays.set(relays);
+                    this._cdr.markForCheck();
                 });
             });
         });
@@ -79,19 +84,22 @@ export class SettingsRelayComponent implements OnInit {
     ngOnInit(): void {}
 
     addRelay(): void {
-        if (this.newRelayUrl()) {
-            this._relayService.addRelay(this.newRelayUrl());
+        if (this.newRelayUrl().trim()) {
+            this._relayService.addRelay(this.newRelayUrl().trim());
             this.newRelayUrl.set('');
+            this._cdr.markForCheck();
         }
     }
 
     updateRelayAccess(relay: any): void {
         console.log('Relay Access Updated:', relay.url, relay.accessType);
         this._relayService.updateRelayAccessType(relay.url, relay.accessType);
+        this._cdr.markForCheck();
     }
 
     removeRelay(url: string): void {
         this._relayService.removeRelay(url);
+        this._cdr.markForCheck();
     }
 
     trackByFn(index: number, item: any): any {
@@ -106,11 +114,15 @@ export class SettingsRelayComponent implements OnInit {
         return relay.connected ? 'text-green-700' : 'text-red-700';
     }
 
-    relayFavIcon(url: string): string {
-        const safeUrl = url
-            .replace('wss://', 'https://')
-            .replace('ws://', 'https://');
-        return safeUrl + '/favicon.ico';
+    relayFavIcon(url: string): SafeUrl {
+        if (this.relayIconsCache.has(url)) {
+            return this.relayIconsCache.get(url)!;
+        }
+        const sanitizedUrl = this._sanitizer.bypassSecurityTrustUrl(
+            url.replace('wss://', 'https://').replace('ws://', 'https://') + '/favicon.ico'
+        );
+        this.relayIconsCache.set(url, sanitizedUrl);
+        return sanitizedUrl;
     }
 
     getSafeUrl(url: string): SafeUrl {
