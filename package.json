@@ -79,6 +79,7 @@
     "stream-browserify": "^3.0.0",
     "tslib": "^2.8.1",
     "webln": "^0.3.2",
+    "webpack": "^5.97.1",
     "zone.js": "0.15.0"
   },
   "devDependencies": {
