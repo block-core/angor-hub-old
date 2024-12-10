@@ -26,10 +26,10 @@
                     class="mt-8"
                     [appearance]="'outline'"
                     [showIcon]="false"
-                    [type]="secAlert.type"
-                    [@shake]="secAlert.type === 'error'"
+                    [type]="secAlert().type"
+                    [@shake]="secAlert().type === 'error'"
                 >
-                    {{ secAlert.message }}
+                    {{ secAlert().message }}
                 </angor-alert>
 
 
@@ -154,10 +154,10 @@
                     class="mt-8"
                     [appearance]="'outline'"
                     [showIcon]="false"
-                    [type]="menemonicAlert.type"
-                    [@shake]="menemonicAlert.type === 'error'"
+                    [type]="menemonicAlert().type"
+                    [@shake]="menemonicAlert().type === 'error'"
                 >
-                    {{ menemonicAlert.message }}
+                    {{ menemonicAlert().message }}
                 </angor-alert>
                 <!-- Login form with Menemonic -->
                 <form

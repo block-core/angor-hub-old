@@ -1,6 +1,6 @@
 import { AngorAlertComponent, AngorAlertType } from '@angor/components/alert';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import {
     FormBuilder,
     FormGroup,
@@ -40,37 +40,33 @@ import { Subscription } from 'rxjs';
 export class LoginComponent implements OnInit {
     SecretKeyLoginForm: FormGroup;
     MenemonicLoginForm: FormGroup;
-    secAlert = { type: 'error' as AngorAlertType, message: '' };
-    showSecAlert = false;
+    secAlert = signal({ type: 'error' as AngorAlertType, message: '' });
+    showSecAlert = signal(false);
 
-    menemonicAlert = { type: 'error' as AngorAlertType, message: '' };
-    showMenemonicAlert = false;
+    menemonicAlert = signal({ type: 'error' as AngorAlertType, message: '' });
+    showMenemonicAlert = signal(false);
 
-    loading = false;
-    isInstalledExtension = false;
+    loading = signal(false);
+    isInstalledExtension = signal(false);
     privateKey: Uint8Array = new Uint8Array();
-    publicKey: string = '';
-    npub: string = '';
-    nsec: string = '';
+    publicKey = signal('');
+    npub = signal('');
+    nsec = signal('');
 
-    useNostrLogin = true;
-
+    useNostrLogin = signal(true);
 
     private subscription: Subscription;
 
-    constructor(
-        private _formBuilder: FormBuilder,
-        private _router: Router,
-        private _signerService: SignerService,
-        private _stateService: StateService,
-        private _nostrLoginService: NostrLoginService
-    ) { }
-
+    private _formBuilder = inject(FormBuilder);
+    private _router = inject(Router);
+    private _signerService = inject(SignerService);
+    private _stateService = inject(StateService);
+    private _nostrLoginService = inject(NostrLoginService);
 
     ngOnInit(): void {
         this.subscription = this._nostrLoginService.getPublicKeyObservable().subscribe({
             next: (pubkey: string) => {
-                this.publicKey = pubkey;
+                this.publicKey.set(pubkey);
                 this._signerService.setPublicKey(pubkey);
                 this.initializeAppState();
                 this._router.navigateByUrl('/home');
@@ -106,7 +102,7 @@ export class LoginComponent implements OnInit {
 
         this.MenemonicLoginForm = this._formBuilder.group({
             menemonic: ['', [Validators.required, Validators.minLength(3)]],
-            passphrase: [''], 
+            passphrase: [''],
             password: [''],
         });
     }
@@ -120,9 +116,9 @@ export class LoginComponent implements OnInit {
             globalContext.nostr &&
             typeof globalContext.nostr.signEvent === 'function'
         ) {
-            this.isInstalledExtension = true;
+            this.isInstalledExtension.set(true);
         } else {
-            this.isInstalledExtension = false;
+            this.isInstalledExtension.set(false);
         }
     }
 
@@ -134,8 +130,8 @@ export class LoginComponent implements OnInit {
         const secretKey = this.SecretKeyLoginForm.get('secretKey')?.value;
         const password = this.SecretKeyLoginForm.get('password')?.value;
 
-        this.loading = true;
-        this.showSecAlert = false;
+        this.loading.set(true);
+        this.showSecAlert.set(false);
 
         try {
             const success = this._signerService.handleLoginWithKey(
@@ -152,12 +148,9 @@ export class LoginComponent implements OnInit {
             }
         } catch (error) {
             // Handle login failure
-            this.loading = false;
-            this.secAlert.message =
-                error instanceof Error
-                    ? error.message
-                    : 'An unexpected error occurred.';
-            this.showSecAlert = true;
+            this.loading.set(false);
+            this.secAlert.update(alert => ({ ...alert, message: error instanceof Error ? error.message : 'An unexpected error occurred.' }));
+            this.showSecAlert.set(true);
             console.error('Login error: ', error);
         }
     }
@@ -172,8 +165,8 @@ export class LoginComponent implements OnInit {
             this.MenemonicLoginForm.get('passphrase')?.value || ''; // Optional passphrase
         const password = this.MenemonicLoginForm.get('password')?.value;
 
-        this.loading = true;
-        this.showMenemonicAlert = false;
+        this.loading.set(true);
+        this.showMenemonicAlert.set(false);
 
         const success = this._signerService.handleLoginWithMnemonic(
             menemonic,
@@ -185,9 +178,9 @@ export class LoginComponent implements OnInit {
             this.initializeAppState();
             this._router.navigateByUrl('/home');
         } else {
-            this.loading = false;
-            this.menemonicAlert.message = 'Menemonic is missing or invalid.';
-            this.showMenemonicAlert = true;
+            this.loading.set(false);
+            this.menemonicAlert.update(alert => ({ ...alert, message: 'Menemonic is missing or invalid.' }));
+            this.showMenemonicAlert.set(true);
         }
     }
 
