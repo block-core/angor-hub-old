@@ -36,6 +36,7 @@ export interface AngorNavigationItem {
     };
     children?: AngorNavigationItem[];
     meta?: any;
+    requiresLogin?: boolean;
 }
 
 export type AngorVerticalNavigationAppearance =

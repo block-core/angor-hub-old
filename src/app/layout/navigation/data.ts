@@ -22,6 +22,7 @@ export const defaultNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:bookmark',
         link: '/bookmark',
+        requiresLogin: true,
     },
     {
         id: 'chat',
@@ -33,6 +34,7 @@ export const defaultNavigation: AngorNavigationItem[] = [
             title: '0',
             classes: 'px-2 bg-[#086c81] text-white rounded-full',
         },
+        requiresLogin: true,
     },
     {
         id: 'profile',
@@ -40,6 +42,7 @@ export const defaultNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:user',
         link: '/profile',
+        requiresLogin: true,
     },
     {
         id: 'settings',
@@ -47,6 +50,7 @@ export const defaultNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:cog-6-tooth',
         link: '/settings',
+        requiresLogin: true,
     }
 ];
 
@@ -71,6 +75,7 @@ export const horizontalNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:bookmark',
         link: '/bookmark',
+        requiresLogin: true,
     },
     {
         id: 'chat',
@@ -82,6 +87,7 @@ export const horizontalNavigation: AngorNavigationItem[] = [
             title: '27',
             classes: 'px-2 bg-[#086c81] text-white rounded-full',
         },
+        requiresLogin: true,
     },
     {
         id: 'profile',
@@ -89,6 +95,7 @@ export const horizontalNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:user',
         link: '/profile',
+        requiresLogin: true,
     },
     {
         id: 'settings',
@@ -96,5 +103,6 @@ export const horizontalNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:cog-6-tooth',
         link: '/settings',
+        requiresLogin: true,
     }
 ];

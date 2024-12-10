@@ -150,31 +150,31 @@
                 </div>
 
                 <angor-alert
-                    *ngIf="showMenemonicAlert"
+                    *ngIf="showMnemonicAlert"
                     class="mt-8"
                     [appearance]="'outline'"
                     [showIcon]="false"
-                    [type]="menemonicAlert().type"
-                    [@shake]="menemonicAlert().type === 'error'"
+                    [type]="mnemonicAlert().type"
+                    [@shake]="mnemonicAlert().type === 'error'"
                 >
-                    {{ menemonicAlert().message }}
+                    {{ mnemonicAlert().message }}
                 </angor-alert>
-                <!-- Login form with Menemonic -->
+                <!-- Login form with Mnemonic -->
                 <form
                     class="mt-8"
-                    [formGroup]="MenemonicLoginForm"
-                    (ngSubmit)="loginWithMenemonic()"
+                    [formGroup]="MnemonicLoginForm"
+                    (ngSubmit)="loginWithMnemonic()"
                 >
-                    <!-- Menemonic field -->
+                    <!-- Mnemonic field -->
                     <mat-form-field class="w-full">
                         <mat-label>Mnemonic</mat-label>
                         <input
                             matInput
-                            formControlName="menemonic"
-                            autocomplete="menemonic"
+                            formControlName="mnemonic"
+                            autocomplete="mnemonic"
                         />
                         @if (
-                            MenemonicLoginForm.get('menemonic').hasError(
+                            MnemonicLoginForm.get('mnemonic').hasError(
                                 'required'
                             )
                         ) {
@@ -189,7 +189,7 @@
                             matInput
                             type="password"
                             [formControlName]="'passphrase'"
-                            autocomplete="current-passphrase-menemonic"
+                            autocomplete="current-passphrase-mnemonic"
                             #passphraseField
                         />
                         <button
@@ -215,7 +215,7 @@
                         </button>
                         <mat-error
                             *ngIf="
-                                MenemonicLoginForm.get('passphrase').hasError(
+                                MnemonicLoginForm.get('passphrase').hasError(
                                     'required'
                                 )
                             "
@@ -231,35 +231,35 @@
                             matInput
                             type="password"
                             [formControlName]="'password'"
-                            autocomplete="current-password-menemonic"
-                            #menemonicPasswordField
+                            autocomplete="current-password-mnemonic"
+                            #mnemonicPasswordField
                         />
                         <button
                             mat-icon-button
                             type="button"
                             (click)="
-                                menemonicPasswordField.type === 'password'
-                                    ? (menemonicPasswordField.type = 'text')
-                                    : (menemonicPasswordField.type = 'password')
+                                mnemonicPasswordField.type === 'password'
+                                    ? (mnemonicPasswordField.type = 'text')
+                                    : (mnemonicPasswordField.type = 'password')
                             "
                             matSuffix
                         >
                             <mat-icon
                                 *ngIf="
-                                    menemonicPasswordField.type === 'password'
+                                    mnemonicPasswordField.type === 'password'
                                 "
                                 class="icon-size-5"
                                 [svgIcon]="'heroicons_solid:eye'"
                             ></mat-icon>
                             <mat-icon
-                                *ngIf="menemonicPasswordField.type === 'text'"
+                                *ngIf="mnemonicPasswordField.type === 'text'"
                                 class="icon-size-5"
                                 [svgIcon]="'heroicons_solid:eye-slash'"
                             ></mat-icon>
                         </button>
                         <mat-error
                             *ngIf="
-                                MenemonicLoginForm.get('password').hasError(
+                                MnemonicLoginForm.get('password').hasError(
                                     'required'
                                 )
                             "
@@ -273,7 +273,7 @@
                         class="angor-mat-button-large mt-6 w-full"
                         mat-flat-button
                         color="primary"
-                        [disabled]="MenemonicLoginForm.invalid"
+                        [disabled]="MnemonicLoginForm.invalid"
                     >
                         <span *ngIf="!loading">Login</span>
                         <mat-progress-spinner

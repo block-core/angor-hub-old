@@ -1,6 +1,6 @@
 import { AngorAlertComponent, AngorAlertType } from '@angor/components/alert';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import {
     FormBuilder,
     FormGroup,
@@ -19,6 +19,7 @@ import { SignerService } from 'app/services/signer.service';
 import { StateService } from 'app/services/state.service';
 import { NostrLoginService } from 'app/services/nostr-login.service';
 import { Subscription } from 'rxjs';
+
 @Component({
     selector: 'auth-sign-in',
     templateUrl: './login.component.html',
@@ -35,27 +36,19 @@ import { Subscription } from 'rxjs';
         MatCheckboxModule,
         MatProgressSpinnerModule,
         CommonModule,
-    ]
+    ],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
     SecretKeyLoginForm: FormGroup;
-    MenemonicLoginForm: FormGroup;
+    MnemonicLoginForm: FormGroup;
     secAlert = signal({ type: 'error' as AngorAlertType, message: '' });
     showSecAlert = signal(false);
-
-    menemonicAlert = signal({ type: 'error' as AngorAlertType, message: '' });
-    showMenemonicAlert = signal(false);
-
+    mnemonicAlert = signal({ type: 'error' as AngorAlertType, message: '' });
+    showMnemonicAlert = signal(false);
     loading = signal(false);
     isInstalledExtension = signal(false);
-    privateKey: Uint8Array = new Uint8Array();
     publicKey = signal('');
-    npub = signal('');
-    nsec = signal('');
-
-    useNostrLogin = signal(true);
-
-    private subscription: Subscription;
+    subscription: Subscription;
 
     private _formBuilder = inject(FormBuilder);
     private _router = inject(Router);
@@ -73,10 +66,16 @@ export class LoginComponent implements OnInit {
             },
             error: (error) => console.error('Error receiving public key:', error),
         });
+
         this.initializeForms();
         this.checkNostrExtensionAvailability();
     }
 
+    ngOnDestroy(): void {
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+        }
+    }
 
     login(): void {
         this._nostrLoginService.launchLoginScreen();
@@ -86,11 +85,63 @@ export class LoginComponent implements OnInit {
         this._nostrLoginService.launchSignupScreen();
     }
 
-     private async initializeAppState(): Promise<void> {
+    loginWithSecretKey(): void {
+        if (this.SecretKeyLoginForm.invalid) return;
+
+        const secretKey = this.SecretKeyLoginForm.get('secretKey')?.value;
+        const password = this.SecretKeyLoginForm.get('password')?.value;
+
+        this.loading.set(true);
+        this.showSecAlert.set(false);
+
+        try {
+            const success = this._signerService.handleLoginWithKey(secretKey, password);
+
+            if (success) {
+                this.initializeAppState();
+                this._router.navigateByUrl('/home');
+            } else {
+                throw new Error('Secret key is missing or invalid.');
+            }
+        } catch (error) {
+            this.loading.set(false);
+            this.secAlert.update(alert => ({
+                ...alert,
+                message: error instanceof Error ? error.message : 'Unexpected error occurred.',
+            }));
+            this.showSecAlert.set(true);
+        }
+    }
+
+    loginWithMnemonic(): void {
+        if (this.MnemonicLoginForm.invalid) return;
+
+        const mnemonic = this.MnemonicLoginForm.get('mnemonic')?.value;
+        const passphrase = this.MnemonicLoginForm.get('passphrase')?.value || '';
+        const password = this.MnemonicLoginForm.get('password')?.value;
+
+        this.loading.set(true);
+        this.showMnemonicAlert.set(false);
+
+        const success = this._signerService.handleLoginWithMnemonic(mnemonic, passphrase, password);
+
+        if (success) {
+            this.initializeAppState();
+            this._router.navigateByUrl('/home');
+        } else {
+            this.loading.set(false);
+            this.mnemonicAlert.update(alert => ({
+                ...alert,
+                message: 'Mnemonic is missing or invalid.',
+            }));
+            this.showMnemonicAlert.set(true);
+        }
+    }
+
+    private async initializeAppState(): Promise<void> {
         const publicKey = this._signerService.getPublicKey();
         if (publicKey) {
             await this._stateService.loadUserProfile(publicKey);
-            console.log('User profile loaded with public key:', publicKey);
         }
     }
 
@@ -100,103 +151,16 @@ export class LoginComponent implements OnInit {
             password: [''],
         });
 
-        this.MenemonicLoginForm = this._formBuilder.group({
-            menemonic: ['', [Validators.required, Validators.minLength(3)]],
+        this.MnemonicLoginForm = this._formBuilder.group({
+            mnemonic: ['', [Validators.required, Validators.minLength(3)]],
             passphrase: [''],
             password: [''],
         });
     }
 
     private checkNostrExtensionAvailability(): void {
-        const globalContext = globalThis as unknown as {
-            nostr?: { signEvent?: Function };
-        };
+        const globalContext = globalThis as unknown as { nostr?: { signEvent?: Function } };
 
-        if (
-            globalContext.nostr &&
-            typeof globalContext.nostr.signEvent === 'function'
-        ) {
-            this.isInstalledExtension.set(true);
-        } else {
-            this.isInstalledExtension.set(false);
-        }
+        this.isInstalledExtension.set(!!globalContext.nostr?.signEvent);
     }
-
-    loginWithSecretKey(): void {
-        if (this.SecretKeyLoginForm.invalid) {
-            return;
-        }
-
-        const secretKey = this.SecretKeyLoginForm.get('secretKey')?.value;
-        const password = this.SecretKeyLoginForm.get('password')?.value;
-
-        this.loading.set(true);
-        this.showSecAlert.set(false);
-
-        try {
-            const success = this._signerService.handleLoginWithKey(
-                secretKey,
-                password
-            ); // Updated method to handle both nsec and hex
-
-            if (success) {
-                // Successful login
-                this.initializeAppState();
-                this._router.navigateByUrl('/home');
-            } else {
-                throw new Error('Secret key is missing or invalid.');
-            }
-        } catch (error) {
-            // Handle login failure
-            this.loading.set(false);
-            this.secAlert.update(alert => ({ ...alert, message: error instanceof Error ? error.message : 'An unexpected error occurred.' }));
-            this.showSecAlert.set(true);
-            console.error('Login error: ', error);
-        }
-    }
-
-    loginWithMenemonic(): void {
-        if (this.MenemonicLoginForm.invalid) {
-            return;
-        }
-
-        const menemonic = this.MenemonicLoginForm.get('menemonic')?.value;
-        const passphrase =
-            this.MenemonicLoginForm.get('passphrase')?.value || ''; // Optional passphrase
-        const password = this.MenemonicLoginForm.get('password')?.value;
-
-        this.loading.set(true);
-        this.showMenemonicAlert.set(false);
-
-        const success = this._signerService.handleLoginWithMnemonic(
-            menemonic,
-            passphrase,
-            password
-        );
-
-        if (success) {
-            this.initializeAppState();
-            this._router.navigateByUrl('/home');
-        } else {
-            this.loading.set(false);
-            this.menemonicAlert.update(alert => ({ ...alert, message: 'Menemonic is missing or invalid.' }));
-            this.showMenemonicAlert.set(true);
-        }
-    }
-
-    async loginWithNostrExtension(): Promise<void> {
-        try {
-            const success = await this._signerService.handleLoginWithExtension();
-
-            if (success) {
-                this.initializeAppState();
-                this._router.navigateByUrl('/home');
-            } else {
-                console.error('Failed to log in using Nostr extension');
-            }
-        } catch (error) {
-            console.error('An error occurred during login with Nostr extension', error);
-        }
-    }
-
 }
