@@ -1,7 +1,7 @@
 import { angorAnimations } from '@angor/animations';
 import { AngorAlertComponent, AngorAlertType } from '@angor/components/alert';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewEncapsulation, inject, signal } from '@angular/core';
 import {
     FormsModule,
     NgForm,
@@ -42,19 +42,17 @@ import { SignerService } from 'app/services/signer.service';
 export class RegisterComponent implements OnInit {
     @ViewChild('registerNgForm') registerNgForm: NgForm;
 
-    alert: { type: AngorAlertType; message: string } = {
+    alert = signal<{ type: AngorAlertType; message: string }>({
         type: 'success',
         message: '',
-    };
+    });
     registerForm: UntypedFormGroup;
-    showAlert: boolean = false;
-    generatedKeys: { secretKey: string; pubkey: string; npub: string; nsec: string } | null = null;
+    showAlert = signal<boolean>(false);
+    generatedKeys = signal<{ secretKey: string; pubkey: string; npub: string; nsec: string } | null>(null);
 
-    constructor(
-        private _formBuilder: UntypedFormBuilder,
-        private _router: Router,
-        private _signerService: SignerService
-    ) {}
+    private _formBuilder = inject(UntypedFormBuilder);
+    private _router = inject(Router);
+    private _signerService = inject(SignerService);
 
     ngOnInit(): void {
         this.registerForm = this._formBuilder.group({
@@ -66,38 +64,38 @@ export class RegisterComponent implements OnInit {
         const password = this.registerForm.get('password')?.value;
         const keys = this._signerService.generateAndStoreKeys(password);
         if (keys) {
-            this.generatedKeys = keys;
-            this.alert = {
+            this.generatedKeys.set(keys);
+            this.alert.set({
                 type: 'success',
                 message: 'Keys generated and stored successfully!',
-            };
+            });
         } else {
-            this.alert = {
+            this.alert.set({
                 type: 'error',
                 message: 'Error generating keys. Please try again.',
-            };
+            });
         }
-        this.showAlert = true;
+        this.showAlert.set(true);
     }
 
     register(): void {
-        if (this.registerForm.invalid || !this.generatedKeys) {
+        if (this.registerForm.invalid || !this.generatedKeys()) {
             return;
         }
 
         this.registerForm.disable();
-        this.showAlert = false;
+        this.showAlert.set(false);
 
         // Simulate saving user metadata
-        const userMetadata = { ...this.generatedKeys, password: this.registerForm.get('password')?.value };
+        const userMetadata = { ...this.generatedKeys(), password: this.registerForm.get('password')?.value };
         console.log('User Metadata:', userMetadata);
 
         // Display success alert and navigate to home
-        this.alert = {
+        this.alert.set({
             type: 'success',
             message: 'Account created successfully!',
-        };
-        this.showAlert = true;
+        });
+        this.showAlert.set(true);
         this._router.navigateByUrl('/home');
     }
 

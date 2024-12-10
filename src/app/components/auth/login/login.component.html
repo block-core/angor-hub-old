@@ -22,7 +22,7 @@
                 </div>
 
                 <angor-alert
-                    *ngIf="showSecAlert"
+                    *ngIf="showSecAlert()"
                     class="mt-8"
                     [appearance]="'outline'"
                     [showIcon]="false"
@@ -134,9 +134,9 @@
                         color="primary"
                         [disabled]="SecretKeyLoginForm.invalid"
                     >
-                        <span *ngIf="!loading">Login</span>
+                        <span *ngIf="!loading()">Login</span>
                         <mat-progress-spinner
-                            *ngIf="loading"
+                            *ngIf="loading()"
                             diameter="24"
                             mode="indeterminate"
                         ></mat-progress-spinner>
@@ -150,7 +150,7 @@
                 </div>
 
                 <angor-alert
-                    *ngIf="showMnemonicAlert"
+                    *ngIf="showMnemonicAlert()"
                     class="mt-8"
                     [appearance]="'outline'"
                     [showIcon]="false"
@@ -275,9 +275,9 @@
                         color="primary"
                         [disabled]="MnemonicLoginForm.invalid"
                     >
-                        <span *ngIf="!loading">Login</span>
+                        <span *ngIf="!loading()">Login</span>
                         <mat-progress-spinner
-                            *ngIf="loading"
+                            *ngIf="loading()"
                             diameter="24"
                             mode="indeterminate"
                         ></mat-progress-spinner>
