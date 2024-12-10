@@ -1,21 +1,47 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { SignerService } from './signer.service';
+import { AngorConfirmationService } from '@angor/services/confirmation';
 
 @Injectable({
     providedIn: 'root',
 })
 export class AuthService {
-    constructor(
-        private signerService: SignerService,
-        private router: Router
-    ) {}
+    private signerService = inject(SignerService);
+    private router = inject(Router);
 
-    isLoggedIn() {
-        if (this.signerService.getPublicKey()) {
-            return true;
-        }
-        this.router.navigate(['/login']);
-        return false;
+    isLoggedIn(): boolean {
+        return !!this.signerService.getPublicKey();
+    }
+
+    promptLogin(): void {
+        const angorConfirmationService = inject(AngorConfirmationService);
+        const dialogRef = angorConfirmationService.open({
+            title: 'Login Required',
+            message: 'You need to be logged in to perform this action. Would you like to login now?',
+            icon: {
+                show: true,
+                name: 'heroicons_solid:login',
+                color: 'primary',
+            },
+            actions: {
+                confirm: {
+                    show: true,
+                    label: 'Login',
+                    color: 'primary',
+                },
+                cancel: {
+                    show: true,
+                    label: 'Cancel',
+                },
+            },
+            dismissible: true,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this.router.navigate(['/login']);
+            }
+        });
     }
 }

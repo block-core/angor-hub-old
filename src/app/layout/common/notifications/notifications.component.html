@@ -1,13 +1,13 @@
 <!-- Notifications toggle -->
 <button mat-icon-button (click)="openPanel()" #notificationsOrigin>
-    @if (unreadCount > 0) {
+    @if (unreadCount() > 0) {
         <span
             class="absolute left-0 right-0 top-0 flex h-3 items-center justify-center"
         >
             <span
                 class="ml-4 mt-2.5 flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-teal-600 px-1 text-xs font-medium text-indigo-50"
             >
-                {{ unreadCount }}
+                {{ unreadCount() }}
             </span>
         </span>
     }
@@ -37,7 +37,7 @@
                     class="dark:text-white"
                     mat-icon-button
                     [matTooltip]="'Mark all as read'"
-                    [disabled]="unreadCount === 0"
+                    [disabled]="unreadCount() === 0"
                     (click)="markAllAsRead()"
                 >
                     <mat-icon
@@ -54,7 +54,7 @@
         >
             <!-- Notifications -->
             @for (
-                notification of notifications;
+                notification of notifications();
                 track trackByFn($index, notification)
             ) {
                 <div
@@ -96,41 +96,6 @@
                         </div>
                     }
 
-                    <!-- Actions -->
-                    <div class="relative my-5 ml-2 mr-6 flex flex-col">
-                        <!-- Indicator -->
-                        <button
-                            class="h-6 min-h-6 w-6"
-                            mat-icon-button
-                            (click)="toggleRead(notification)"
-                            [matTooltip]="
-                                notification.read
-                                    ? 'Mark as unread'
-                                    : 'Mark as read'
-                            "
-                        >
-                            <span
-                                class="h-2 w-2 rounded-full"
-                                [ngClass]="{
-                                    'bg-gray-400 dark:bg-gray-500 sm:opacity-0 sm:group-hover:opacity-100':
-                                        notification.read,
-                                    'bg-primary': !notification.read,
-                                }"
-                            ></span>
-                        </button>
-                        <!-- Remove -->
-                        <button
-                            class="h-6 min-h-6 w-6 sm:opacity-0 sm:group-hover:opacity-100"
-                            mat-icon-button
-                            (click)="deleteNotification(notification)"
-                            [matTooltip]="'Remove'"
-                        >
-                            <mat-icon
-                                class="icon-size-4"
-                                [svgIcon]="'heroicons_solid:x-mark'"
-                            ></mat-icon>
-                        </button>
-                    </div>
                 </div>
 
                 <!-- Notification content template -->
@@ -177,7 +142,7 @@
             }
 
             <!-- No notifications -->
-            @if (!notifications || !notifications.length) {
+            @if (!notifications() || !notifications().length) {
                 <div
                     class="flex flex-auto flex-col items-center justify-center px-8 py-12 sm:justify-start"
                 >

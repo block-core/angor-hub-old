@@ -11,6 +11,8 @@ import {
     ViewChild,
     ViewContainerRef,
     ViewEncapsulation,
+    inject,
+    signal,
 } from '@angular/core';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -45,18 +47,16 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     @ViewChild('notificationsPanel')
     private _notificationsPanel: TemplateRef<any>;
 
-    notifications: NostrNotification[] = [];
-    unreadCount: number = 0;
+    notifications = signal<NostrNotification[]>([]);
+    unreadCount = signal<number>(0);
     private _overlayRef: OverlayRef;
-    private _unsubscribeAll: Subject<any> = new Subject<any>();
+    private _unsubscribeAll = new Subject<any>();
 
-    constructor(
-        private _notificationService: NotificationService,
-        private _changeDetectorRef: ChangeDetectorRef,
-        private _overlay: Overlay,
-        private _viewContainerRef: ViewContainerRef,
-        private _signerService: SignerService
-    ) {}
+    private _notificationService = inject(NotificationService);
+    private _changeDetectorRef = inject(ChangeDetectorRef);
+    private _overlay = inject(Overlay);
+    private _viewContainerRef = inject(ViewContainerRef);
+    private _signerService = inject(SignerService);
 
     ngOnInit(): void {
         const pubkey = this._signerService.getPublicKey();
@@ -66,7 +66,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
                 .getNotificationObservable()
                 .pipe(takeUntil(this._unsubscribeAll))
                 .subscribe((notifications: NostrNotification[]) => {
-                    this.notifications = notifications;
+                    this.notifications.set(notifications);
                     this._changeDetectorRef.markForCheck();
                 });
 
@@ -74,7 +74,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
                 .getNotificationCount()
                 .pipe(takeUntil(this._unsubscribeAll))
                 .subscribe((count: number) => {
-                    this.unreadCount = count;
+                    this.unreadCount.set(count);
                     this._changeDetectorRef.markForCheck();
                 });
         });
@@ -111,11 +111,10 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
     markAllAsRead(): void {
         this._notificationService.markAllAsRead();
+        this.notifications.set([]); // Clear all notifications
+        this._changeDetectorRef.markForCheck(); // Trigger change detection
     }
 
-    toggleRead(notification: NostrNotification): void {
-        notification.read = !notification.read;
-    }
 
     trackByFn(index: number, item: NostrNotification): string {
         return item.id;

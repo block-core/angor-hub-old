@@ -173,7 +173,7 @@ export class NotificationService {
                 read: true,
             })
         );
-        this.notificationSubject.next(updatedNotifications);
+        this.notificationSubject.next([]); // Clear all notifications
         this.notificationCount.next(0);
         const currentTimestamp = Math.floor(Date.now() / 1000);
         this.saveNotificationData(0, currentTimestamp);

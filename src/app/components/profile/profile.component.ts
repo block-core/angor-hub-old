@@ -1,6 +1,5 @@
 import { AngorCardComponent } from '@angor/components/card';
 import { AngorConfigService } from '@angor/services/config';
-import { AngorConfirmationService } from '@angor/services/confirmation';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { CommonModule, NgClass } from '@angular/common';
@@ -149,7 +148,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _snackBar: MatSnackBar,
         private _dialog: MatDialog,
         private _angorConfigService: AngorConfigService,
-        private _angorConfirmationService: AngorConfirmationService,
         private _eventService: EventService,
         private _subscriptionService: SubscriptionService,
         private _clipboard: Clipboard,
