@@ -22,6 +22,7 @@ import { Router, RouterModule } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
 import { SignerService } from 'app/services/signer.service';
 import { NostrLoginService } from 'app/services/nostr-login.service';
+import { AuthService } from 'app/services/auth.service';
 
 @Component({
     selector: 'user',
@@ -49,13 +50,17 @@ export class UserComponent {
     private router = inject(Router);
     private sanitizer = inject(DomSanitizer);
     private nostrLoginService = inject(NostrLoginService);
+    public authService = inject(AuthService);
 
     constructor() {
         // Initialize userPubKey signal
         this.userPubKey.set(this.signerService.getPublicKey());
 
-        // Load user profile
-        this.loadUserProfile();
+        // Check if user is logged in
+        if (this.authService.isLoggedIn()) {
+            // Load user profile
+            this.loadUserProfile();
+        }
 
         // Subscribe to configuration changes
         effect(() => {
@@ -89,7 +94,7 @@ export class UserComponent {
     Switch(): void {
         this.nostrLoginService.switchAccount();
     }
-    
+
     profile(): void {
         this.router.navigate(['/profile']);
     }

@@ -10,32 +10,32 @@
 </button>
 
 <mat-menu [xPosition]="'before'" #userActions="matMenu">
-    <button mat-menu-item>
-        <span class="flex flex-col leading-none">
-            <span>Logged in as</span>
-            <span class="mt-1.5 text-md font-medium">{{
-                user()?.display_name || user?.name || 'Unknown User'
-                }}</span>
-        </span>
-    </button>
-    <mat-divider class="my-2"></mat-divider>
-    <button mat-menu-item (click)="Switch()">
-        <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
-        <span>Switch account</span>
-    </button>
-    <button mat-menu-item (click)="profile()">
-        <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
-        <span>Profile</span>
-    </button>
-    <button mat-menu-item [matMenuTriggerFor]="settingsMenu">
-        <mat-icon [svgIcon]="'heroicons_outline:cog-8-tooth'"></mat-icon>
-        <span>Options</span>
-    </button>
-    <mat-divider class="my-2"></mat-divider>
-    <button mat-menu-item (click)="logout()">
-        <mat-icon [svgIcon]="'heroicons_outline:arrow-right-on-rectangle'"></mat-icon>
-        <span>logout</span>
-    </button>
+    <ng-container *ngIf="authService.isLoggedIn(); else loginMenu">
+
+        <button mat-menu-item (click)="Switch()">
+            <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+            <span>Switch account</span>
+        </button>
+        <button mat-menu-item (click)="profile()">
+            <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+            <span>Profile</span>
+        </button>
+        <button mat-menu-item [matMenuTriggerFor]="settingsMenu">
+            <mat-icon [svgIcon]="'heroicons_outline:cog-8-tooth'"></mat-icon>
+            <span>Options</span>
+        </button>
+        <mat-divider class="my-2"></mat-divider>
+        <button mat-menu-item (click)="logout()">
+            <mat-icon [svgIcon]="'heroicons_outline:arrow-right-on-rectangle'"></mat-icon>
+            <span>logout</span>
+        </button>
+    </ng-container>
+    <ng-template #loginMenu>
+        <button mat-menu-item (click)="authService.promptLogin()">
+            <mat-icon [svgIcon]="'heroicons_outline:login'"></mat-icon>
+            <span>Login</span>
+        </button>
+    </ng-template>
 </mat-menu>
 
 <!-- Settings Menu -->

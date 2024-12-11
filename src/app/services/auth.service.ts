@@ -9,30 +9,30 @@ import { AngorConfirmationService } from '@angor/services/confirmation';
 export class AuthService {
     private signerService = inject(SignerService);
     private router = inject(Router);
+    private angorConfirmationService = inject(AngorConfirmationService); // Ensure this is injected here
 
     isLoggedIn(): boolean {
         return !!this.signerService.getPublicKey();
     }
 
     promptLogin(): void {
-        const angorConfirmationService = inject(AngorConfirmationService);
-        const dialogRef = angorConfirmationService.open({
-            title: 'Login Required',
-            message: 'You need to be logged in to perform this action. Would you like to login now?',
+        const dialogRef = this.angorConfirmationService.open({
+            title: 'Login',
+            message: 'Would you like to login now?',
             icon: {
                 show: true,
-                name: 'heroicons_solid:login',
+                name: 'heroicons_solid:user',
                 color: 'primary',
             },
             actions: {
                 confirm: {
                     show: true,
-                    label: 'Login',
+                    label: 'Yes, Login',
                     color: 'primary',
                 },
                 cancel: {
                     show: true,
-                    label: 'Cancel',
+                    label: 'No, Thanks',
                 },
             },
             dismissible: true,

@@ -179,7 +179,7 @@ export class PostComponent implements OnDestroy {
         });
     }
 
- 
+
     trackByToken(index: number, item: any): any {
         return item.id || index;
     }
