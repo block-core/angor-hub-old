@@ -57,6 +57,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     private _nostrLoginService = inject(NostrLoginService);
 
     ngOnInit(): void {
+        // Clear storage when entering login page
+        this._signerService.clearPassword();
+        this._signerService.logout();
+
         this.subscription = this._nostrLoginService.getPublicKeyObservable().subscribe({
             next: (pubkey: string) => {
                 this.publicKey.set(pubkey);

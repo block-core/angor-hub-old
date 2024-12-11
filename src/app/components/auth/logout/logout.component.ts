@@ -35,7 +35,7 @@ export class LogoutComponent implements OnInit, OnDestroy {
         this.countdown.set(this.countdown() - 1);
       } else {
         clearInterval(this.intervalId);
-        this.logout();
+        this._router.navigate(['login']);
       }
     }, 1000);
   }

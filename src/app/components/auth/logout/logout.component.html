@@ -6,11 +6,15 @@
                 Logging Out
             </div>
 
+            <!-- Login Link -->
+            <div class="mt-8 text-center">
+                <a class="text-primary-500 hover:underline font-medium" [routerLink]="['/login']">
+                    Go to Login
+                </a>
+            </div>
+
             <!-- Quick Action Buttons -->
             <div class="mt-6 flex flex-col items-center" *ngIf="showConfirm()">
-                <div class="text-3xl font-bold text-primary-500">
-                    {{countdown()}}
-                </div>
                 <div class="mt-2 text-center text-gray-600">
                     Automatically logging out in {{countdown()}} seconds
                 </div>
@@ -31,12 +35,7 @@
                 </div>
             </div>
 
-            <!-- Login Link -->
-            <div class="mt-8 text-center">
-                <a class="text-primary-500 hover:underline font-medium" [routerLink]="['/login']">
-                    Return to Login
-                </a>
-            </div>
+
         </div>
     </div>
 </div>
