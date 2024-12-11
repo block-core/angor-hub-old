@@ -47,4 +47,11 @@ export class LogoutComponent implements OnInit, OnDestroy {
         this._signerService.logout();
         console.log('User logged out and keys removed from localStorage.');
     }
+
+    cancelLogout(): void {
+
+        this._unsubscribeAll.next(null);
+        this._router.navigate(['home']); // Navigate to a different route or stay on the same page
+    }
 }
+
