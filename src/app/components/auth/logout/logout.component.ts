@@ -1,57 +1,53 @@
-import { I18nPluralPipe } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit, ViewEncapsulation, inject, OnDestroy } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { SignerService } from 'app/services/signer.service';
-import { Subject, finalize, takeUntil, takeWhile, tap, timer } from 'rxjs';
+import { signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'auth-logout',
-    templateUrl: './logout.component.html',
-    encapsulation: ViewEncapsulation.None,
-    imports: [RouterLink, I18nPluralPipe]
+  selector: 'auth-logout',
+  templateUrl: './logout.component.html',
+  encapsulation: ViewEncapsulation.None,
+  imports: [RouterModule, CommonModule],
+  standalone: true
 })
 export class LogoutComponent implements OnInit, OnDestroy {
-    countdown: number = 5;
-    countdownMapping: any = {
-        '=1': '# second',
-        other: '# seconds',
-    };
-    private _unsubscribeAll: Subject<any> = new Subject<any>();
+  showConfirm = signal(true);
+  countdown = signal(5);
+  private intervalId: any;
 
-    constructor(
-        private _router: Router,
-        private _signerService: SignerService
-    ) {}
+  private _router = inject(Router);
+  private _signerService = inject(SignerService);
 
-    ngOnInit(): void {
-        timer(1000, 1000)
-            .pipe(
-                takeWhile(() => this.countdown > 0),
-                takeUntil(this._unsubscribeAll),
-                tap(() => this.countdown--),
-                finalize(() => {
-                    this.logout();
-                    this._router.navigate(['login']);
-                })
-            )
-            .subscribe();
+  ngOnInit(): void {
+    this.startCountdown();
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
     }
+  }
 
-    ngOnDestroy(): void {
-        this._unsubscribeAll.next(null);
-        this._unsubscribeAll.complete();
-    }
+  private startCountdown(): void {
+    this.intervalId = setInterval(() => {
+      if (this.countdown() > 0) {
+        this.countdown.set(this.countdown() - 1);
+      } else {
+        clearInterval(this.intervalId);
+        this.logout();
+      }
+    }, 1000);
+  }
 
-    logout(): void {
-        this._signerService.clearPassword();
-        this._signerService.logout();
-        console.log('User logged out and keys removed from localStorage.');
-    }
+  logout(): void {
+    this._signerService.clearPassword();
+    this._signerService.logout();
+    this._router.navigate(['login']);
+  }
 
-    cancelLogout(): void {
-
-        this._unsubscribeAll.next(null);
-        this._router.navigate(['home']); // Navigate to a different route or stay on the same page
-    }
+  cancelLogout(): void {
+    this.showConfirm.set(false);
+    this._router.navigate(['home']);
+  }
 }
-

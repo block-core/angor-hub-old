@@ -1,43 +1,41 @@
 <div class="flex min-w-0 flex-auto flex-col items-center sm:justify-center">
-    <div
-        class="w-full px-4 py-8 sm:bg-card sm:w-auto sm:rounded-2xl sm:p-12 sm:shadow"
-    >
+    <div class="w-full px-4 py-8 sm:bg-card sm:w-auto sm:rounded-2xl sm:p-12 sm:shadow">
         <div class="mx-auto w-full max-w-80 sm:mx-0 sm:w-80">
             <!-- Title -->
-            <div
-                class="mt-8 text-center text-4xl font-extrabold leading-tight tracking-tight"
-            >
-                You have logout!
-            </div>
-            <div class="mt-0.5 flex justify-center font-medium">
-                <!-- Redirect countdown -->
-                @if (countdown > 0) {
-                    Redirecting in
-                    {{ countdown | i18nPlural: countdownMapping }}
-                }
-
-                <!-- Redirect message -->
-                @if (countdown === 0) {
-                    You are now being redirected!
-                }
+            <div class="mt-8 text-center text-4xl font-extrabold leading-tight tracking-tight">
+                Logging Out
             </div>
 
-            <!-- Form footer -->
-            <div class="text-secondary mt-8 text-center text-md font-medium">
-                <a
-                    class="ml-1 text-primary-500 hover:underline"
-                    [routerLink]="['/login']"
-                >
-                    <span class="text-2xl font-extrabold">Go to login</span>
-                </a>
-            </div>
-            <div class="mt-4 flex justify-center">
+            <!-- Quick Action Buttons -->
+            <div class="mt-6 flex flex-col items-center" *ngIf="showConfirm()">
+                <div class="text-3xl font-bold text-primary-500">
+                    {{countdown()}}
+                </div>
+                <div class="mt-2 text-center text-gray-600">
+                    Automatically logging out in {{countdown()}} seconds
+                </div>
                 <button
-                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                    (click)="cancelLogout()"
-                >
+                    class="mt-4 px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                    (click)="cancelLogout()">
                     Cancel Logout
                 </button>
+            </div>
+
+            <!-- Cancelled Message -->
+            <div class="mt-6 text-center" *ngIf="!showConfirm()">
+                <div class="text-green-500 font-bold text-xl">
+                    Logout Cancelled
+                </div>
+                <div class="mt-2 text-gray-600">
+                    Returning to home page...
+                </div>
+            </div>
+
+            <!-- Login Link -->
+            <div class="mt-8 text-center">
+                <a class="text-primary-500 hover:underline font-medium" [routerLink]="['/login']">
+                    Return to Login
+                </a>
             </div>
         </div>
     </div>

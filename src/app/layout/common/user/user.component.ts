@@ -8,7 +8,6 @@ import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
-    Signal,
     inject,
     signal,
     effect,
