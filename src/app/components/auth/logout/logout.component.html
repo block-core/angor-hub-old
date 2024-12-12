@@ -14,28 +14,30 @@
             </div>
 
             <!-- Quick Action Buttons -->
-            <div class="mt-6 flex flex-col items-center" *ngIf="showConfirm()">
-                <div class="mt-2 text-center text-gray-600">
-                    Automatically logging out in {{countdown()}} seconds
+            @if (showConfirm()) {
+                <div class="mt-6 flex flex-col items-center">
+                    <div class="mt-2 text-center text-gray-600">
+                        Automatically logging out in {{countdown()}} seconds
+                    </div>
+                    <button
+                        class="mt-4 px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                        (click)="cancelLogout()">
+                        Cancel Logout
+                    </button>
                 </div>
-                <button
-                    class="mt-4 px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-                    (click)="cancelLogout()">
-                    Cancel Logout
-                </button>
-            </div>
+            }
 
             <!-- Cancelled Message -->
-            <div class="mt-6 text-center" *ngIf="!showConfirm()">
-                <div class="text-green-500 font-bold text-xl">
-                    Logout Cancelled
+            @if (!showConfirm()) {
+                <div class="mt-6 text-center">
+                    <div class="text-green-500 font-bold text-xl">
+                        Logout Cancelled
+                    </div>
+                    <div class="mt-2 text-gray-600">
+                        Returning to home page...
+                    </div>
                 </div>
-                <div class="mt-2 text-gray-600">
-                    Returning to home page...
-                </div>
-            </div>
-
-
+            }
         </div>
     </div>
 </div>
