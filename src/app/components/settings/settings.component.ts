@@ -21,7 +21,7 @@ import { SettingsNotificationsComponent } from './notifications/notifications.co
 import { SettingsProfileComponent } from './profile/profile.component';
 import { SettingsRelayComponent } from './relay/relay.component';
 import { SettingsSecurityComponent } from './security/security.component';
-import { SettingsAdvancedProfileComponent } from './advanced-profile/advanced-profile.component';
+import { SettingsProjectProfileComponent } from './project-profile/project-profile.component';
 
 @Component({
     selector: 'settings',
@@ -40,7 +40,7 @@ import { SettingsAdvancedProfileComponent } from './advanced-profile/advanced-pr
         SettingsRelayComponent,
         SettingsNetworkComponent,
         SettingsIndexerComponent,
-        SettingsAdvancedProfileComponent
+        SettingsProjectProfileComponent
     ]
 })
 export class SettingsComponent implements OnInit, OnDestroy {
@@ -77,11 +77,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
                 'Update your personal profile, manage your account details, and modify your private information.',
         },
         {
-            id: 'advanced-profile',
+            id: 'project-profile',
             icon: 'heroicons_outline:check-badge',
-            title: 'Advanced Profile',
+            title: 'Project profile',
             description:
-                'Manage and explore advanced settings of your profile, including privacy options, analytics, activity logs, and connected accounts.',
+                'Manage and customize your project profile, including privacy settings, analytics, activity logs, and linked accounts.',
         },
         {
             id: 'notifications',

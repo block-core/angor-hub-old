@@ -30,8 +30,8 @@ import { PasswordDialogComponent } from 'app/shared/password-dialog/password-dia
 import { NostrEvent, UnsignedEvent, finalizeEvent } from 'nostr-tools';
 
 @Component({
-    selector: 'settings-advanced-profile',
-    templateUrl: './advanced-profile.component.html',
+    selector: 'settings-project-profile',
+    templateUrl: './project-profile.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
@@ -48,7 +48,7 @@ import { NostrEvent, UnsignedEvent, finalizeEvent } from 'nostr-tools';
         CommonModule,
     ]
 })
-export class SettingsAdvancedProfileComponent implements OnInit {
+export class SettingsProjectProfileComponent implements OnInit {
     profileForm: FormGroup;
     content: string;
     user: any;
