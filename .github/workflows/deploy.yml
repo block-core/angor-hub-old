@@ -23,7 +23,7 @@ jobs:
           rm -f package-lock.json
 
       - name: Install dependencies
-        run: npm install --force
+        run: npm install
 
       - name: Run deploy script
         run: npm run deploy

@@ -32,13 +32,15 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      # Step 3: Remove node_modules
+      # Step 3: Remove node_modules and package-lock.json
       - name: Clean up
-        run: rm -rf node_modules
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
 
       # Step 4: Install dependencies
       - name: Install Dependencies
-        run: npm install --force
+        run: npm install
 
       # Step 5: Determine version
       - name: Set Version Variable
