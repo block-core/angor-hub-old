@@ -28,20 +28,23 @@
             <div class="flex w-full max-w-xs flex-col items-center justify-between sm:max-w-none sm:flex-row">
                 <!-- Search bar with clear button -->
                 <div class="flex w-full items-center space-x-2 sm:w-auto">
-                    <mat-form-field class="mt-4 w-full sm:w-80" [subscriptSizing]="'dynamic'" (keyup.enter)="filterByQuery(query.value)">
+                    <mat-form-field class="mt-4 w-full sm:w-80" [subscriptSizing]="'dynamic'"
+                        (keyup.enter)="filterByQuery(query.value)">
                         <mat-icon matPrefix class="icon-size-5"
                             [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                         <input placeholder="Search ..." matInput #query />
                     </mat-form-field>
                     <!-- Clear search button -->
-                    <button mat-icon-button color="warn" class="mt-4"  *ngIf="showCloseSearchButton()"
-                    (click)="resetSearch(query)">
+                    @if (showCloseSearchButton()) {
+                    <button mat-icon-button color="warn" class="mt-4" (click)="resetSearch(query)">
                         <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
                     </button>
-                    <button mat-icon-button color="success" class="mt-4" *ngIf="!showCloseSearchButton()"
-                    (click)="filterByQuery(query.value)">
+                    }
+                    @if (!showCloseSearchButton()) {
+                    <button mat-icon-button color="success" class="mt-4" (click)="filterByQuery(query.value)">
                         <mat-icon [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                     </button>
+                    }
                 </div>
                 <!-- Toggle completed -->
                 <mat-slide-toggle class="mt-8 sm:ml-auto sm:mt-0" [color]="'primary'">
@@ -53,115 +56,157 @@
             <!-- Project Cards -->
             <div class="mt-10 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
                 <!-- Loop through projects and render cards -->
-                <ng-container *ngFor="let project of projectDetails()">
-                    <angor-card class="filter-info flex w-full flex-col">
-                        <div class="flex h-32">
-                            <img class="object-cover" [src]="project.banner || '/images/pages/profile/cover.jpg'" alt="Card cover image"
-                                onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';"
-                                alt="Card cover image" />
-                        </div>
-                        <div class="flex px-8">
-                            <div class="bg-card -mt-12 rounded-full p-1">
-                                <img class="h-24 w-24 rounded-full object-cover" [src]="
-                                project.picture ||
+                @for (project of projectDetails(); track $index) {
+                <angor-card class="filter-info flex w-full flex-col">
+                    <div class="flex h-32">
+                        <img class="object-cover" [src]="
+                                    project.banner ||
+                                    '/images/pages/profile/cover.jpg'
+                                " alt="Card cover image"
+                            onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';"
+                            alt="Card cover image" />
+                    </div>
+                    <div class="flex px-8">
+                        <div class="bg-card -mt-12 rounded-full p-1">
+                            <img class="h-24 w-24 rounded-full object-cover" [src]="
+                                        project.picture ||
                                         'images/avatars/avatar-placeholder.png'
                                     " onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-                                    alt="Project logo" />
-                            </div>
-                        </div>
-                        <div class="flex flex-col px-8 pb-6 pt-4">
-                            <div class="flex items-center justify-between">
-                                <div class="min-w-0 flex-1">
-                                    <div *ngIf="project.displayName || project.name" class="truncate text-2xl font-semibold leading-tight" role="button" (click)="goToProjectDetails(project)">
-                                        {{ project.displayName || project.nostrPubKey }}
-                                    </div>
-                                    <div *ngIf="!project.name && !project.displayName" class="truncate text-2xl font-semibold leading-tight">
-                                        {{ project.displayName || project.nostrPubKey }}
-                                    </div>
-                                    <div class="text-secondary mt-1 truncate leading-tight">
-                                        {{ project.about || 'No description available' }}
-                                    </div>
-                                </div>
-                                <div *ngIf="project.displayName || project.name" class="absolute top-2 right-2 flex space-x-2">
-                                    <!-- Buttons -->
-                                    <div
-                                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
-                                        <button mat-icon-button [routerLink]="['/chat', project.nostrPubKey]">
-                                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
-                                        </button>
-                                    </div>
-                                    <div
-                                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
-                                        <button mat-icon-button (click)="toggleBookmark(project.nostrPubKey)">
-                                            <mat-icon class="icon-size-5"
-                                                      [svgIcon]="(bookmarks$ | async)?.includes(project.nostrPubKey) ? 'heroicons_solid:bookmark' : 'heroicons_outline:bookmark'">
-                                            </mat-icon>
-                                        </button>
-                                    </div>
-                                </div>
-
-                            </div>
-                            <hr class="my-6 w-full border-t" />
-                            <!-- <div class="flex items-center justify-between">
-                                <div class="text-secondary mr-3 text-md font-medium">
-                                    {{ project.totalInvestmentsCount || 0 }}
-                                    investors
-                                </div>
-                                <div class="flex items-center">
-                                    <ng-container *ngFor="
-                                            let investor of [].constructor(
-                                                project.totalInvestmentsCount ||
-                                                    0
-                                            );
-                                            let i = index
-                                        ">
-                                        <ng-container *ngIf="i < 10">
-                                            <img class="text-card ring-bg-card m-0.5 h-6 w-6 rounded-full ring-2"
-                                                [ngClass]="{
-                                                    '-ml-3':
-                                                        project.totalInvestmentsCount >
-                                                            1 && i > 0,
-                                                }" [src]="
-                                                    'images/avatars/avatar-placeholder.png'
-                                                " alt="Investor avatar {{
-                                                    i + 1
-                                                }}" />
-                                        </ng-container>
-                                    </ng-container>
-                                </div>
-                            </div> -->
-                        </div>
-                    </angor-card>
-                </ng-container>
-            </div>
-            <ng-container *ngIf="!loading() || initialLoadComplete()">
-                <ng-container *ngIf="projectDetails().length === 0">
-                    <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
-                        <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
-                        <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
-                            No projects
+                                alt="Project logo" />
                         </div>
                     </div>
-                </ng-container>
-            </ng-container>
-
-            <ng-container *ngIf="loading() && !initialLoadComplete()">
-                <div class="flex flex-auto flex-col items-center justify-center">
-                    <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
-                    <div class="text-secondary mt-4 text-xl">Loading projects...</div>
+                    <div class="flex flex-col px-8 pb-6 pt-4">
+                        <div class="flex items-center justify-between">
+                            <div class="min-w-0 flex-1">
+                                <div *ngIf="
+                                            project.displayName || project.name
+                                        " class="truncate text-2xl font-semibold leading-tight" role="button"
+                                    (click)="goToProjectDetails(project)">
+                                    {{
+                                    project.displayName ||
+                                    project.nostrPubKey
+                                    }}
+                                </div>
+                                <div *ngIf="
+                                            !project.name &&
+                                            !project.displayName
+                                        " class="truncate text-2xl font-semibold leading-tight">
+                                    {{
+                                    project.displayName ||
+                                    project.nostrPubKey
+                                    }}
+                                </div>
+                                <div class="text-secondary mt-1 truncate leading-tight">
+                                    {{
+                                    project.about ||
+                                    'No description available'
+                                    }}
+                                </div>
+                            </div>
+                            <div *ngIf="project.displayName || project.name"
+                                class="absolute right-2 top-2 flex space-x-2">
+                                <!-- Buttons -->
+                                <div
+                                    class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                                    <button mat-icon-button [routerLink]="[
+                                                '/chat',
+                                                project.nostrPubKey,
+                                            ]">
+                                        <mat-icon class="icon-size-5" [svgIcon]="
+                                                    'heroicons_outline:chat-bubble-left-right'
+                                                "></mat-icon>
+                                    </button>
+                                </div>
+                                <div
+                                    class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                                    <button mat-icon-button (click)="
+                                                toggleBookmark(
+                                                    project.nostrPubKey
+                                                )
+                                            ">
+                                        <mat-icon class="icon-size-5" [svgIcon]="
+                                                    (
+                                                        bookmarks$ | async
+                                                    )?.includes(
+                                                        project.nostrPubKey
+                                                    )
+                                                        ? 'heroicons_solid:bookmark'
+                                                        : 'heroicons_outline:bookmark'
+                                                ">
+                                        </mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-6 w-full border-t" />
+                        <!-- <div class="flex items-center justify-between">
+                            <div class="text-secondary mr-3 text-md font-medium">
+                                {{ project.totalInvestmentsCount || 0 }}
+                                investors
+                            </div>
+                            <div class="flex items-center">
+                                <ng-container *ngFor="
+                                        let investor of [].constructor(
+                                            project.totalInvestmentsCount ||
+                                                0
+                                        );
+                                        let i = index
+                                    ">
+                                    <ng-container *ngIf="i < 10">
+                                        <img class="text-card ring-bg-card m-0.5 h-6 w-6 rounded-full ring-2"
+                                            [ngClass]="{
+                                                '-ml-3':
+                                                    project.totalInvestmentsCount >
+                                                        1 && i > 0,
+                                            }" [src]="
+                                                'images/avatars/avatar-placeholder.png'
+                                            " alt="Investor avatar {{
+                                                i + 1
+                                            }}" />
+                                    </ng-container>
+                                </ng-container>
+                            </div>
+                        </div> -->
+                    </div>
+                </angor-card>
+                }
+            </div>
+            @if (!loading() || initialLoadComplete()) {
+            @if (projectDetails().length === 0) {
+            <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
+                <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
+                <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
+                    No projects
                 </div>
-            </ng-container>
+            </div>
+            }
+            }
+
+            @if (loading() && !initialLoadComplete()) {
+            <div class="flex flex-auto flex-col items-center justify-center">
+                <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+                <div class="text-secondary mt-4 text-xl">
+                    Loading projects...
+                </div>
+            </div>
+            }
+
+            @if (projectDetails().length > 0) {
             <!-- Load More Button -->
-            <div *ngIf="projectDetails().length > 0" class="mt-10 flex justify-center">
-                <button mat-raised-button color="primary" class="bg-card text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
-                (click)="loadMoreProjects()" [disabled]="loading()">
+            <div class="mt-10 flex justify-center">
+                <button mat-raised-button color="primary"
+                    class="bg-card text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
+                    (click)="loadMoreProjects()" [disabled]="loading()">
                     {{ loading() ? 'Loading...' : 'Load More Projects' }}
                 </button>
             </div>
+            }
 
-            <div *ngIf="!loading() && errorMessage()" class="error-message">
+            @if (!loading() && errorMessage()) {
+            <div class="error-message">
                 {{ errorMessage() }}
             </div>
+            }
         </div>
     </div>
 </div>
