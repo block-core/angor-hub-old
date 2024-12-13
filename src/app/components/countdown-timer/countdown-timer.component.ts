@@ -10,59 +10,103 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
     styles: [`
         .countdown-container {
             display: flex;
-            justify-content: center;
-            gap: 1rem;
-            padding: 1rem;
+            justify-content: flex-end;
+            margin-top: 0.5rem;
+            position: absolute;
+            top: 130px;
+            right: 30px;
+            transform: translateY(0);
+            width: auto;
+        }
+        .time-boxes-container {
+            display: flex;
+            gap: 0.75rem;
         }
         .time-box {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(5px);
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 0.5rem;
-            min-width: 70px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-width: 55px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
         .time-value {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: bold;
             font-family: 'Monaco', monospace;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
         }
         .time-label {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             opacity: 0.8;
         }
-        .flip {
-            animation: flipAnimation 0.6s ease-in-out;
+        .status-tooltip {
+            position: absolute;
+            bottom: -25px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 10;
         }
-        @keyframes flipAnimation {
-            0% { transform: perspective(400px) rotateX(0); }
-            50% { transform: perspective(400px) rotateX(-90deg); }
-            100% { transform: perspective(400px) rotateX(0); }
+        .countdown-container:hover .status-tooltip {
+            opacity: 1;
+        }
+        @media (max-width: 600px) {
+            .countdown-container {
+                justify-content: flex-end;
+                margin-top: 0.25rem;
+                width: auto;
+                transform: translateY(0);
+            }
+            .time-boxes-container {
+                gap: 0.5rem;
+            }
+            .time-box {
+                padding: 0.25rem;
+                min-width: 45px;
+            }
+            .time-value {
+                font-size: 1rem;
+            }
+            .time-label {
+                font-size: 0.55rem;
+            }
+            .status-tooltip {
+                font-size: 0.65rem;  
+            }
         }
     `],
     template: `
-        <div class="text-center mb-2 font-bold" [style.color]="hasStarted ? '#ef4444' : '#22c55e'">
-            {{ displayText }}
-        </div>
         <div class="countdown-container">
-            <div class="time-box">
-                <div class="time-value" [class.flip]="days !== previousDays">{{ days }}</div>
-                <div class="time-label">Days</div>
+            <div class="time-boxes-container">
+                <div class="time-box">
+                    <div class="time-value" [@numberChange]="days !== previousDays">{{ days }}</div>
+                    <div class="time-label">Days</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" [@numberChange]="hours !== previousHours">{{ hours }}</div>
+                    <div class="time-label">Hours</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" [@numberChange]="minutes !== previousMinutes">{{ minutes }}</div>
+                    <div class="time-label">Min</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" [@numberChange]="seconds !== previousSeconds">{{ seconds }}</div>
+                    <div class="time-label">Sec</div>
+                </div>
             </div>
-            <div class="time-box">
-                <div class="time-value" [class.flip]="hours !== previousHours">{{ hours }}</div>
-                <div class="time-label">Hours</div>
-            </div>
-            <div class="time-box">
-                <div class="time-value" [class.flip]="minutes !== previousMinutes">{{ minutes }}</div>
-                <div class="time-label">Minutes</div>
-            </div>
-            <div class="time-box">
-                <div class="time-value" [class.flip]="seconds !== previousSeconds">{{ seconds }}</div>
-                <div class="time-label">Seconds</div>
+            <div class="status-tooltip" [style.color]="hasStarted ? '#ff6e99' : '#42f548'">
+                {{ displayText }}
             </div>
         </div>
     `,
@@ -70,11 +114,11 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
         trigger('numberChange', [
             transition(':increment', [
                 style({ transform: 'translateY(-100%)', opacity: 0 }),
-                animate('300ms ease-out', style({ transform: 'translateY(0)', opacity: 1 }))
+                animate('500ms ease-out', style({ transform: 'translateY(0)', opacity: 1 }))
             ]),
             transition(':decrement', [
                 style({ transform: 'translateY(100%)', opacity: 0 }),
-                animate('300ms ease-out', style({ transform: 'translateY(0)', opacity: 1 }))
+                animate('500ms ease-out', style({ transform: 'translateY(0)', opacity: 1 }))
             ])
         ])
     ]
@@ -118,10 +162,10 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
 
         if (now >= this.startDate && now < this.expiryDate) {
             this.hasStarted = true;
-            this.displayText = 'Time Remaining:';
+            this.displayText = 'Time Remaining';
         } else if (now < this.startDate) {
             this.hasStarted = false;
-            this.displayText = 'Starting in:';
+            this.displayText = 'Starting in';
         } else {
             this.hasStarted = true;
             this.displayText = 'Expired';

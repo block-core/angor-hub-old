@@ -66,13 +66,19 @@
                             onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';"
                             alt="Card cover image" />
                     </div>
-                    <div class="flex px-8">
-                        <div class="bg-card -mt-12 rounded-full p-1">
+                    <div class="flex px-8 items-center justify-between">
+                        <div class="bg-card -mt-12 rounded-full p-1 shadow-lg profile-picture">
                             <img class="h-24 w-24 rounded-full object-cover" [src]="
                                         project.picture ||
                                         'images/avatars/avatar-placeholder.png'
                                     " onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
                                 alt="Project logo" />
+                        </div>
+                        <div class="ml-auto">
+                            <countdown-timer
+                                [startDate]="project.startDate"
+                                [expiryDate]="project.expiryDate">
+                            </countdown-timer>
                         </div>
                     </div>
                     <div class="flex flex-col px-8 pb-6 pt-4">
@@ -141,35 +147,49 @@
                         <hr class="my-6 w-full border-t" />
 
                         <!-- projectDetails -->
-                        <countdown-timer
-                            [startDate]="project.startDate"
-                            [expiryDate]="project.expiryDate"
-                            class="mb-4">
-                        </countdown-timer>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="flex flex-col">
-                                <span class="text-sm text-gray-500">Target Amount</span>
-                                <span class="font-semibold">{{ project.targetAmount | number }} BTC</span>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-gray-500">Target Amount</span>
+                                    <span class="font-semibold">{{ project.targetAmount | number }} TBTC</span>
+                                </div>
                             </div>
-                            <div class="flex flex-col">
-                                <span class="text-sm text-gray-500">Start Date</span>
-                                <span class="font-semibold">{{ project.startDate*1000 | date }}</span>
+                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-gray-500">Start Date</span>
+                                    <span class="font-semibold">{{ project.startDate*1000 | date }}</span>
+                                </div>
                             </div>
-                            <div class="flex flex-col">
-                                <span class="text-sm text-gray-500">Penalty Days</span>
-                                <span class="font-semibold">{{ project.penaltyDays }} days</span>
+                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-gray-500">Penalty Days</span>
+                                    <span class="font-semibold">{{ project.penaltyDays }} days</span>
+                                </div>
                             </div>
-                            <div class="flex flex-col">
-                                <span class="text-sm text-gray-500">Expiry Date</span>
-                                <span class="font-semibold">{{ project.expiryDate*1000 | date }}</span>
+                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-gray-500">Expiry Date</span>
+                                    <span class="font-semibold">{{ project.expiryDate*1000 | date }}</span>
+                                </div>
                             </div>
-                            <div class="flex flex-col">
-                                <span class="text-sm text-gray-500">Stages</span>
-                                <span class="font-semibold">{{ project.stages?.length || 0 }}</span>
+                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-gray-500">Stages</span>
+                                    <span class="font-semibold">{{ project.stages?.length || 0 }}</span>
+                                </div>
                             </div>
-                            <div class="flex flex-col">
-                                <span class="text-sm text-gray-500">Seeders</span>
-                                <span class="font-semibold">{{ project.projectSeeders?.secretHashes?.length || 0 }}</span>
+                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:user-group'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-gray-500">Seeders</span>
+                                    <span class="font-semibold">{{ project.projectSeeders?.secretHashes?.length || 0 }}</span>
+                                </div>
                             </div>
                         </div>
 
@@ -180,18 +200,18 @@
                                target="_blank"
                                class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-primary p-0.5 text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary dark:hover:bg-primary-600 dark:focus:ring-primary-800 w-full">
                                 <span class="relative flex items-center justify-center gap-2 rounded-md bg-card w-full px-4 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
-                                    <mat-icon class="icon-size-5 text-primary dark:text-primary-400 group-hover:text-white" 
+                                    <mat-icon class="icon-size-5 text-primary dark:text-primary-400 group-hover:text-white"
                                              [svgIcon]="'heroicons_solid:circle-stack'">
                                     </mat-icon>
                                     <span class="text-primary dark:text-primary-400 group-hover:text-white">Invest Now</span>
                                 </span>
                             </a>
-                            
+
                             <!-- Profile Button -->
                             <button (click)="goToProjectDetails(project)"
                                     class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 p-0.5 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-800 w-full">
                                 <span class="relative flex items-center justify-center gap-2 rounded-md bg-card w-full px-4 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
-                                    <mat-icon class="icon-size-5 text-gray-700 dark:text-gray-300 group-hover:text-white" 
+                                    <mat-icon class="icon-size-5 text-gray-700 dark:text-gray-300 group-hover:text-white"
                                              [svgIcon]="'heroicons_outline:document-text'">
                                     </mat-icon>
                                     <span class="text-gray-700 dark:text-gray-300 group-hover:text-white">View Details</span>
@@ -241,3 +261,12 @@
         </div>
     </div>
 </div>
+
+<style>
+    @media (max-width: 600px) {
+        .profile-picture img {
+            height: 18px;  /* Smaller height */
+            width: 18px;   /* Smaller width */
+        }
+    }
+</style>
