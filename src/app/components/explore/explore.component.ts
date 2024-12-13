@@ -32,6 +32,7 @@ import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
  import { BookmarkService } from 'app/services/bookmark.service';
 import { Project, ProjectDetails, ProjectStatistics } from 'app/interface/project.interface';
 import { ProjectsService } from 'app/services/projects.service';
+import { CountdownTimerComponent } from '../countdown-timer/countdown-timer.component';
 
 @Component({
     selector: 'explore',
@@ -52,6 +53,7 @@ import { ProjectsService } from 'app/services/projects.service';
         MatProgressBarModule,
         CommonModule,
         MatProgressSpinnerModule,
+        CountdownTimerComponent,
     ]
 })
 export class ExploreComponent implements OnInit, OnDestroy {
