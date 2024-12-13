@@ -2,6 +2,7 @@ import { AngorCardComponent } from '@angor/components/card';
 import { CommonModule, NgClass } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { IndexerService } from 'app/services/indexer.service';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +18,7 @@ import { BookmarkService } from 'app/services/bookmark.service';
 import { ProjectsService } from 'app/services/projects.service';
 import { StorageService } from 'app/services/storage.service';
 import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
+import { CountdownTimerComponent } from 'app/layout/common/countdown-timer/countdown-timer.component';
 
 @Component({
     selector: 'app-bookmark',
@@ -35,12 +37,15 @@ import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
         MatProgressBarModule,
         CommonModule,
         MatProgressSpinnerModule,
+        CountdownTimerComponent
     ],
     templateUrl: './bookmark.component.html',
     styleUrls: ['./bookmark.component.scss'],
 })
 export class BookmarkComponent implements OnInit, OnDestroy {
     bookmarkService = inject(BookmarkService);
+    indexerService = inject(IndexerService);
+
     savedProjectDetailes = signal<ProjectDetails[]>([]);
     isLoading = signal(false);
     bookmarks$ = this.bookmarkService.bookmarks$;
