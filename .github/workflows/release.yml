@@ -32,46 +32,52 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      # Step 3: Install dependencies
+      # Step 3: Remove node_modules and package-lock.json
+      - name: Clean up
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
+
+      # Step 4: Install dependencies
       - name: Install Dependencies
         run: npm ci
 
-      # Step 4: Determine version
+      # Step 5: Determine version
       - name: Set Version Variable
         run: |
           VERSION=$(npm run version --silent || echo "0.0.1")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      # Step 5: Set Release name
+      # Step 6: Set Release name
       - name: Set Release Name
         run: |
           RELEASE_NAME=${{ env.PROJECT_NAME }}-${{ env.VERSION }}.zip
           echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
-      # Step 6: Build the project
+      # Step 7: Build the project
       - name: Build Project
         run: npm run build
 
-      # Step 7: Verify build output
+      # Step 8: Verify build output
       - name: Verify Build Output
         run: ls -la dist
         continue-on-error: false
 
-      # Step 8: Package build output
+      # Step 9: Package build output
       - name: Package Project
         run: |
           cd dist
           zip -r ../${{ env.RELEASE_NAME }} .
         continue-on-error: false
 
-      # Step 9: Upload Artifact
+      # Step 10: Upload Artifact
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.PROJECT_NAME }}-preview-${{ env.VERSION }}
           path: ${{ env.RELEASE_NAME }}
 
-      # Step 10: Create or Update GitHub Release
+      # Step 11: Create or Update GitHub Release
       - name: Create or Update GitHub Release
         run: |
           if gh release view ${{ env.VERSION }}; then
