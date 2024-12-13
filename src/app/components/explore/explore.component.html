@@ -139,34 +139,34 @@
                             </div>
                         </div>
                         <hr class="my-6 w-full border-t" />
-                        <!-- <div class="flex items-center justify-between">
-                            <div class="text-secondary mr-3 text-md font-medium">
-                                {{ project.totalInvestmentsCount || 0 }}
-                                investors
+
+                        <!-- projectDetails -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-500">Target Amount</span>
+                                <span class="font-semibold">{{ project.targetAmount | number }} BTC</span>
                             </div>
-                            <div class="flex items-center">
-                                <ng-container *ngFor="
-                                        let investor of [].constructor(
-                                            project.totalInvestmentsCount ||
-                                                0
-                                        );
-                                        let i = index
-                                    ">
-                                    <ng-container *ngIf="i < 10">
-                                        <img class="text-card ring-bg-card m-0.5 h-6 w-6 rounded-full ring-2"
-                                            [ngClass]="{
-                                                '-ml-3':
-                                                    project.totalInvestmentsCount >
-                                                        1 && i > 0,
-                                            }" [src]="
-                                                'images/avatars/avatar-placeholder.png'
-                                            " alt="Investor avatar {{
-                                                i + 1
-                                            }}" />
-                                    </ng-container>
-                                </ng-container>
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-500">Start Date</span>
+                                <span class="font-semibold">{{ project.startDate*1000 | date }}</span>
                             </div>
-                        </div> -->
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-500">Penalty Days</span>
+                                <span class="font-semibold">{{ project.penaltyDays }} days</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-500">Expiry Date</span>
+                                <span class="font-semibold">{{ project.expiryDate*1000 | date }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-500">Stages</span>
+                                <span class="font-semibold">{{ project.stages?.length || 0 }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-500">Seeders Required</span>
+                                <span class="font-semibold">{{ project.projectSeeders?.secretHashes?.length || 0 }}</span>
+                            </div>
+                        </div>
                     </div>
                 </angor-card>
                 }
