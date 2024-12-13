@@ -1,6 +1,6 @@
 import { AngorCardComponent } from '@angor/components/card';
 import { CommonModule, NgClass } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -40,51 +40,46 @@ import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
     styleUrls: ['./bookmark.component.scss'],
 })
 export class BookmarkComponent implements OnInit, OnDestroy {
-    savedProjects: Project[] = [];
-    savedProjectDetailes: ProjectDetails[] = [];
-    bookmarks$: Observable<string[]>;
-    isLoading = true;
+    bookmarkService = inject(BookmarkService);
+    savedProjectDetailes = signal<ProjectDetails[]>([]);
+    isLoading = signal(false);
+    bookmarks$ = this.bookmarkService.bookmarks$;
     private _unsubscribeAll = new Subject<any>();
 
     constructor(
-        private _bookmarkService: BookmarkService,
         private _storageService: StorageService,
         private _router: Router,
         private _projectsService: ProjectsService,
-    ) {
-        this.bookmarks$ = this._bookmarkService.bookmarks$;
-    }
+    ) {}
 
     async ngOnInit(): Promise<void> {
         try {
-            await this._bookmarkService.initializeForCurrentUser();
+            await this.bookmarkService.initializeForCurrentUser();
             await this.loadBookmarkedProjects();
             this.subscribeToBookmarkChanges();
-            this.isLoading = false;
+            this.isLoading.set(false);
         } catch (error) {
             console.error('Error during initialization:', error);
-            this.isLoading = false;
+            this.isLoading.set(false);
         }
     }
-
 
     trackByFn(index: number, item: ProjectDetails): string | number {
         return item.nostrPubKey || index;
     }
 
     private async loadBookmarkedProjects(): Promise<void> {
-        this.isLoading = true;
+        this.isLoading.set(true);
         try {
-            const bookmarkIds = await this._bookmarkService.getBookmarks();
+            const bookmarkIds = await this.bookmarkService.getBookmarks();
             const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
-            this.savedProjectDetailes = projects;
-            this.isLoading = false;
+            this.savedProjectDetailes.set(projects);
+            this.isLoading.set(false);
         } catch (error) {
             console.error('Error loading bookmarked projects:', error);
-            this.isLoading = false;
+            this.isLoading.set(false);
         }
     }
-
 
     private subscribeToBookmarkChanges(): void {
         this.bookmarks$
@@ -92,16 +87,15 @@ export class BookmarkComponent implements OnInit, OnDestroy {
             .subscribe(async (bookmarkIds) => {
                 try {
                     const projects = await this._storageService.getProjectsByNostrPubKeys(bookmarkIds);
-                    this.savedProjectDetailes = projects;
-                    this.fetchMetadataForProjects(this.savedProjectDetailes);
-                    this.isLoading = false;
+                    this.savedProjectDetailes.set(projects);
+                    this.fetchMetadataForProjects(this.savedProjectDetailes());
+                    this.isLoading.set(false);
                 } catch (error) {
                     console.error('Error updating bookmarks:', error);
-                    this.isLoading = false;
+                    this.isLoading.set(false);
                 }
             });
     }
-
 
     private fetchMetadataForProjects(projects: ProjectDetails[]): void {
         projects.forEach((project) => {
@@ -124,11 +118,11 @@ export class BookmarkComponent implements OnInit, OnDestroy {
 
     async toggleBookmark(projectNpub: string): Promise<void> {
         const isBookmarked =
-            await this._bookmarkService.isBookmarked(projectNpub);
+            await this.bookmarkService.isBookmarked(projectNpub);
         if (isBookmarked) {
-            await this._bookmarkService.removeBookmark(projectNpub);
+            await this.bookmarkService.removeBookmark(projectNpub);
         } else {
-            await this._bookmarkService.addBookmark(projectNpub);
+            await this.bookmarkService.addBookmark(projectNpub);
         }
     }
 
