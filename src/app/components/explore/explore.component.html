@@ -153,7 +153,7 @@
                                 <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
                                 <div class="flex flex-col">
                                     <span class="text-sm text-gray-500">Target Amount</span>
-                                    <span class="font-semibold">{{ project.targetAmount | number }} TBTC</span>
+                                    <span class="font-semibold">{{ project.targetAmount | number }} {{ indexerService.getNetwork() === 'mainnet' ? 'BTC' : 'TBTC' }}</span>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
@@ -196,7 +196,7 @@
                         <!-- Investment Buttons -->
                         <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <!-- Invest Button -->
-                            <a [href]="'https://test.angor.io/view/' + project.projectIdentifier"
+                            <a [href]="(indexerService.getNetwork() === 'mainnet' ? 'https://beta.angor.io/view/' : 'https://test.angor.io/view/') + project.projectIdentifier"
                                target="_blank"
                                class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-primary p-0.5 text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary dark:hover:bg-primary-600 dark:focus:ring-primary-800 w-full">
                                 <span class="relative flex items-center justify-center gap-2 rounded-md bg-card w-full px-4 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">

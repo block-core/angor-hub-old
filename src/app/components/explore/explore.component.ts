@@ -32,7 +32,8 @@ import { catchError, Observable, of, Subject, takeUntil, tap } from 'rxjs';
  import { BookmarkService } from 'app/services/bookmark.service';
 import { Project, ProjectDetails, ProjectStatistics } from 'app/interface/project.interface';
 import { ProjectsService } from 'app/services/projects.service';
-import { CountdownTimerComponent } from '../countdown-timer/countdown-timer.component';
+import { CountdownTimerComponent } from '../../layout/common/countdown-timer/countdown-timer.component';
+import { IndexerService } from 'app/services/indexer.service';
 
 @Component({
     selector: 'explore',
@@ -63,6 +64,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
     changeDetectorRef = inject(ChangeDetectorRef);
     router = inject(Router);
     bookmarkService = inject(BookmarkService);
+    indexerService = inject(IndexerService);
 
     projects: Project[] = [];
     projectDetails = signal<ProjectDetails[]>([]);
@@ -226,6 +228,8 @@ export class ExploreComponent implements OnInit, OnDestroy {
     }
 
     goToProjectDetails(project: ProjectDetails): void {
+        const network = this.indexerService.getNetwork();
+        const baseUrl = network === 'mainnet' ? 'https://beta.angor.io/view/' : 'https://test.angor.io/view/';
         this.projectService.fetchProjectStats(project.projectIdentifier).pipe(
             tap((stats: ProjectStatistics) => {
                 this.storageService.saveProjectStats(project.projectIdentifier, stats);
