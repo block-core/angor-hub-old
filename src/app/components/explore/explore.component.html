@@ -34,11 +34,11 @@
                         <input placeholder="Search ..." matInput #query />
                     </mat-form-field>
                     <!-- Clear search button -->
-                    <button mat-icon-button color="warn" class="mt-4"  *ngIf="showCloseSearchButton"
+                    <button mat-icon-button color="warn" class="mt-4"  *ngIf="showCloseSearchButton()"
                     (click)="resetSearch(query)">
                         <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
                     </button>
-                    <button mat-icon-button color="success" class="mt-4" *ngIf="!showCloseSearchButton"
+                    <button mat-icon-button color="success" class="mt-4" *ngIf="!showCloseSearchButton()"
                     (click)="filterByQuery(query.value)">
                         <mat-icon [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                     </button>
@@ -53,7 +53,7 @@
             <!-- Project Cards -->
             <div class="mt-10 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
                 <!-- Loop through projects and render cards -->
-                <ng-container *ngFor="let project of projectDetails;">
+                <ng-container *ngFor="let project of projectDetails()">
                     <angor-card class="filter-info flex w-full flex-col">
                         <div class="flex h-32">
                             <img class="object-cover" [src]="project.banner || '/images/pages/profile/cover.jpg'" alt="Card cover image"
@@ -72,36 +72,18 @@
                         <div class="flex flex-col px-8 pb-6 pt-4">
                             <div class="flex items-center justify-between">
                                 <div class="min-w-0 flex-1">
-                                    @if (project.displayName || project.name) {
-                                     <div class="truncate text-2xl font-semibold leading-tight" role="button" (click)="
-                                                goToProjectDetails(project)
-                                            ">
-                                        {{
-                                        project.displayName ||
-                                        project.nostrPubKey
-                                        }}
+                                    <div *ngIf="project.displayName || project.name" class="truncate text-2xl font-semibold leading-tight" role="button" (click)="goToProjectDetails(project)">
+                                        {{ project.displayName || project.nostrPubKey }}
                                     </div>
-                                    }
-                                    @if (
-                                    !project.name && !project.displayName
-                                    ) {
-                                    <div class="truncate text-2xl font-semibold leading-tight">
-                                        {{
-                                        project.displayName ||
-                                        project.nostrPubKey
-                                        }}
+                                    <div *ngIf="!project.name && !project.displayName" class="truncate text-2xl font-semibold leading-tight">
+                                        {{ project.displayName || project.nostrPubKey }}
                                     </div>
-                                    }
                                     <div class="text-secondary mt-1 truncate leading-tight">
-                                        {{
-                                        project.about ||
-                                        'No description available'
-                                        }}
+                                        {{ project.about || 'No description available' }}
                                     </div>
                                 </div>
-                                @if (project.displayName || project.name) {
-                                <!-- Buttons -->
-                                <div class="absolute top-2 right-2 flex space-x-2">
+                                <div *ngIf="project.displayName || project.name" class="absolute top-2 right-2 flex space-x-2">
+                                    <!-- Buttons -->
                                     <div
                                         class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
                                         <button mat-icon-button [routerLink]="['/chat', project.nostrPubKey]">
@@ -117,8 +99,6 @@
                                         </button>
                                     </div>
                                 </div>
-
-                                }
 
                             </div>
                             <hr class="my-6 w-full border-t" />
@@ -154,8 +134,8 @@
                     </angor-card>
                 </ng-container>
             </div>
-            <ng-container *ngIf="!loading || initialLoadComplete">
-                <ng-container *ngIf="projectDetails.length === 0">
+            <ng-container *ngIf="!loading() || initialLoadComplete()">
+                <ng-container *ngIf="projectDetails().length === 0">
                     <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
                         <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
                         <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
@@ -165,22 +145,22 @@
                 </ng-container>
             </ng-container>
 
-            <ng-container *ngIf="loading && !initialLoadComplete">
+            <ng-container *ngIf="loading() && !initialLoadComplete()">
                 <div class="flex flex-auto flex-col items-center justify-center">
                     <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
                     <div class="text-secondary mt-4 text-xl">Loading projects...</div>
                 </div>
             </ng-container>
             <!-- Load More Button -->
-            <div *ngIf="filteredProjects.length > 0" class="mt-10 flex justify-center">
+            <div *ngIf="projectDetails().length > 0" class="mt-10 flex justify-center">
                 <button mat-raised-button color="primary" class="bg-card text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
-                (click)="loadMoreProjects()" [disabled]="loading">
-                    {{ loading ? 'Loading...' : 'Load More Projects' }}
+                (click)="loadMoreProjects()" [disabled]="loading()">
+                    {{ loading() ? 'Loading...' : 'Load More Projects' }}
                 </button>
             </div>
 
-            <div *ngIf="!loading && errorMessage" class="error-message">
-                {{ errorMessage }}
+            <div *ngIf="!loading() && errorMessage()" class="error-message">
+                {{ errorMessage() }}
             </div>
         </div>
     </div>

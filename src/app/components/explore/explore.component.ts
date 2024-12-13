@@ -13,6 +13,8 @@ import {
     OnDestroy,
     OnInit,
     ViewEncapsulation,
+    inject,
+    signal
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
@@ -54,60 +56,53 @@ import { ProjectsService } from 'app/services/projects.service';
 })
 export class ExploreComponent implements OnInit, OnDestroy {
 
+    projectService = inject(ProjectsService);
+    storageService = inject(StorageService);
+    changeDetectorRef = inject(ChangeDetectorRef);
+    router = inject(Router);
+    bookmarkService = inject(BookmarkService);
 
     projects: Project[] = [];
-    projectDetails: ProjectDetails[] = [];
-
-    filteredProjects: ProjectDetails[] = []
-    loading: boolean = false;
-    errorMessage: string = '';
+    projectDetails = signal<ProjectDetails[]>([]);
+    filteredProjects: ProjectDetails[] = [];
+    loading = signal(false);
+    errorMessage = signal('');
     noMoreProjects: boolean = false;
-    showCloseSearchButton: boolean;
+    showCloseSearchButton = signal(false);
     bookmarks$: Observable<string[]>;
     bookmarkedProjectNpubs: string[] = [];
-    initialLoadComplete: boolean = false;
+    initialLoadComplete = signal(false);
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-    constructor(
-        private _projectsService: ProjectsService,
-        private _storageService: StorageService,
-        private _changeDetectorRef: ChangeDetectorRef,
-        private _router: Router,
-        private _bookmarkService: BookmarkService,
-    ) {
-
-        this.bookmarks$ = this._bookmarkService.bookmarks$;
+    constructor() {
+        this.bookmarks$ = this.bookmarkService.bookmarks$;
     }
 
     async ngOnInit(): Promise<void> {
-        await this._bookmarkService.initializeForCurrentUser();
+        await this.bookmarkService.initializeForCurrentUser();
         this.loadInitialProjects();
         this.subscribeToProjectsUpdates();
         this.subscribeToLoading();
         this.subscribeToNoMoreProjects();
         this.subscribeToBookmarkChanges();
-
     }
 
-
     private loadInitialProjects(): void {
-        this._projectsService.resetProjects();
-        this.loading = true;
-        this.initialLoadComplete = false;
-        this._projectsService.fetchProjects().pipe(
+        this.projectService.resetProjects();
+        this.loading.set(true);
+        this.initialLoadComplete.set(false);
+        this.projectService.fetchProjects().pipe(
             takeUntil(this._unsubscribeAll)
         ).subscribe({
             next: (projects: Project[]) => {
                 this.projects = projects;
-                this.filteredProjects = this.projectDetails;
+                this.filteredProjects = this.projectDetails();
                 this.updateBookmarkStatus();
                 this.fetchProjectDetails(projects);
-                this.initialLoadComplete = true;
-                this._changeDetectorRef.detectChanges();
-
+                this.initialLoadComplete.set(true);
+                this.changeDetectorRef.detectChanges();
                 console.log(projects);
-
             }
         });
     }
@@ -116,23 +111,21 @@ export class ExploreComponent implements OnInit, OnDestroy {
         this.bookmarks$.pipe(takeUntil(this._unsubscribeAll)).subscribe(bookmarkIds => {
             this.bookmarkedProjectNpubs = bookmarkIds;
             this.updateBookmarkStatus();
-            this._changeDetectorRef.detectChanges();
+            this.changeDetectorRef.detectChanges();
         });
     }
 
     private updateBookmarkStatus(): void {
-        this.projectDetails.forEach(project => {
+        this.projectDetails().forEach(project => {
             project.isBookmarked = this.bookmarkedProjectNpubs.includes(project.nostrPubKey);
         });
-        this.filteredProjects = [...this.projectDetails];
-
+        this.filteredProjects = [...this.projectDetails()];
     }
-
 
     private async fetchMetadataForProjects(projects: ProjectDetails[]): Promise<void> {
         for (const project of projects) {
             try {
-                const profileMetadata = await this._storageService.getProfile(project.nostrPubKey);
+                const profileMetadata = await this.storageService.getProfile(project.nostrPubKey);
                 if (profileMetadata) {
                     this.updateProjectMetadata(project, profileMetadata);
                 } else {
@@ -147,12 +140,10 @@ export class ExploreComponent implements OnInit, OnDestroy {
     private async fetchProjectDetails(projects: Project[]): Promise<void> {
         for (const project of projects) {
             try {
-
-                const projectDetails = await this._storageService.getProjectDetails(project.projectIdentifier);
-
+                const projectDetails = await this.storageService.getProjectDetails(project.projectIdentifier);
                 if (projectDetails) {
-                    this.projectDetails.push(projectDetails);
-                    const metadata = await this._storageService.getProfile(projectDetails.nostrPubKey);
+                    this.projectDetails.update(details => [...details, projectDetails]);
+                    const metadata = await this.storageService.getProfile(projectDetails.nostrPubKey);
                     if (metadata) {
                         this.updateProjectMetadata(projectDetails, metadata);
                     } else {
@@ -168,30 +159,28 @@ export class ExploreComponent implements OnInit, OnDestroy {
     }
 
     private subscribeToProjectsUpdates(): void {
-        this._storageService.profile$
+        this.storageService.profile$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((data) => {
                 if (data && data.pubKey) {
-                    const project = this.projectDetails.find(proj => proj.nostrPubKey === data.pubKey);
+                    const project = this.projectDetails().find(proj => proj.nostrPubKey === data.pubKey);
                     if (project) {
                         this.updateProjectMetadata(project, data.metadata);
-                        this._changeDetectorRef.detectChanges();
+                        this.changeDetectorRef.detectChanges();
                     }
                 }
             });
     }
 
-
     private updateProjectMetadata(project: ProjectDetails, metadata: any): void {
         project.displayName = metadata.name || project.displayName;
         project.about = metadata.about || project.about;
         project.picture = metadata.picture || project.picture;
-        project.banner= metadata.banner || project.banner;
+        project.banner = metadata.banner || project.banner;
     }
 
-
     loadMoreProjects(): void {
-        this._projectsService.fetchProjects().pipe(
+        this.projectService.fetchProjects().pipe(
             takeUntil(this._unsubscribeAll)
         ).subscribe({
             next: (newProjects: Project[]) => {
@@ -201,34 +190,32 @@ export class ExploreComponent implements OnInit, OnDestroy {
                     )
                 );
                 this.projects = [...this.projects, ...uniqueNewProjects];
-                this.filteredProjects = [...this.projectDetails];
+                this.filteredProjects = [...this.projectDetails()];
                 this.fetchProjectDetails(uniqueNewProjects);
-                this._changeDetectorRef.detectChanges();
+                this.changeDetectorRef.detectChanges();
             },
             error: (error) => {
-                this.errorMessage = 'Error loading more projects';
-                this._changeDetectorRef.detectChanges();
+                this.errorMessage.set('Error loading more projects');
+                this.changeDetectorRef.detectChanges();
             }
         });
     }
 
-
     private subscribeToLoading(): void {
-        this._projectsService.loading$
+        this.projectService.loading$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((loading) => {
-                this.loading = loading;
-                this._changeDetectorRef.detectChanges();
+                this.loading.set(loading);
+                this.changeDetectorRef.detectChanges();
             });
     }
 
-
     private subscribeToNoMoreProjects(): void {
-        this._projectsService.noMoreProjects$
+        this.projectService.noMoreProjects$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((noMore) => {
                 this.noMoreProjects = noMore;
-                this._changeDetectorRef.detectChanges();
+                this.changeDetectorRef.detectChanges();
             });
     }
 
@@ -236,35 +223,32 @@ export class ExploreComponent implements OnInit, OnDestroy {
         return item.projectIdentifier || index;
     }
 
-   goToProjectDetails(project: ProjectDetails): void {
-    this._projectsService.fetchProjectStats(project.projectIdentifier).pipe(
-        tap((stats: ProjectStatistics) => {
-
-            this._storageService.saveProjectStats(project.projectIdentifier, stats);
-        }),
-        tap(() => {
-
-            this._router.navigate(['/profile', project.nostrPubKey, project.projectIdentifier]);
-        }),
-        catchError((error) => {
-            console.error(`Failed to navigate to project details for ${project.projectIdentifier}:`, error);
-            return of(null);
-        })
-    ).subscribe();
-}
-
+    goToProjectDetails(project: ProjectDetails): void {
+        this.projectService.fetchProjectStats(project.projectIdentifier).pipe(
+            tap((stats: ProjectStatistics) => {
+                this.storageService.saveProjectStats(project.projectIdentifier, stats);
+            }),
+            tap(() => {
+                this.router.navigate(['/profile', project.nostrPubKey, project.projectIdentifier]);
+            }),
+            catchError((error) => {
+                console.error(`Failed to navigate to project details for ${project.projectIdentifier}:`, error);
+                return of(null);
+            })
+        ).subscribe();
+    }
 
     filterByQuery(query: string): void {
         if (!query || query.trim() === '') {
-            this.filteredProjects = [...this.projectDetails];
-            this.showCloseSearchButton = false;
-            this._changeDetectorRef.detectChanges();
+            this.filteredProjects = [...this.projectDetails()];
+            this.showCloseSearchButton.set(false);
+            this.changeDetectorRef.detectChanges();
             return;
         }
 
         const lowerCaseQuery = query.toLowerCase();
 
-        this.filteredProjects = this.projectDetails.filter((project) => {
+        this.filteredProjects = this.projectDetails().filter((project) => {
             return (
                 (project.displayName &&
                     project.displayName
@@ -287,28 +271,28 @@ export class ExploreComponent implements OnInit, OnDestroy {
             );
         });
 
-        this.showCloseSearchButton = this.projects.length > 0;
+        this.showCloseSearchButton.set(this.projects.length > 0);
 
-        this._changeDetectorRef.detectChanges();
+        this.changeDetectorRef.detectChanges();
     }
 
     resetSearch(queryInput: HTMLInputElement): void {
         queryInput.value = '';
         this.filterByQuery('');
-        this.showCloseSearchButton = false;
+        this.showCloseSearchButton.set(false);
     }
 
     async toggleBookmark(projectNpub: string): Promise<void> {
-        const isBookmarked = await this._bookmarkService.isBookmarked(projectNpub);
+        const isBookmarked = await this.bookmarkService.isBookmarked(projectNpub);
         if (isBookmarked) {
-            await this._bookmarkService.removeBookmark(projectNpub);
+            await this.bookmarkService.removeBookmark(projectNpub);
         } else {
-            await this._bookmarkService.addBookmark(projectNpub);
+            await this.bookmarkService.addBookmark(projectNpub);
         }
     }
 
     async isProjectBookmarked(projectNpub: string): Promise<boolean> {
-        return await this._bookmarkService.isBookmarked(projectNpub);
+        return await this.bookmarkService.isBookmarked(projectNpub);
     }
 
     ngOnDestroy(): void {
