@@ -81,7 +81,7 @@
                             </countdown-timer>
                         </div>
                     </div>
-                    <div class="flex flex-col px-8 pb-6 pt-4">
+                    <div class="flex flex-col px-8 pb-6 pt-4 mt-4">
                         <div class="flex items-center justify-between">
                             <div class="min-w-0 flex-1">
                                 <div *ngIf="
@@ -149,47 +149,59 @@
                         <!-- projectDetails -->
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                            <div class="flex items-center space-x-2 p-4 bg-white rounded-lg">
                                 <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
                                 <div class="flex flex-col">
                                     <span class="text-sm text-gray-500">Target Amount</span>
                                     <span class="font-semibold">{{ project.targetAmount | number }} {{ indexerService.getNetwork() === 'mainnet' ? 'BTC' : 'TBTC' }}</span>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                            <div class="flex items-center space-x-2 p-4">
                                 <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
                                 <div class="flex flex-col">
                                     <span class="text-sm text-gray-500">Start Date</span>
                                     <span class="font-semibold">{{ project.startDate*1000 | date }}</span>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                            <div class="flex items-center space-x-2 p-4">
                                 <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
                                 <div class="flex flex-col">
                                     <span class="text-sm text-gray-500">Penalty Days</span>
                                     <span class="font-semibold">{{ project.penaltyDays }} days</span>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
+                            <div class="flex items-center space-x-2 p-4">
                                 <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
                                 <div class="flex flex-col">
                                     <span class="text-sm text-gray-500">Expiry Date</span>
                                     <span class="font-semibold">{{ project.expiryDate*1000 | date }}</span>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
-                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
-                                <div class="flex flex-col">
-                                    <span class="text-sm text-gray-500">Stages</span>
-                                    <span class="font-semibold">{{ project.stages?.length || 0 }}</span>
+
+                        </div>
+
+                        <!-- Investment Progress -->
+                        <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-500">Investment Progress</span>
+                                <span class="text-sm font-semibold">
+                                    {{ (projectStats[project.projectIdentifier]?.amountInvested/100000000 || 0) | number }} /
+                                    {{ project.targetAmount | number }}
+                                    {{ indexerService.getNetwork() === 'mainnet' ? 'BTC' : 'TBTC' }}
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                <div class="bg-primary h-2.5 rounded-full"
+                                     [style.width]="(Math.min(((projectStats[project.projectIdentifier]?.amountInvested/100000000 || 0) / project.targetAmount * 100), 100)) + '%'">
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
-                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:user-group'"></mat-icon>
-                                <div class="flex flex-col">
-                                    <span class="text-sm text-gray-500">Seeders</span>
-                                    <span class="font-semibold">{{ project.projectSeeders?.secretHashes?.length || 0 }}</span>
-                                </div>
+                            <div class="flex justify-between mt-2">
+                                <span class="text-xs text-gray-500">
+                                    {{ projectStats[project.projectIdentifier]?.investorCount || 0 }} Investors
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    {{ ((projectStats[project.projectIdentifier]?.amountInvested/100000000 || 0) / project.targetAmount * 100) | number:'1.0-1' }}% Complete
+                                </span>
                             </div>
                         </div>
 

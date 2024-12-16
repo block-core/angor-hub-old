@@ -65,6 +65,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
     router = inject(Router);
     bookmarkService = inject(BookmarkService);
     indexerService = inject(IndexerService);
+    protected Math = Math;
 
     projects: Project[] = [];
     projectDetails = signal<ProjectDetails[]>([]);
@@ -76,6 +77,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
     bookmarks$: Observable<string[]>;
     bookmarkedProjectNpubs: string[] = [];
     initialLoadComplete = signal(false);
+    projectStats: Record<string, ProjectStatistics> = {};
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -90,6 +92,9 @@ export class ExploreComponent implements OnInit, OnDestroy {
         this.subscribeToLoading();
         this.subscribeToNoMoreProjects();
         this.subscribeToBookmarkChanges();
+        this.projectService.projectStats$.subscribe(stats => {
+            this.projectStats = stats;
+        });
     }
 
     private loadInitialProjects(): void {
@@ -306,3 +311,4 @@ export class ExploreComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 }
+
