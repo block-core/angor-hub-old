@@ -84,25 +84,19 @@
                     <div class="flex flex-col px-8 pb-6 pt-4 mt-4">
                         <div class="flex items-center justify-between">
                             <div class="min-w-0 flex-1">
-                                <div *ngIf="
-                                            project.displayName || project.name
-                                        " class="truncate text-2xl font-semibold leading-tight" role="button"
-                                    (click)="goToProjectDetails(project)">
+                                <div *ngIf="project.displayName || project.name" class="truncate text-2xl font-semibold leading-tight text-gray-900 dark:text-gray-100" role="button" (click)="goToProjectDetails(project)">
                                     {{
                                     project.displayName ||
                                     project.nostrPubKey
                                     }}
                                 </div>
-                                <div *ngIf="
-                                            !project.name &&
-                                            !project.displayName
-                                        " class="truncate text-2xl font-semibold leading-tight">
+                                <div *ngIf="!project.name && !project.displayName" class="truncate text-2xl font-semibold leading-tight text-gray-900 dark:text-gray-100">
                                     {{
                                     project.displayName ||
                                     project.nostrPubKey
                                     }}
                                 </div>
-                                <div class="text-secondary mt-1 truncate leading-tight">
+                                <div class="mt-1 truncate leading-tight text-gray-700 dark:text-gray-300">
                                     {{
                                     project.about ||
                                     'No description available'
@@ -113,24 +107,24 @@
                                 class="absolute right-2 top-2 flex space-x-2">
                                 <!-- Buttons -->
                                 <div
-                                    class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                                    class="flex h-10 w-10 items-center justify-center rounded-full border bg-white dark:bg-gray-800 shadow-md">
                                     <button mat-icon-button [routerLink]="[
                                                 '/chat',
                                                 project.nostrPubKey,
                                             ]">
-                                        <mat-icon class="icon-size-5" [svgIcon]="
+                                        <mat-icon class="icon-size-5 text-gray-700 dark:text-gray-300" [svgIcon]="
                                                     'heroicons_outline:chat-bubble-left-right'
                                                 "></mat-icon>
                                     </button>
                                 </div>
                                 <div
-                                    class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                                    class="flex h-10 w-10 items-center justify-center rounded-full border bg-white dark:bg-gray-800 shadow-md">
                                     <button mat-icon-button (click)="
                                                 toggleBookmark(
                                                     project.nostrPubKey
                                                 )
                                             ">
-                                        <mat-icon class="icon-size-5" [svgIcon]="
+                                        <mat-icon class="icon-size-5 text-gray-700 dark:text-gray-300" [svgIcon]="
                                                     (
                                                         bookmarks$ | async
                                                     )?.includes(
@@ -149,31 +143,31 @@
                         <!-- projectDetails -->
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div class="flex items-center space-x-2 p-4 bg-white rounded-lg">
+                            <div class="flex items-center space-x-2 p-4">
                                 <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
                                 <div class="flex flex-col">
-                                    <span class="text-sm text-gray-500">Target Amount</span>
+                                    <span class="text-sm  dark:text-gray-100  text-gray-500">Target Amount</span>
                                     <span class="font-semibold">{{ project.targetAmount | number }} {{ indexerService.getNetwork() === 'mainnet' ? 'BTC' : 'TBTC' }}</span>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2 p-4">
                                 <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
                                 <div class="flex flex-col">
-                                    <span class="text-sm text-gray-500">Start Date</span>
+                                    <span class="text-sm dark:text-gray-100 text-gray-500">Start Date</span>
                                     <span class="font-semibold">{{ project.startDate*1000 | date }}</span>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2 p-4">
                                 <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
                                 <div class="flex flex-col">
-                                    <span class="text-sm text-gray-500">Penalty Days</span>
+                                    <span class="text-sm dark:text-gray-100 text-gray-500">Penalty Days</span>
                                     <span class="font-semibold">{{ project.penaltyDays }} days</span>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2 p-4">
                                 <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
                                 <div class="flex flex-col">
-                                    <span class="text-sm text-gray-500">Expiry Date</span>
+                                    <span class="text-sm dark:text-gray-100 text-gray-500">Expiry Date</span>
                                     <span class="font-semibold">{{ project.expiryDate*1000 | date }}</span>
                                 </div>
                             </div>
@@ -183,7 +177,7 @@
                         <!-- Investment Progress -->
                         <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                             <div class="flex justify-between mb-2">
-                                <span class="text-sm text-gray-500">Investment Progress</span>
+                                <span class="text-sm dark:text-gray-100 text-gray-500">Investment Progress</span>
                                 <span class="text-sm font-semibold">
                                     {{ (projectStats[project.projectIdentifier]?.amountInvested/100000000 || 0) | number }} /
                                     {{ project.targetAmount | number }}
@@ -196,10 +190,10 @@
                                 </div>
                             </div>
                             <div class="flex justify-between mt-2">
-                                <span class="text-xs text-gray-500">
+                                <span class="text-xs dark:text-gray-100 text-gray-500">
                                     {{ projectStats[project.projectIdentifier]?.investorCount || 0 }} Investors
                                 </span>
-                                <span class="text-xs text-gray-500">
+                                <span class="text-xs dark:text-gray-100 text-gray-500">
                                     {{ ((projectStats[project.projectIdentifier]?.amountInvested/100000000 || 0) / project.targetAmount * 100) | number:'1.0-1' }}% Complete
                                 </span>
                             </div>
@@ -221,7 +215,8 @@
 
                             <!-- Profile Button -->
                             <button (click)="goToProjectDetails(project)"
-                                    class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 p-0.5 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-800 w-full">
+                                                                   class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-primary p-0.5 text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary dark:hover:bg-primary-600 dark:focus:ring-primary-800 w-full">
+
                                 <span class="relative flex items-center justify-center gap-2 rounded-md bg-card w-full px-4 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
                                     <mat-icon class="icon-size-5 text-gray-700 dark:text-gray-300 group-hover:text-white"
                                              [svgIcon]="'heroicons_outline:document-text'">
