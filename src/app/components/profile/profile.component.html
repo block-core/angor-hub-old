@@ -201,6 +201,30 @@
         </div>
     </div>
 
+    <!-- Add this after the profile header section and before the content -->
+    <div class="flex justify-center border-b border-gray-200 dark:border-gray-700 mb-4">
+        <nav class="flex space-x-8">
+            <button 
+                (click)="switchTab('about')"
+                [ngClass]="{'border-primary text-primary': activeTab === 'about', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300': activeTab !== 'about'}"
+                class="py-4 px-1 border-b-2 font-medium text-sm">
+                About
+            </button>
+            <button 
+                (click)="switchTab('updates')"
+                [ngClass]="{'border-primary text-primary': activeTab === 'updates', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300': activeTab !== 'updates'}"
+                class="py-4 px-1 border-b-2 font-medium text-sm">
+                Updates
+            </button>
+            <button 
+                (click)="switchTab('comments')"
+                [ngClass]="{'border-primary text-primary': activeTab === 'comments', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300': activeTab !== 'comments'}"
+                class="py-4 px-1 border-b-2 font-medium text-sm">
+                Comments
+            </button>
+        </nav>
+    </div>
+
     <!-- Main -->
     <div class="mx-auto w-full max-w-5xl p-6 sm:p-8">
         <!-- About Section -->
@@ -218,8 +242,8 @@
            </mat-expansion-panel>
          </mat-accordion> -->
 
-        <!-- Main Section -->
-        <div class="m-auto flex w-full max-w-140 flex-col items-start">
+        <!-- Wrap your existing content sections in tab-specific divs -->
+        <div [ngClass]="{'hidden': activeTab !== 'about'}">
             <angor-card
                 *ngIf="profileUser?.about && profileUser.about.trim() !== ''"
                 class="about-section mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8"
@@ -259,348 +283,356 @@
                     >
                 </div>
             </angor-card>
+        </div>
 
-            <!-- Create Post -->
-            <angor-card
-                *ngIf="isCurrentUserProfile"
-                class="mb-8 flex w-full flex-col p-6 pb-6 sm:p-8"
-            >
-                <div class="flex justify-between">
-                    <div class="text-xl font-semibold">Create Post</div>
-                    <!-- Toggle preview -->
-                    <mat-slide-toggle
-                        class="-mr-4 ml-auto"
-                        [color]="'primary'"
-                        (change)="togglePreview()"
-                    >
-                        Preview
-                    </mat-slide-toggle>
-                </div>
-                <div class="mt-8 flex flex-col items-start sm:flex-row">
-                    <mat-form-field
-                        class="w-full"
-                        [subscriptSizing]="'dynamic'"
-                    >
-                        <textarea
-                            matInput
-                            [placeholder]="'What\'s on your mind?'"
-                            [rows]="3"
-                            #eventInput
-                            cdkTextareaAutosize
-                        ></textarea>
-                    </mat-form-field>
-                </div>
-                <div
-                    class="-mx-3 mt-6 flex items-center justify-between sm:mt-8"
+        <div [ngClass]="{'hidden': activeTab !== 'updates'}">
+            <div class="m-auto flex w-full max-w-140 flex-col items-start">
+                <!-- Create Post -->
+                <angor-card
+                    *ngIf="isCurrentUserProfile"
+                    class="mb-8 flex w-full flex-col p-6 pb-6 sm:p-8"
                 >
-                    <div class="flex items-center">
-                        <button
-                            class="mr-1 px-3"
-                            mat-button
-                            (click)="toggleEmojiPicker()"
+                    <div class="flex justify-between">
+                        <div class="text-xl font-semibold">Create Post</div>
+                        <!-- Toggle preview -->
+                        <mat-slide-toggle
+                            class="-mr-4 ml-auto"
+                            [color]="'primary'"
+                            (change)="togglePreview()"
                         >
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="'heroicons_solid:face-smile'"
-                            ></mat-icon>
-                            <span class="ml-2">Feeling</span>
-                        </button>
-                        <div
-                            *ngIf="showEmojiPicker"
-                            class="emoji-picker-container-global"
-                        >
-                            <emoji-mart
-                                (emojiClick)="addEmoji($event)"
-                                [darkMode]="darkMode"
-                            ></emoji-mart>
-                        </div>
-                        <button
-                            class="mr-1 hidden px-3 sm:inline-flex"
-                            mat-button
-                        >
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="'heroicons_solid:photo'"
-                            ></mat-icon>
-                            <span class="ml-2">Media</span>
-                        </button>
-
-                        <button
-                            class="mr-1 hidden px-3 sm:inline-flex"
-                            mat-button
-                        >
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="'heroicons_solid:user-circle'"
-                            ></mat-icon>
-                            <span class="ml-2">Tag</span>
-                        </button>
-
-                        <button
-                            class="px-3"
-                            mat-button
-                            [matMenuTriggerFor]="postCardMenu01"
-                        >
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="
-                                    'heroicons_solid:ellipsis-horizontal'
-                                "
-                            ></mat-icon>
-                        </button>
-
-                        <mat-menu #postCardMenu01="matMenu">
-                            <button class="sm:hidden" mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon
-                                        class="mr-3 icon-size-5"
-                                        [svgIcon]="
-                                            'heroicons_solid:user-circle'
-                                        "
-                                    ></mat-icon>
-                                    <span>Tag</span>
-                                </span>
-                            </button>
-                            <button class="sm:hidden" mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon
-                                        class="mr-3 icon-size-5"
-                                        [svgIcon]="'heroicons_solid:face-smile'"
-                                    ></mat-icon>
-                                    <span>Feeling</span>
-                                </span>
-                            </button>
-                            <button mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon
-                                        class="mr-3 icon-size-5"
-                                        [svgIcon]="'heroicons_solid:play'"
-                                    ></mat-icon>
-                                    <span>Live</span>
-                                </span>
-                            </button>
-                            <button mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon
-                                        class="mr-3 icon-size-5"
-                                        [svgIcon]="'heroicons_solid:sparkles'"
-                                    ></mat-icon>
-                                    <span>Gif</span>
-                                </span>
-                            </button>
-                            <button mat-menu-item>
-                                <span class="flex items-center">
-                                    <mat-icon
-                                        class="mr-3 icon-size-5"
-                                        [svgIcon]="'heroicons_solid:map-pin'"
-                                    ></mat-icon>
-                                    <span>Check in</span>
-                                </span>
-                            </button>
-                        </mat-menu>
+                            Preview
+                        </mat-slide-toggle>
                     </div>
-
-                    <button
-                        class="mr-1 flex px-3"
-                        mat-button
-                        (click)="sendEvent()"
+                    <div class="mt-8 flex flex-col items-start sm:flex-row">
+                        <mat-form-field
+                            class="w-full"
+                            [subscriptSizing]="'dynamic'"
+                        >
+                            <textarea
+                                matInput
+                                [placeholder]="'What\'s on your mind?'"
+                                [rows]="3"
+                                #eventInput
+                                cdkTextareaAutosize
+                            ></textarea>
+                        </mat-form-field>
+                    </div>
+                    <div
+                        class="-mx-3 mt-6 flex items-center justify-between sm:mt-8"
                     >
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'heroicons_solid:paper-airplane'"
-                        ></mat-icon>
-                        <span class="ml-2">Send</span>
-                    </button>
-                </div>
-            </angor-card>
-
-            <!-- preview -->
-            <angor-card
-                *ngIf="isPreview"
-                class="mb-8 flex w-full flex-col bg-primary-50 dark:bg-primary-800"
-                #expandableComments="angorCard"
-            >
-                <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-                    <img
-                        class="mr-4 h-10 w-10 rounded-full object-cover"
-                        [src]="getSafeUrl(profileUser?.picture)"
-                        onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-                        alt="{{
-                            profileUser?.display_name || profileUser?.name || ''
-                        }}"
-                    />
-                    <div class="flex flex-col">
-                        <span class="font-semibold leading-none">{{
-                            profileUser?.display_name || profileUser?.name || ''
-                        }}</span>
-                        <span class="text-secondary mt-1 text-sm leading-none"
-                            >1 minutes ago</span
-                        >
-                    </div>
-                </div>
-
-                <div
-                    *ngFor="
-                        let token of parseContent.parseContent(
-                            eventInput.nativeElement.value
-                        );
-                        trackBy: trackByFn
-
-                    "
-                    class="inline-block whitespace-pre-wrap break-words"
-                >
-                    <!-- YouTube Embeds -->
-                    <!-- <ng-container *ngIf="token.token === 'youtube'">
-                        <div class="relative mb-4 block">
-                            <iframe [src]="token.safeWord" width="560" height="315" frameborder="0"
-                                allowfullscreen></iframe>
-                        </div>
-                    </ng-container> -->
-
-                    <!-- Images -->
-                    <ng-container *ngIf="token.token === 'image'">
-                        <div class="relative mb-4 block">
-                            <img
-                                [src]="token.safeWord"
-                                alt="Embedded Image"
-                                style="width: 100%"
-                                class="max-h-140 object-cover"
-                            />
-                        </div>
-                    </ng-container>
-
-                    <!-- Videos -->
-                    <ng-container *ngIf="token.token === 'video'">
-                        <div class="relative mb-4 block">
-                            <video controls style="width: 100%">
-                                <source
-                                    [src]="token.safeWord"
-                                    type="video/mp4"
-                                />
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
-                    </ng-container>
-
-                    <!-- Audio -->
-                    <ng-container *ngIf="token.token === 'audio'">
-                        <div class="relative mb-4 block">
-                            <audio controls>
-                                <source
-                                    [src]="token.safeWord"
-                                    type="audio/mpeg"
-                                />
-                                Your browser does not support the audio element.
-                            </audio>
-                        </div>
-                    </ng-container>
-
-                    <!-- Links -->
-                    <ng-container *ngIf="token.token === 'link'">
-                        <div class="mx-6 mb-6 mt-2 sm:mx-8">
-                            <a
-                                class="inline-block break-words text-blue-500 underline"
-                                [href]="token.word"
-                                target="_blank"
+                        <div class="flex items-center">
+                            <button
+                                class="mr-1 px-3"
+                                mat-button
+                                (click)="toggleEmojiPicker()"
                             >
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_solid:face-smile'"
+                                ></mat-icon>
+                                <span class="ml-2">Feeling</span>
+                            </button>
+                            <div
+                                *ngIf="showEmojiPicker"
+                                class="emoji-picker-container-global"
+                            >
+                                <emoji-mart
+                                    (emojiClick)="addEmoji($event)"
+                                    [darkMode]="darkMode"
+                                ></emoji-mart>
+                            </div>
+                            <button
+                                class="mr-1 hidden px-3 sm:inline-flex"
+                                mat-button
+                            >
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_solid:photo'"
+                                ></mat-icon>
+                                <span class="ml-2">Media</span>
+                            </button>
+
+                            <button
+                                class="mr-1 hidden px-3 sm:inline-flex"
+                                mat-button
+                            >
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_solid:user-circle'"
+                                ></mat-icon>
+                                <span class="ml-2">Tag</span>
+                            </button>
+
+                            <button
+                                class="px-3"
+                                mat-button
+                                [matMenuTriggerFor]="postCardMenu01"
+                            >
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="
+                                        'heroicons_solid:ellipsis-horizontal'
+                                    "
+                                ></mat-icon>
+                            </button>
+
+                            <mat-menu #postCardMenu01="matMenu">
+                                <button class="sm:hidden" mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="
+                                                'heroicons_solid:user-circle'
+                                            "
+                                        ></mat-icon>
+                                        <span>Tag</span>
+                                    </span>
+                                </button>
+                                <button class="sm:hidden" mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:face-smile'"
+                                        ></mat-icon>
+                                        <span>Feeling</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:play'"
+                                        ></mat-icon>
+                                        <span>Live</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:sparkles'"
+                                        ></mat-icon>
+                                        <span>Gif</span>
+                                    </span>
+                                </button>
+                                <button mat-menu-item>
+                                    <span class="flex items-center">
+                                        <mat-icon
+                                            class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:map-pin'"
+                                        ></mat-icon>
+                                        <span>Check in</span>
+                                    </span>
+                                </button>
+                            </mat-menu>
+                        </div>
+
+                        <button
+                            class="mr-1 flex px-3"
+                            mat-button
+                            (click)="sendEvent()"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:paper-airplane'"
+                            ></mat-icon>
+                            <span class="ml-2">Send</span>
+                        </button>
+                    </div>
+                </angor-card>
+
+                <!-- preview -->
+                <angor-card
+                    *ngIf="isPreview"
+                    class="mb-8 flex w-full flex-col bg-primary-50 dark:bg-primary-800"
+                    #expandableComments="angorCard"
+                >
+                    <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
+                        <img
+                            class="mr-4 h-10 w-10 rounded-full object-cover"
+                            [src]="getSafeUrl(profileUser?.picture)"
+                            onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
+                            alt="{{
+                                profileUser?.display_name || profileUser?.name || ''
+                            }}"
+                        />
+                        <div class="flex flex-col">
+                            <span class="font-semibold leading-none">{{
+                                profileUser?.display_name || profileUser?.name || ''
+                            }}</span>
+                            <span class="text-secondary mt-1 text-sm leading-none"
+                                >1 minutes ago</span
+                            >
+                        </div>
+                    </div>
+
+                    <div
+                        *ngFor="
+                            let token of parseContent.parseContent(
+                                eventInput.nativeElement.value
+                            );
+                            trackBy: trackByFn
+
+                        "
+                        class="inline-block whitespace-pre-wrap break-words"
+                    >
+                        <!-- YouTube Embeds -->
+                        <!-- <ng-container *ngIf="token.token === 'youtube'">
+                            <div class="relative mb-4 block">
+                                <iframe [src]="token.safeWord" width="560" height="315" frameborder="0"
+                                    allowfullscreen></iframe>
+                            </div>
+                        </ng-container> -->
+
+                        <!-- Images -->
+                        <ng-container *ngIf="token.token === 'image'">
+                            <div class="relative mb-4 block">
+                                <img
+                                    [src]="token.safeWord"
+                                    alt="Embedded Image"
+                                    style="width: 100%"
+                                    class="max-h-140 object-cover"
+                                />
+                            </div>
+                        </ng-container>
+
+                        <!-- Videos -->
+                        <ng-container *ngIf="token.token === 'video'">
+                            <div class="relative mb-4 block">
+                                <video controls style="width: 100%">
+                                    <source
+                                        [src]="token.safeWord"
+                                        type="video/mp4"
+                                    />
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </ng-container>
+
+                        <!-- Audio -->
+                        <ng-container *ngIf="token.token === 'audio'">
+                            <div class="relative mb-4 block">
+                                <audio controls>
+                                    <source
+                                        [src]="token.safeWord"
+                                        type="audio/mpeg"
+                                    />
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        </ng-container>
+
+                        <!-- Links -->
+                        <ng-container *ngIf="token.token === 'link'">
+                            <div class="mx-6 mb-6 mt-2 sm:mx-8">
+                                <a
+                                    class="inline-block break-words text-blue-500 underline"
+                                    [href]="token.word"
+                                    target="_blank"
+                                >
+                                    <span
+                                        class="inline-block break-words"
+                                        >{{ token.word }}</span
+                                    >
+                                </a>
+                            </div>
+                        </ng-container>
+
+                        <!-- Plain Text -->
+                        <ng-container *ngIf="!token.token">
+                            <div class="mx-6 mb-6 mt-2 sm:mx-8">
                                 <span
                                     class="inline-block break-words"
-                                    >{{ token.word }}</span
+                                    [ngClass]="{
+                                        'large-font': isSingleEmojiOrWord(token),
+                                    }"
                                 >
-                            </a>
-                        </div>
-                    </ng-container>
-
-                    <!-- Plain Text -->
-                    <ng-container *ngIf="!token.token">
-                        <div class="mx-6 mb-6 mt-2 sm:mx-8">
-                            <span
-                                class="inline-block break-words"
-                                [ngClass]="{
-                                    'large-font': isSingleEmojiOrWord(token),
-                                }"
-                            >
-                                {{ token.trim() }}
-                            </span>
-                        </div>
-                    </ng-container>
-                </div>
-
-                <div class="mx-3 flex items-center sm:mx-5">
-                    <button class="mr-1 px-3" mat-button>
-                        <mat-icon
-                            class="text-red-500 icon-size-5"
-                            [svgIcon]="'heroicons_solid:heart'"
-                        ></mat-icon>
-                        <span class="ml-2">Unlike</span>
-                    </button>
-                    <button class="mr-1 px-3" mat-button>
-                        <mat-icon
-                            class="text-blue-500 icon-size-5"
-                            [svgIcon]="
-                                'heroicons_solid:chat-bubble-left-ellipsis'
-                            "
-                        ></mat-icon>
-                        <span class="ml-2">Comment</span>
-                    </button>
-                    <button class="mr-1 px-3" mat-button>
-                        <mat-icon
-                            class="text-green-500 icon-size-5"
-                            [svgIcon]="'heroicons_solid:share'"
-                        ></mat-icon>
-                        <span class="ml-2">Share</span>
-                    </button>
-                    <button class="mr-1 px-3" mat-button>
-                        <mat-icon
-                            class="text-orange-500 icon-size-5"
-                            [svgIcon]="'heroicons_solid:bolt'"
-                        ></mat-icon>
-                        <span class="ml-2">Zap</span>
-                    </button>
-                </div>
-
-                <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
-                <div
-                    class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center"
-                >
-                    <div class="flex items-center">
-                        <div class="ml-3 text-md tracking-tight">0 Zap</div>
+                                    {{ token.trim() }}
+                                </span>
+                            </div>
+                        </ng-container>
                     </div>
-                    <div class="hidden flex-auto sm:flex"></div>
-                    <div class="mt-4 flex items-center sm:mt-0">
-                        <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
-                            0 Like
+
+                    <div class="mx-3 flex items-center sm:mx-5">
+                        <button class="mr-1 px-3" mat-button>
+                            <mat-icon
+                                class="text-red-500 icon-size-5"
+                                [svgIcon]="'heroicons_solid:heart'"
+                            ></mat-icon>
+                            <span class="ml-2">Unlike</span>
                         </button>
-                        <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
-                            0 shares
+                        <button class="mr-1 px-3" mat-button>
+                            <mat-icon
+                                class="text-blue-500 icon-size-5"
+                                [svgIcon]="
+                                    'heroicons_solid:chat-bubble-left-ellipsis'
+                                "
+                            ></mat-icon>
+                            <span class="ml-2">Comment</span>
                         </button>
-                        <button class="px-3 sm:-mr-4" mat-button>
-                            <span class="mr-1">0 Comments</span>
+                        <button class="mr-1 px-3" mat-button>
+                            <mat-icon
+                                class="text-green-500 icon-size-5"
+                                [svgIcon]="'heroicons_solid:share'"
+                            ></mat-icon>
+                            <span class="ml-2">Share</span>
+                        </button>
+                        <button class="mr-1 px-3" mat-button>
+                            <mat-icon
+                                class="text-orange-500 icon-size-5"
+                                [svgIcon]="'heroicons_solid:bolt'"
+                            ></mat-icon>
+                            <span class="ml-2">Zap</span>
                         </button>
                     </div>
-                </div>
-            </angor-card>
 
-            @for (item of posts; track $index) {
-                <app-post
-                    class="mb-8 flex w-full flex-col"
-                    [item]="item"
-                ></app-post>
-            }
-
-            @if (hasMorePosts) {
-                <div class="m-auto mt-4 flex justify-center">
-                    <button
-                        class="bg-card text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
-                        mat-raised-button
-                        color="primary"
-                        (click)="loadNextPage()"
-                        [disabled]="loading"
+                    <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
+                    <div
+                        class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center"
                     >
-                        {{ loading ? 'Loading...' : 'Load More Posts' }}
-                    </button>
-                </div>
-            }
+                        <div class="flex items-center">
+                            <div class="ml-3 text-md tracking-tight">0 Zap</div>
+                        </div>
+                        <div class="hidden flex-auto sm:flex"></div>
+                        <div class="mt-4 flex items-center sm:mt-0">
+                            <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
+                                0 Like
+                            </button>
+                            <button class="-ml-2 mr-1 px-3 sm:ml-0" mat-button>
+                                0 shares
+                            </button>
+                            <button class="px-3 sm:-mr-4" mat-button>
+                                <span class="mr-1">0 Comments</span>
+                            </button>
+                        </div>
+                    </div>
+                </angor-card>
+
+                @for (item of posts; track $index) {
+                    <app-post
+                        class="mb-8 flex w-full flex-col"
+                        [item]="item"
+                    ></app-post>
+                }
+
+                @if (hasMorePosts) {
+                    <div class="m-auto mt-4 flex justify-center">
+                        <button
+                            class="bg-card text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
+                            mat-raised-button
+                            color="primary"
+                            (click)="loadNextPage()"
+                            [disabled]="loading"
+                        >
+                            {{ loading ? 'Loading...' : 'Load More Posts' }}
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div [ngClass]="{'hidden': activeTab !== 'comments'}">
+            <!-- Add your comments section content here -->
         </div>
     </div>
 </div>

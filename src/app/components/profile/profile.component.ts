@@ -202,6 +202,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     projectIdentifier: string = '';
 
+    activeTab: 'about' | 'updates' | 'comments' = 'about';
+
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _signerService: SignerService,
@@ -615,5 +617,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     async isProjectBookmarked(projectNpub: string): Promise<boolean> {
         return await this._bookmarkService.isBookmarked(projectNpub);
+    }
+
+    switchTab(tab: 'about' | 'updates' | 'comments'): void {
+        this.activeTab = tab;
+        this._changeDetectorRef.markForCheck();
     }
 }
