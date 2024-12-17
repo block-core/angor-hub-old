@@ -27,7 +27,7 @@
             <!-- Project Cards -->
             <div class="mt-10 grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
                 <!-- Loop through projects and render cards -->
-                <ng-container *ngFor="let project of savedProjectDetailes(); trackBy: trackByFn">
+                @for ( project of savedProjectDetailes(); track project.nostrPubKey) {
                     <angor-card class="filter-info flex w-full flex-col">
                         <div class="flex h-32">
                             <img class="object-cover" [src]="project.banner || '/images/pages/profile/cover.jpg'" alt="Card cover image"
@@ -100,96 +100,110 @@
                                 }
                             </div>
                             <hr class="my-6 w-full border-t" />
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
-                                    <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm text-gray-500">Target Amount</span>
-                                        <span class="font-semibold">{{ project.targetAmount | number }} {{ indexerService.getNetwork() === 'mainnet' ? 'BTC' : 'TBTC' }}</span>
-                                    </div>
+                                                   <!-- projectDetails -->
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex items-center space-x-2 p-4">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm  dark:text-gray-100  text-gray-500">Target Amount</span>
+                                    <span class="font-semibold">{{ project.targetAmount | number }} {{ indexerService.getNetwork() === 'mainnet' ? 'BTC' : 'TBTC' }}</span>
                                 </div>
-                                <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
-                                    <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm text-gray-500">Start Date</span>
-                                        <span class="font-semibold">{{ project.startDate*1000 | date }}</span>
-                                    </div>
+                            </div>
+                            <div class="flex items-center space-x-2 p-4">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm dark:text-gray-100 text-gray-500">Start Date</span>
+                                    <span class="font-semibold">{{ project.startDate*1000 | date }}</span>
                                 </div>
-                                <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
-                                    <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm text-gray-500">Penalty Days</span>
-                                        <span class="font-semibold">{{ project.penaltyDays }} days</span>
-                                    </div>
+                            </div>
+                            <div class="flex items-center space-x-2 p-4">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm dark:text-gray-100 text-gray-500">Penalty Days</span>
+                                    <span class="font-semibold">{{ project.penaltyDays }} days</span>
                                 </div>
-                                <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
-                                    <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm text-gray-500">Expiry Date</span>
-                                        <span class="font-semibold">{{ project.expiryDate*1000 | date }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
-                                    <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm text-gray-500">Stages</span>
-                                        <span class="font-semibold">{{ project.stages?.length || 0 }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2 p-4 bg-white shadow-md rounded-lg">
-                                    <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:user-group'"></mat-icon>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm text-gray-500">Seeders</span>
-                                        <span class="font-semibold">{{ project.projectSeeders?.secretHashes?.length || 0 }}</span>
-                                    </div>
+                            </div>
+                            <div class="flex items-center space-x-2 p-4">
+                                <mat-icon class="text-primary text-3xl" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
+                                <div class="flex flex-col">
+                                    <span class="text-sm dark:text-gray-100 text-gray-500">Expiry Date</span>
+                                    <span class="font-semibold">{{ project.expiryDate*1000 | date }}</span>
                                 </div>
                             </div>
 
-                            <!-- Investment Buttons -->
-                            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <!-- Invest Button -->
-                                <a [href]="(indexerService.getNetwork() === 'mainnet' ? 'https://beta.angor.io/view/' : 'https://test.angor.io/view/') + project.projectIdentifier"
-                                   target="_blank"
-                                   class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-primary p-0.5 text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary dark:hover:bg-primary-600 dark:focus:ring-primary-800 w-full">
-                                    <span class="relative flex items-center justify-center gap-2 rounded-md bg-card w-full px-4 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
-                                        <mat-icon class="icon-size-5 text-primary dark:text-primary-400 group-hover:text-white"
-                                                 [svgIcon]="'heroicons_solid:circle-stack'">
-                                        </mat-icon>
-                                        <span class="text-primary dark:text-primary-400 group-hover:text-white">Invest Now</span>
-                                    </span>
-                                </a>
+                        </div>
 
-                                <!-- Profile Button -->
-                                <button (click)="goToProjectDetails(project)"
-                                        class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 p-0.5 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-800 w-full">
-                                    <span class="relative flex items-center justify-center gap-2 rounded-md bg-card w-full px-4 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
-                                        <mat-icon class="icon-size-5 text-gray-700 dark:text-gray-300 group-hover:text-white"
-                                                 [svgIcon]="'heroicons_outline:document-text'">
-                                        </mat-icon>
-                                        <span class="text-gray-700 dark:text-gray-300 group-hover:text-white">View Details</span>
-                                    </span>
-                                </button>
+                        <!-- Investment Progress -->
+                        <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm dark:text-gray-100 text-gray-500">Investment Progress</span>
+                                <span class="text-sm font-semibold">
+                                    {{ (projectStats[project.projectIdentifier]?.amountInvested/100000000 || 0) | number }} /
+                                    {{ project.targetAmount | number }}
+                                    {{ indexerService.getNetwork() === 'mainnet' ? 'BTC' : 'TBTC' }}
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                <div class="bg-primary h-2.5 rounded-full"
+                                     [style.width]="(Math.min(((projectStats[project.projectIdentifier]?.amountInvested/100000000 || 0) / project.targetAmount * 100), 100)) + '%'">
+                                </div>
+                            </div>
+                            <div class="flex justify-between mt-2">
+                                <span class="text-xs dark:text-gray-100 text-gray-500">
+                                    {{ projectStats[project.projectIdentifier]?.investorCount || 0 }} Investors
+                                </span>
+                                <span class="text-xs dark:text-gray-100 text-gray-500">
+                                    {{ ((projectStats[project.projectIdentifier]?.amountInvested/100000000 || 0) / project.targetAmount * 100) | number:'1.0-1' }}% Complete
+                                </span>
                             </div>
                         </div>
+
+                        <!-- Investment Buttons -->
+                        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Invest Button -->
+                            <a [href]="(indexerService.getNetwork() === 'mainnet' ? 'https://beta.angor.io/view/' : 'https://test.angor.io/view/') + project.projectIdentifier"
+                               target="_blank"
+                               class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-primary p-0.5 text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary dark:hover:bg-primary-600 dark:focus:ring-primary-800 w-full">
+                                <span class="relative flex items-center justify-center gap-2 rounded-md bg-card w-full px-4 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
+                                    <mat-icon class="icon-size-5 text-primary dark:text-primary-400 group-hover:text-white"
+                                             [svgIcon]="'heroicons_solid:circle-stack'">
+                                    </mat-icon>
+                                    <span class="text-primary dark:text-primary-400 group-hover:text-white">Invest Now</span>
+                                </span>
+                            </a>
+
+                            <!-- Profile Button -->
+                            <button (click)="goToProjectDetails(project)"
+                                                                   class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-primary p-0.5 text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary dark:hover:bg-primary-600 dark:focus:ring-primary-800 w-full">
+
+                                <span class="relative flex items-center justify-center gap-2 rounded-md bg-card w-full px-4 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0">
+                                    <mat-icon class="icon-size-5 text-gray-700 dark:text-gray-300 group-hover:text-white"
+                                             [svgIcon]="'heroicons_outline:document-text'">
+                                    </mat-icon>
+                                    <span class="text-gray-700 dark:text-gray-300 group-hover:text-white">View Details</span>
+                                </span>
+                            </button>
+                        </div>
+                        </div>
                     </angor-card>
-                </ng-container>
+                }
             </div>
-            <!-- Loading spinner -->
-            <ng-container *ngIf="isLoading()">
-                <div class="flex flex-auto flex-col items-center justify-center">
-                    <mat-spinner [diameter]="40"></mat-spinner>
-                    <div class="text-secondary mt-4 text-lg">Loading projects...</div>
+            @if (isLoading()) {
+            <div class="flex flex-auto flex-col items-center justify-center">
+                <mat-spinner [diameter]="40"></mat-spinner>
+                <div class="text-secondary mt-4 text-lg">Loading projects...</div>
+            </div>
+            }
+
+            @if (!isLoading() && savedProjectDetailes().length === 0) {
+            <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
+                <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
+                <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
+                    No projects
                 </div>
-            </ng-container>
-            <!-- No projects message -->
-            <ng-container *ngIf="!isLoading() && savedProjectDetailes().length === 0">
-                <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
-                    <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:archive-box-x-mark'"></mat-icon>
-                    <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
-                        No projects
-                    </div>
-                </div>
-            </ng-container>
+            </div>
+            }
         </div>
     </div>
 </div>

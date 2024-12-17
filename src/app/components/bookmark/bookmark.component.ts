@@ -50,6 +50,8 @@ export class BookmarkComponent implements OnInit, OnDestroy {
     isLoading = signal(false);
     bookmarks$ = this.bookmarkService.bookmarks$;
     private _unsubscribeAll = new Subject<any>();
+    projectStats: Record<string, ProjectStatistics> = {};
+    protected Math = Math;
 
     constructor(
         private _storageService: StorageService,
@@ -67,6 +69,9 @@ export class BookmarkComponent implements OnInit, OnDestroy {
             console.error('Error during initialization:', error);
             this.isLoading.set(false);
         }
+        this._projectsService.projectStats$.subscribe(stats => {
+            this.projectStats = stats;
+        });
     }
 
     trackByFn(index: number, item: ProjectDetails): string | number {
