@@ -51,7 +51,71 @@ interface Chip {
 @Component({
     selector: 'profile',
     templateUrl: './profile.component.html',
-    styleUrls: ['./profile.component.scss'],
+    styles: [`
+        .emoji-picker-container-global {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            width: 350px;
+            max-width: 100%;
+        }
+        .heart-beat {
+            animation: heartBeatAnimation 0.3s ease-in-out;
+        }
+
+        @keyframes heartBeatAnimation {
+            0% {
+                transform: scale(1);
+            }
+            30% {
+                transform: scale(2);
+            }
+            60% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+
+            .spinner {
+                border: 4px solid rgba(0, 0, 0, 0.1);
+                border-left-color: #009fb5;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+        }
+        .about-section {
+            overflow: hidden;
+            transition: height 0.3s ease;
+        }
+        .c-img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+        .c-video {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+    `],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     standalone: true,
