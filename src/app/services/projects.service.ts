@@ -41,9 +41,11 @@ export class ProjectsService {
     ) {
         this.selectedNetwork = this.indexerService.getNetwork();
         console.log('Selected network:', this.selectedNetwork);
+        this.resetProjects(); // Ensure projects are reset and fetched on service initialization
     }
 
     fetchProjects(): Observable<Project[]> {
+        this.resetProjects(); // Reset projects to ensure fresh data is fetched
         if (this.loadingSubject.value || this.noMoreProjectsSubject.value) {
             console.log('Skipping fetch: Already loading or no more projects.');
             return of([]);
