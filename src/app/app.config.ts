@@ -143,7 +143,7 @@ export const appConfig: ApplicationConfig = {
                 services: navigationServices,
             },
             angor: JSON.parse(localStorage.getItem('angorConfig')) ?? {
-                layout: 'classic',
+                layout: 'modern',
                 scheme: 'light',
                 screens: {
                     sm: '600px',
