@@ -1,3 +1,4 @@
+import { AngorFullscreenComponent } from '@angor/components/fullscreen';
 import { AngorLoadingBarComponent } from '@angor/components/loading-bar';
 import {
     AngorNavigationService,
@@ -28,6 +29,7 @@ import { UpdateComponent } from '../../../common/update/update.component';
         AngorVerticalNavigationComponent,
         MatButtonModule,
         MatIconModule,
+        AngorFullscreenComponent,
         SearchComponent,
         NotificationsComponent,
         UserComponent,

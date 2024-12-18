@@ -14,11 +14,13 @@
         <ng-container angorVerticalNavigationContentHeader>
             <!-- Logo -->
             <div class="flex h-20 items-center px-8 pt-6">
-                <img
-                    class="h-10 w-24"
-                    src="images/logo/logo-text-on-dark.svg"
-                    alt="Angor Hub"
-                />
+                <a [routerLink]="['/']">
+                    <img
+                        class="h-10 w-24"
+                        src="images/logo/logo-text-on-dark.svg"
+                        alt="Angor Hub"
+                    />
+                </a>
             </div>
         </ng-container>
     </angor-vertical-navigation>
@@ -34,16 +36,20 @@
             <!-- Logo -->
             <div class="mx-2 flex items-center lg:mr-8">
                 <div class="hidden lg:flex">
-                    <img
-                        class="h-10 w-24 dark:hidden"
-                        src="images/logo/logo-text.svg"
-                    />
-                    <img
-                        class="hidden h-10 w-24 dark:flex"
-                        src="images/logo/logo-text-on-dark.svg"
-                    />
+                    <a [routerLink]="['/']">
+                        <img
+                            class="h-10 w-24 dark:hidden"
+                            src="images/logo/logo-text.svg"
+                        />
+                        <img
+                            class="hidden h-10 w-24 dark:flex"
+                            src="images/logo/logo-text-on-dark.svg"
+                        />
+                    </a>
                 </div>
-                <img class="flex w-8 lg:hidden" src="images/logo/logo.svg" />
+                <a [routerLink]="['/']">
+                    <img class="flex w-8 lg:hidden" src="images/logo/logo.svg" />
+                </a>
             </div>
             <!-- Horizontal navigation -->
             <angor-horizontal-navigation

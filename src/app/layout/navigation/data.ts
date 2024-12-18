@@ -2,13 +2,7 @@
 import { AngorNavigationItem } from '@angor/components/navigation';
 
 export const defaultNavigation: AngorNavigationItem[] = [
-    {
-        id: 'home',
-        title: 'Home',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/home',
-    },
+ 
     {
         id: 'explore',
         title: 'Explore',
@@ -55,13 +49,7 @@ export const defaultNavigation: AngorNavigationItem[] = [
 ];
 
 export const horizontalNavigation: AngorNavigationItem[] = [
-    {
-        id: 'home',
-        title: 'Home',
-        type: 'basic',
-        icon: 'heroicons_outline:home',
-        link: '/home',
-    },
+
     {
         id: 'explore',
         title: 'Explore',

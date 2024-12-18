@@ -9,7 +9,7 @@ import { ANGOR_VERSION } from '@angor/version';
 import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterOutlet, RouterModule } from '@angular/router';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { NotificationsComponent } from 'app/layout/common/notifications/notifications.component';
@@ -35,6 +35,7 @@ import { UpdateComponent } from '../../../common/update/update.component';
         UserComponent,
         RouterOutlet,
         UpdateComponent,
+        RouterModule
     ]
 })
 export class ModernLayoutComponent implements OnInit, OnDestroy {
