@@ -3,135 +3,99 @@
     <div class="bg-card flex flex-col shadow">
         <!-- Cover image -->
         <div>
-            <img
-                class="h-40 object-cover lg:h-80"
-                [src]="profileUser?.banner || '/images/pages/profile/cover.jpg'"
-                onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';"
-                alt="{{
+            <img class="h-40 object-cover lg:h-80" [src]="profileUser?.banner || '/images/pages/profile/cover.jpg'"
+                onerror="this.onerror=null; this.src='/images/pages/profile/cover.jpg';" alt="{{
                     profileUser?.display_name || profileUser?.name || 'Banner'
-                }}"
-            />
+                }}" />
         </div>
 
         <!-- User info -->
-        <div
-            class="bg-card mx-auto flex w-full max-w-5xl flex-0 flex-col items-center px-8 lg:h-18 lg:flex-row"
-        >
+        <div class="bg-card mx-auto flex w-full max-w-5xl flex-0 flex-col items-center px-8 lg:h-18 lg:flex-row">
             <!-- picture -->
             <div class="-mt-26 flex-shrink-0 rounded-full lg:-mt-22">
                 <ng-container *ngIf="profileUser?.picture; else defaultAvatar">
-                    <img
-                        class="ring-bg-card h-32 min-h-32 w-32 min-w-32 max-w-fit rounded-full object-cover ring-4"
+                    <img class="ring-bg-card h-32 min-h-32 w-32 min-w-32 max-w-fit rounded-full object-cover ring-4"
                         [src]="getSafeUrl(profileUser?.picture)"
-                        onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-                        alt="{{
+                        onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';" alt="{{
                             profileUser?.display_name || profileUser?.name || ''
-                        }}"
-                    />
+                        }}" />
                 </ng-container>
                 <ng-template #defaultAvatar>
-                    <img
-                        class="ring-bg-card h-32 min-h-32 w-32 min-w-32 rounded-full object-cover ring-4"
+                    <img class="ring-bg-card h-32 min-h-32 w-32 min-w-32 rounded-full object-cover ring-4"
                         src="/images/avatars/avatar-placeholder.png"
-                        onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-                        alt="{{
+                        onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';" alt="{{
                             profileUser?.display_name || profileUser?.name || ''
-                        }}"
-                    />
+                        }}" />
                 </ng-template>
             </div>
 
             <!-- Details -->
-            <div
-                class="mt-4 flex flex-grow flex-col items-center lg:ml-8 lg:mt-0 lg:items-start"
-            >
-                <div
-                    class="max-w-full truncate text-lg font-bold leading-tight lg:max-w-[25rem]"
-                    style="
+            <div class="mt-4 flex flex-grow flex-col items-center lg:ml-8 lg:mt-0 lg:items-start">
+                <div class="max-w-full truncate text-lg font-bold leading-tight lg:max-w-[25rem]" style="
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
-                    "
-                >
+                    ">
                     {{
-                        profileUser?.display_name ||
-                            profileUser?.name ||
-                            'Unknown User'
+                    profileUser?.display_name ||
+                    profileUser?.name ||
+                    'Unknown User'
                     }}
                 </div>
-                <div
-                    class="text-secondary max-w-full truncate leading-tight lg:max-w-[25rem]"
-                    style="
+                <div class="text-secondary max-w-full truncate leading-tight lg:max-w-[25rem]" style="
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
-                    "
-                >
+                    ">
                     {{ profileUser?.username || profileUser?.name }}
                 </div>
             </div>
 
             <!-- Separator -->
-             <div class="flex flex-shrink-0 items-center space-x-6 lg:mt-0">
+            <div class="flex flex-shrink-0 items-center space-x-6 lg:mt-0">
 
 
                 <!-- Tools -->
-                <div
-                    class="mb-4 mt-8 flex flex-shrink-0 items-center space-x-6 lg:m-0 lg:ml-auto"
-                >
+                <div class="mb-4 mt-8 flex flex-shrink-0 items-center space-x-6 lg:m-0 lg:ml-auto">
 
-                @if (projectIdentifier) {
-                     <div
-                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+                    @if (projectIdentifier) {
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
                         <button mat-icon-button [routerLink]="['/chat', routePubKey]">
-                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
+                            <mat-icon class="icon-size-5"
+                                [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
                         </button>
                     </div>
-             
-                    <div
-                        class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
+
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-md">
                         <button mat-icon-button (click)="toggleBookmark(routePubKey)">
                             <mat-icon class="icon-size-5"
-                                      [svgIcon]="(bookmarks$ | async)?.includes(routePubKey) ? 'heroicons_solid:bookmark' : 'heroicons_outline:bookmark'">
+                                [svgIcon]="(bookmarks$ | async)?.includes(routePubKey) ? 'heroicons_solid:bookmark' : 'heroicons_outline:bookmark'">
                             </mat-icon>
                         </button>
                     </div>
-                
+
 
                     <div>
-                        <button
-                            mat-icon-button
-                            [matMenuTriggerFor]="profileMenu"
-                        >
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="'heroicons_solid:ellipsis-vertical'"
-                            ></mat-icon>
+                        <button mat-icon-button [matMenuTriggerFor]="profileMenu">
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
                         </button>
                         <mat-menu #profileMenu="matMenu">
                             <!-- Send/Receive Zap -->
-                            <button
-                                mat-menu-item
-                                (click)="openZapDialog()"
-                                *ngIf="
+                            <button mat-menu-item (click)="openZapDialog()" *ngIf="
                                     !isCurrentUserProfile ||
                                     isCurrentUserProfile
-                                "
-                            >
+                                ">
                                 <span class="flex items-center">
-                                    <mat-icon
-                                        class="mr-3 icon-size-5"
-                                        [svgIcon]="
+                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
                                             isCurrentUserProfile
                                                 ? 'heroicons_outline:qr-code'
                                                 : 'feather:zap'
-                                        "
-                                    ></mat-icon>
+                                        "></mat-icon>
                                     <span>{{
                                         isCurrentUserProfile
-                                            ? 'Receive Zap'
-                                            : 'Send Zap'
-                                    }}</span>
+                                        ? 'Receive Zap'
+                                        : 'Send Zap'
+                                        }}</span>
                                 </span>
                             </button>
 
@@ -139,12 +103,9 @@
                             <ng-container *ngFor="let key of ['hex', 'npub']">
                                 <button mat-menu-item (click)="copyKey(key)">
                                     <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            [svgIcon]="
+                                        <mat-icon class="mr-3 icon-size-5" [svgIcon]="
                                                 'heroicons_outline:clipboard-document'
-                                            "
-                                        ></mat-icon>
+                                            "></mat-icon>
                                         <span>Copy Public key ({{ key }})</span>
                                     </span>
                                 </button>
@@ -154,18 +115,11 @@
                             <mat-divider class="my-2"></mat-divider>
 
                             <!-- Edit Profile for Current User -->
-                            <button
-                                *ngIf="isCurrentUserProfile"
-                                mat-menu-item
-                                [routerLink]="'/settings/profile'"
-                            >
+                            <button *ngIf="isCurrentUserProfile" mat-menu-item [routerLink]="'/settings/profile'">
                                 <span class="flex items-center">
-                                    <mat-icon
-                                        class="mr-3 icon-size-5"
-                                        [svgIcon]="
+                                    <mat-icon class="mr-3 icon-size-5" [svgIcon]="
                                             'heroicons_outline:pencil-square'
-                                        "
-                                    ></mat-icon>
+                                        "></mat-icon>
                                     <span>Edit your profile</span>
                                 </span>
                             </button>
@@ -174,28 +128,23 @@
                             <ng-container *ngIf="!isCurrentUserProfile">
                                 <button mat-menu-item>
                                     <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            [svgIcon]="
+                                        <mat-icon class="mr-3 icon-size-5" [svgIcon]="
                                                 'heroicons_solid:exclamation-triangle'
-                                            "
-                                        ></mat-icon>
+                                            "></mat-icon>
                                         <span>Report</span>
                                     </span>
                                 </button>
                                 <button mat-menu-item>
                                     <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            [svgIcon]="'heroicons_solid:bell'"
-                                        ></mat-icon>
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:bell'"></mat-icon>
                                         <span>Turn on notifications</span>
                                     </span>
                                 </button>
                             </ng-container>
                         </mat-menu>
                     </div>
-                }
+                    }
                 </div>
             </div>
         </div>
@@ -204,20 +153,17 @@
     <!-- Add this after the profile header section and before the content -->
     <div class="flex justify-center border-b border-gray-200 dark:border-gray-700 mb-4">
         <nav class="flex space-x-8">
-            <button 
-                (click)="switchTab('about')"
+            <button (click)="switchTab('about')"
                 [ngClass]="{'border-primary text-primary': activeTab === 'about', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300': activeTab !== 'about'}"
                 class="py-4 px-1 border-b-2 font-medium text-sm">
                 About
             </button>
-            <button 
-                (click)="switchTab('updates')"
+            <button (click)="switchTab('updates')"
                 [ngClass]="{'border-primary text-primary': activeTab === 'updates', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300': activeTab !== 'updates'}"
                 class="py-4 px-1 border-b-2 font-medium text-sm">
                 Updates
             </button>
-            <button 
-                (click)="switchTab('comments')"
+            <button (click)="switchTab('comments')"
                 [ngClass]="{'border-primary text-primary': activeTab === 'comments', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300': activeTab !== 'comments'}"
                 class="py-4 px-1 border-b-2 font-medium text-sm">
                 Comments
@@ -244,238 +190,279 @@
 
         <!-- Wrap your existing content sections in tab-specific divs -->
         <div [ngClass]="{'hidden': activeTab !== 'about'}">
-            <angor-card
-                *ngIf="profileUser?.about && profileUser.about.trim() !== ''"
+            <angor-card *ngIf="profileUser?.about && profileUser.about.trim() !== ''"
                 class="about-section mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8"
                 [ngStyle]="{
                     height: aboutExpanded ? 'auto' : '80px',
                     overflow: aboutExpanded ? 'visible' : 'hidden',
-                }"
-                style="position: relative"
-            >
+                }" style="position: relative">
                 <div class="mb-2 flex w-full items-center justify-between">
                     <div class="text-2xl font-semibold leading-tight">
                         About
                     </div>
-                    <button
-                        mat-icon-button
-                        color="primary"
-                        (click)="toggleAbout()"
-                        style="position: absolute; top: 16px; right: 16px"
-                        aria-label="Toggle about section"
-                    >
-                    <mat-icon [svgIcon]="aboutExpanded ? 'heroicons_outline:chevron-up' : 'heroicons_outline:chevron-down'"></mat-icon>
+                    <button mat-icon-button color="primary" (click)="toggleAbout()"
+                        style="position: absolute; top: 16px; right: 16px" aria-label="Toggle about section">
+                        <mat-icon
+                            [svgIcon]="aboutExpanded ? 'heroicons_outline:chevron-up' : 'heroicons_outline:chevron-down'"></mat-icon>
 
                     </button>
                 </div>
 
-                <div
-                    class="about-content text-base text-gray-700 dark:text-gray-50 transition-all duration-300"
+                <div class="about-content text-base text-gray-700 dark:text-gray-50 transition-all duration-300"
                     [ngStyle]="{
                         'white-space': aboutExpanded ? 'normal' : 'nowrap',
                         'max-height': aboutExpanded ? 'none' : '1.5em',
                         overflow: 'hidden',
-                    }"
-                >
+                    }">
                     {{ profileUser?.about || '' }}
-                    <span *ngIf="!aboutExpanded" class="text-gray-500"
-                        >...</span
-                    >
+                    <span *ngIf="!aboutExpanded" class="text-gray-500">...</span>
                 </div>
             </angor-card>
+
+
+            <angor-card class="mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8">
+                <div class="mb-2 flex w-full items-center justify-between">
+                    <div class="text-2xl font-semibold leading-tight">
+                        Slide Show
+                    </div>
+
+                </div>
+
+                <div class="text-base text-gray-700 dark:text-gray-50 transition-all duration-300">
+
+
+                </div>
+            </angor-card>
+
+            <angor-card class="mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8">
+                <div class="mb-2 flex w-full items-center justify-between">
+                    <div class="text-2xl font-semibold leading-tight">
+                        Call to Action
+                    </div>
+
+                </div>
+
+                <div class="text-base text-gray-700 dark:text-gray-50 transition-all duration-300">
+
+
+                </div>
+            </angor-card>
+
+            <angor-card class="mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8">
+                <div class="mb-2 flex w-full items-center justify-between">
+                    <div class="text-2xl font-semibold leading-tight">
+                        Download Box
+                    </div>
+
+                </div>
+
+                <div class="text-base text-gray-700 dark:text-gray-50 transition-all duration-300">
+
+
+                </div>
+            </angor-card>
+
+            <angor-card class="mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8">
+                <div class="mb-2 flex w-full items-center justify-between">
+                    <div class="text-2xl font-semibold leading-tight">
+                        Image Gallery
+                    </div>
+
+                </div>
+
+                <div class="text-base text-gray-700 dark:text-gray-50 transition-all duration-300">
+
+
+                </div>
+            </angor-card>
+
+            <angor-card class="mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8">
+                <div class="mb-2 flex w-full items-center justify-between">
+                    <div class="text-2xl font-semibold leading-tight">
+                        Investors
+                    </div>
+
+                </div>
+
+                <div class="text-base text-gray-700 dark:text-gray-50 transition-all duration-300">
+
+
+                </div>
+            </angor-card>
+
+            <angor-card class="mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8">
+                <div class="mb-2 flex w-full items-center justify-between">
+                    <div class="text-2xl font-semibold leading-tight">
+                        Social Media Links
+                    </div>
+
+                </div>
+
+                <div class="text-base text-gray-700 dark:text-gray-50 transition-all duration-300">
+
+
+                </div>
+            </angor-card>
+
+            <angor-card class="mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8">
+                <div class="mb-2 flex w-full items-center justify-between">
+                    <div class="text-2xl font-semibold leading-tight">
+                        Team Members
+                    </div>
+
+                </div>
+
+                <div class="text-base text-gray-700 dark:text-gray-50 transition-all duration-300">
+
+
+                </div>
+            </angor-card>
+
+            <angor-card class="mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8">
+                <div class="mb-2 flex w-full items-center justify-between">
+                    <div class="text-2xl font-semibold leading-tight">
+                        Useful Links
+                    </div>
+
+                </div>
+
+                <div class="text-base text-gray-700 dark:text-gray-50 transition-all duration-300">
+
+
+                </div>
+            </angor-card>
+
+
+            <angor-card class="mb-8 flex w-full flex-col items-start p-6 pb-6 transition-all duration-300 sm:p-8">
+                <div class="mb-2 flex w-full items-center justify-between">
+                    <div class="text-2xl font-semibold leading-tight">
+                        Zap
+                    </div>
+
+                </div>
+
+                <div class="text-base text-gray-700 dark:text-gray-50 transition-all duration-300">
+
+
+                </div>
+            </angor-card>
+
         </div>
 
+
+
         <div [ngClass]="{'hidden': activeTab !== 'updates'}">
-            <div class="m-auto flex w-full max-w-140 flex-col items-start">
+            <div class="m-auto flex w-full flex-col items-start">
                 <!-- Create Post -->
-                <angor-card
-                    *ngIf="isCurrentUserProfile"
-                    class="mb-8 flex w-full flex-col p-6 pb-6 sm:p-8"
-                >
+                <angor-card *ngIf="isCurrentUserProfile" class="mb-8 flex w-full flex-col p-6 pb-6 sm:p-8">
                     <div class="flex justify-between">
                         <div class="text-xl font-semibold">Create Post</div>
                         <!-- Toggle preview -->
-                        <mat-slide-toggle
-                            class="-mr-4 ml-auto"
-                            [color]="'primary'"
-                            (change)="togglePreview()"
-                        >
+                        <mat-slide-toggle class="-mr-4 ml-auto" [color]="'primary'" (change)="togglePreview()">
                             Preview
                         </mat-slide-toggle>
                     </div>
                     <div class="mt-8 flex flex-col items-start sm:flex-row">
-                        <mat-form-field
-                            class="w-full"
-                            [subscriptSizing]="'dynamic'"
-                        >
-                            <textarea
-                                matInput
-                                [placeholder]="'What\'s on your mind?'"
-                                [rows]="3"
-                                #eventInput
-                                cdkTextareaAutosize
-                            ></textarea>
+                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                            <textarea matInput [placeholder]="'What\'s on your mind?'" [rows]="3" #eventInput
+                                cdkTextareaAutosize></textarea>
                         </mat-form-field>
                     </div>
-                    <div
-                        class="-mx-3 mt-6 flex items-center justify-between sm:mt-8"
-                    >
+                    <div class="-mx-3 mt-6 flex items-center justify-between sm:mt-8">
                         <div class="flex items-center">
-                            <button
-                                class="mr-1 px-3"
-                                mat-button
-                                (click)="toggleEmojiPicker()"
-                            >
-                                <mat-icon
-                                    class="icon-size-5"
-                                    [svgIcon]="'heroicons_solid:face-smile'"
-                                ></mat-icon>
+                            <button class="mr-1 px-3" mat-button (click)="toggleEmojiPicker()">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:face-smile'"></mat-icon>
                                 <span class="ml-2">Feeling</span>
                             </button>
-                            <div
-                                *ngIf="showEmojiPicker"
-                                class="emoji-picker-container-global"
-                            >
-                                <emoji-mart
-                                    (emojiClick)="addEmoji($event)"
-                                    [darkMode]="darkMode"
-                                ></emoji-mart>
+                            <div *ngIf="showEmojiPicker" class="emoji-picker-container-global">
+                                <emoji-mart (emojiClick)="addEmoji($event)" [darkMode]="darkMode"></emoji-mart>
                             </div>
-                            <button
-                                class="mr-1 hidden px-3 sm:inline-flex"
-                                mat-button
-                            >
-                                <mat-icon
-                                    class="icon-size-5"
-                                    [svgIcon]="'heroicons_solid:photo'"
-                                ></mat-icon>
+                            <button class="mr-1 hidden px-3 sm:inline-flex" mat-button>
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:photo'"></mat-icon>
                                 <span class="ml-2">Media</span>
                             </button>
 
-                            <button
-                                class="mr-1 hidden px-3 sm:inline-flex"
-                                mat-button
-                            >
-                                <mat-icon
-                                    class="icon-size-5"
-                                    [svgIcon]="'heroicons_solid:user-circle'"
-                                ></mat-icon>
+                            <button class="mr-1 hidden px-3 sm:inline-flex" mat-button>
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
                                 <span class="ml-2">Tag</span>
                             </button>
 
-                            <button
-                                class="px-3"
-                                mat-button
-                                [matMenuTriggerFor]="postCardMenu01"
-                            >
-                                <mat-icon
-                                    class="icon-size-5"
-                                    [svgIcon]="
+                            <button class="px-3" mat-button [matMenuTriggerFor]="postCardMenu01">
+                                <mat-icon class="icon-size-5" [svgIcon]="
                                         'heroicons_solid:ellipsis-horizontal'
-                                    "
-                                ></mat-icon>
+                                    "></mat-icon>
                             </button>
 
                             <mat-menu #postCardMenu01="matMenu">
                                 <button class="sm:hidden" mat-menu-item>
                                     <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            [svgIcon]="
+                                        <mat-icon class="mr-3 icon-size-5" [svgIcon]="
                                                 'heroicons_solid:user-circle'
-                                            "
-                                        ></mat-icon>
+                                            "></mat-icon>
                                         <span>Tag</span>
                                     </span>
                                 </button>
                                 <button class="sm:hidden" mat-menu-item>
                                     <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            [svgIcon]="'heroicons_solid:face-smile'"
-                                        ></mat-icon>
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:face-smile'"></mat-icon>
                                         <span>Feeling</span>
                                     </span>
                                 </button>
                                 <button mat-menu-item>
                                     <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            [svgIcon]="'heroicons_solid:play'"
-                                        ></mat-icon>
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:play'"></mat-icon>
                                         <span>Live</span>
                                     </span>
                                 </button>
                                 <button mat-menu-item>
                                     <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            [svgIcon]="'heroicons_solid:sparkles'"
-                                        ></mat-icon>
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:sparkles'"></mat-icon>
                                         <span>Gif</span>
                                     </span>
                                 </button>
                                 <button mat-menu-item>
                                     <span class="flex items-center">
-                                        <mat-icon
-                                            class="mr-3 icon-size-5"
-                                            [svgIcon]="'heroicons_solid:map-pin'"
-                                        ></mat-icon>
+                                        <mat-icon class="mr-3 icon-size-5"
+                                            [svgIcon]="'heroicons_solid:map-pin'"></mat-icon>
                                         <span>Check in</span>
                                     </span>
                                 </button>
                             </mat-menu>
                         </div>
 
-                        <button
-                            class="mr-1 flex px-3"
-                            mat-button
-                            (click)="sendEvent()"
-                        >
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="'heroicons_solid:paper-airplane'"
-                            ></mat-icon>
+                        <button class="mr-1 flex px-3" mat-button (click)="sendEvent()">
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:paper-airplane'"></mat-icon>
                             <span class="ml-2">Send</span>
                         </button>
                     </div>
                 </angor-card>
 
                 <!-- preview -->
-                <angor-card
-                    *ngIf="isPreview"
-                    class="mb-8 flex w-full flex-col bg-primary-50 dark:bg-primary-800"
-                    #expandableComments="angorCard"
-                >
+                <angor-card *ngIf="isPreview" class="mb-8 flex w-full flex-col bg-primary-50 dark:bg-primary-800"
+                    #expandableComments="angorCard">
                     <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-                        <img
-                            class="mr-4 h-10 w-10 rounded-full object-cover"
-                            [src]="getSafeUrl(profileUser?.picture)"
-                            onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';"
-                            alt="{{
+                        <img class="mr-4 h-10 w-10 rounded-full object-cover" [src]="getSafeUrl(profileUser?.picture)"
+                            onerror="this.onerror=null; this.src='/images/avatars/avatar-placeholder.png';" alt="{{
                                 profileUser?.display_name || profileUser?.name || ''
-                            }}"
-                        />
+                            }}" />
                         <div class="flex flex-col">
                             <span class="font-semibold leading-none">{{
                                 profileUser?.display_name || profileUser?.name || ''
-                            }}</span>
-                            <span class="text-secondary mt-1 text-sm leading-none"
-                                >1 minutes ago</span
-                            >
+                                }}</span>
+                            <span class="text-secondary mt-1 text-sm leading-none">1 minutes ago</span>
                         </div>
                     </div>
 
-                    <div
-                        *ngFor="
+                    <div *ngFor="
                             let token of parseContent.parseContent(
                                 eventInput.nativeElement.value
                             );
                             trackBy: trackByFn
 
-                        "
-                        class="inline-block whitespace-pre-wrap break-words"
-                    >
+                        " class="inline-block whitespace-pre-wrap break-words">
                         <!-- YouTube Embeds -->
                         <!-- <ng-container *ngIf="token.token === 'youtube'">
                             <div class="relative mb-4 block">
@@ -487,12 +474,8 @@
                         <!-- Images -->
                         <ng-container *ngIf="token.token === 'image'">
                             <div class="relative mb-4 block">
-                                <img
-                                    [src]="token.safeWord"
-                                    alt="Embedded Image"
-                                    style="width: 100%"
-                                    class="max-h-140 object-cover"
-                                />
+                                <img [src]="token.safeWord" alt="Embedded Image" style="width: 100%"
+                                    class="max-h-140 object-cover" />
                             </div>
                         </ng-container>
 
@@ -500,10 +483,7 @@
                         <ng-container *ngIf="token.token === 'video'">
                             <div class="relative mb-4 block">
                                 <video controls style="width: 100%">
-                                    <source
-                                        [src]="token.safeWord"
-                                        type="video/mp4"
-                                    />
+                                    <source [src]="token.safeWord" type="video/mp4" />
                                     Your browser does not support the video tag.
                                 </video>
                             </div>
@@ -513,10 +493,7 @@
                         <ng-container *ngIf="token.token === 'audio'">
                             <div class="relative mb-4 block">
                                 <audio controls>
-                                    <source
-                                        [src]="token.safeWord"
-                                        type="audio/mpeg"
-                                    />
+                                    <source [src]="token.safeWord" type="audio/mpeg" />
                                     Your browser does not support the audio element.
                                 </audio>
                             </div>
@@ -525,15 +502,9 @@
                         <!-- Links -->
                         <ng-container *ngIf="token.token === 'link'">
                             <div class="mx-6 mb-6 mt-2 sm:mx-8">
-                                <a
-                                    class="inline-block break-words text-blue-500 underline"
-                                    [href]="token.word"
-                                    target="_blank"
-                                >
-                                    <span
-                                        class="inline-block break-words"
-                                        >{{ token.word }}</span
-                                    >
+                                <a class="inline-block break-words text-blue-500 underline" [href]="token.word"
+                                    target="_blank">
+                                    <span class="inline-block break-words">{{ token.word }}</span>
                                 </a>
                             </div>
                         </ng-container>
@@ -541,12 +512,9 @@
                         <!-- Plain Text -->
                         <ng-container *ngIf="!token.token">
                             <div class="mx-6 mb-6 mt-2 sm:mx-8">
-                                <span
-                                    class="inline-block break-words"
-                                    [ngClass]="{
+                                <span class="inline-block break-words" [ngClass]="{
                                         'large-font': isSingleEmojiOrWord(token),
-                                    }"
-                                >
+                                    }">
                                     {{ token.trim() }}
                                 </span>
                             </div>
@@ -555,41 +523,27 @@
 
                     <div class="mx-3 flex items-center sm:mx-5">
                         <button class="mr-1 px-3" mat-button>
-                            <mat-icon
-                                class="text-red-500 icon-size-5"
-                                [svgIcon]="'heroicons_solid:heart'"
-                            ></mat-icon>
+                            <mat-icon class="text-red-500 icon-size-5" [svgIcon]="'heroicons_solid:heart'"></mat-icon>
                             <span class="ml-2">Unlike</span>
                         </button>
                         <button class="mr-1 px-3" mat-button>
-                            <mat-icon
-                                class="text-blue-500 icon-size-5"
-                                [svgIcon]="
+                            <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="
                                     'heroicons_solid:chat-bubble-left-ellipsis'
-                                "
-                            ></mat-icon>
+                                "></mat-icon>
                             <span class="ml-2">Comment</span>
                         </button>
                         <button class="mr-1 px-3" mat-button>
-                            <mat-icon
-                                class="text-green-500 icon-size-5"
-                                [svgIcon]="'heroicons_solid:share'"
-                            ></mat-icon>
+                            <mat-icon class="text-green-500 icon-size-5" [svgIcon]="'heroicons_solid:share'"></mat-icon>
                             <span class="ml-2">Share</span>
                         </button>
                         <button class="mr-1 px-3" mat-button>
-                            <mat-icon
-                                class="text-orange-500 icon-size-5"
-                                [svgIcon]="'heroicons_solid:bolt'"
-                            ></mat-icon>
+                            <mat-icon class="text-orange-500 icon-size-5" [svgIcon]="'heroicons_solid:bolt'"></mat-icon>
                             <span class="ml-2">Zap</span>
                         </button>
                     </div>
 
                     <hr class="mx-6 mb-6 mt-4 border-b sm:mx-8" />
-                    <div
-                        class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center"
-                    >
+                    <div class="mx-6 mb-4 flex flex-col sm:mx-8 sm:mb-6 sm:flex-row sm:items-center">
                         <div class="flex items-center">
                             <div class="ml-3 text-md tracking-tight">0 Zap</div>
                         </div>
@@ -609,24 +563,16 @@
                 </angor-card>
 
                 @for (item of posts; track $index) {
-                    <app-post
-                        class="mb-8 flex w-full flex-col"
-                        [item]="item"
-                    ></app-post>
+                <app-post class="mb-8 flex w-full flex-col" [item]="item"></app-post>
                 }
 
                 @if (hasMorePosts) {
-                    <div class="m-auto mt-4 flex justify-center">
-                        <button
-                            class="bg-card text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
-                            mat-raised-button
-                            color="primary"
-                            (click)="loadNextPage()"
-                            [disabled]="loading"
-                        >
-                            {{ loading ? 'Loading...' : 'Load More Posts' }}
-                        </button>
-                    </div>
+                <div class="m-auto mt-4 flex justify-center">
+                    <button class="bg-card text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
+                        mat-raised-button color="primary" (click)="loadNextPage()" [disabled]="loading">
+                        {{ loading ? 'Loading...' : 'Load More Posts' }}
+                    </button>
+                </div>
                 }
             </div>
         </div>
