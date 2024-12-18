@@ -65,23 +65,43 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
                 justify-content: flex-end;
                 margin-top: 0.25rem;
                 width: auto;
-                transform: translateY(0);
+                transform: scale(0.8);
+                transform-origin: right top;
+                right: 20px;
             }
             .time-boxes-container {
-                gap: 0.5rem;
+                gap: 0.35rem;
             }
             .time-box {
-                padding: 0.25rem;
-                min-width: 45px;
+                padding: 0.2rem;
+                min-width: 40px;
             }
             .time-value {
-                font-size: 1rem;
+                font-size: 0.9rem;
+                margin-bottom: 0.1rem;
             }
             .time-label {
-                font-size: 0.55rem;
+                font-size: 0.5rem;
             }
             .status-tooltip {
-                font-size: 0.65rem;  
+                font-size: 0.6rem;
+                bottom: -20px;
+                padding: 3px 6px;
+            }
+        }
+        @media (max-width: 400px) {
+            .countdown-container {
+                transform: scale(0.7);
+                right: 15px;
+            }
+            .time-box {
+                min-width: 35px;
+            }
+            .time-value {
+                font-size: 0.85rem;
+            }
+            .time-label {
+                font-size: 0.45rem;
             }
         }
     `],
