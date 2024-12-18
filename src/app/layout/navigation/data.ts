@@ -24,10 +24,10 @@ export const defaultNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:chat-bubble-left-right',
         link: '/chat',
-        badge: {
-            title: '0',
-            classes: 'px-2 bg-[#086c81] text-white rounded-full',
-        },
+        // badge: {
+        //     title: '0',
+        //     classes: 'px-2 bg-[#086c81] text-white rounded-full',
+        // },
         requiresLogin: true,
     },
     {
@@ -71,10 +71,10 @@ export const horizontalNavigation: AngorNavigationItem[] = [
         type: 'basic',
         icon: 'heroicons_outline:chat-bubble-left-right',
         link: '/chat',
-        badge: {
-            title: '0',
-            classes: 'px-2 bg-[#086c81] text-white rounded-full',
-        },
+        // badge: {
+        //     title: '0',
+        //     classes: 'px-2 bg-[#086c81] text-white rounded-full',
+        // },
         requiresLogin: true,
     },
     {
